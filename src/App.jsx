@@ -4,10 +4,6 @@ import Home from "./components/Home";
 function App() {
   return (
     <Router>
-      <nav className="flex gap-5 p-4 bg-gray-200">
-        <Link to="/" className="text-blue-500">Inicio</Link>
-      </nav>
-
       <Routes>
         <Route path="/" element={<Home />} />
       </Routes>
