@@ -184,39 +184,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* TractorCard Component */}
-      <section className="bg-gray-100 py-12">
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl md:text-4xl font-bold text-red-800 text-center">
-            Botones Calculadora
-          </h1>
-          <div className="w-32 h-1 bg-red-800 mx-auto mt-2 mb-10"></div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Botón Tengo Tractor */}
-            <TractorCard 
-              imageSrc={IconTrac} 
-              title="Tengo Tractor" 
-              description="Encuentra implementos agrícolas compatibles con su tractor según su potencia disponible."
-            />
-
-            {/* Botón Tengo Maquinaria */}
-            <TractorCard 
-              imageSrc={IconMac} 
-              title="Tengo Maquinaria" 
-              description="Encuentra el tractor con la potencia adecuada para tu implemento y optimiza tu trabajo en el campo"
-            />
-
-            {/* Maquina 3 */}
-            <TractorCard 
-              imageSrc={IconCamp} 
-              title="Busco Equipo" 
-              description="Te guiamos en la selección del equipo ideal según tus necesidades. encuentra la mejor combinación de tractor y maquinaria."
-            />
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
