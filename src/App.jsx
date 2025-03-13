@@ -2,6 +2,10 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./components/Home";
 import AppCalculadora from "./components/AppCalculadora";
+import DatosTractor from "./pages/DatosTractor";
+import DatosLlantas from "./pages/DatosLlanta";
+import DatosClimaticos from "./pages/DatosClimativos";
+import Resultados from "./pages/Resultados";
 
 function App() {
   return (
@@ -12,6 +16,10 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/calculadora" element={<AppCalculadora />} />
+            <Route path="/TengoTractor" element={<DatosTractor/>}/>
+            <Route path="/DatosLlantas" element={<DatosLlantas/>}/>
+            <Route path="/DatosClimaticos" element={<DatosClimaticos/>}/>
+            <Route path="/Resultados" element={<Resultados/>}/>
             {/* ++++++ Rutas adicionales ++++++ */}
             {/* <Route path="/catalogo" element={<Catalogo />} /> */}
             {/* <Route path="/sobre-nosotro" element={<SobreNosotros />} /> */}
