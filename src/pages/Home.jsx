@@ -4,27 +4,15 @@ import demoImg from "../assets/img/1.png";
 import IconTrac from "../assets/img/IconTrac.png";
 import IconMac from "../assets/img/IconMac.png";
 import IconCamp from "../assets/img/IconCamp.png";
-import TractorCard from "./TractorCard";
+import TractorCard from "../components/TractorCard";
+import HomeVideo from "../components/HomeVideo";
 
 const Home = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      {/* Hero Section with Local Video */}
-      <section className="relative h-screen w-full">
-        {/* Video como GIF sin controles */}
-        <video
-          className="w-full h-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          disablePictureInPicture
-          disableRemotePlayback
-        >
-          <source src={demoVideo} type="video/mp4" />
-          Tu navegador no soporta videos HTML5.
-        </video>
-      </section>
+      {/* Aqui va el video */}
+      
+      <HomeVideo videoSrc={demoVideo} />
 
       {/* Tractores Destacados Section */}
       <section className="bg-gray-100 py-12">

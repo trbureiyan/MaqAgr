@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Home from "./components/Home";
+import Home from "./pages/Home";
 import AppCalculadora from "./components/AppCalculadora";
 import Logo from './assets/img/logo.svg';
 import DatosTractor from "./pages/DatosTractor";
