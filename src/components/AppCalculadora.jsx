@@ -19,6 +19,7 @@ const AppCalculadora = () => {
           {/* Botón Tengo Tractor */}
           <TractorCard 
             imageSrc={IconTrac} 
+            link ="/TengoTractor"
             title="Tengo Tractor" 
             description="Encuentra implementos agrícolas compatibles con su tractor según su potencia disponible."
           />
