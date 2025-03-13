@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Logo from './assets/img/logo1.svg';
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Home from "./components/Home";
+import Home from "./pages/Home";
 import AppCalculadora from "./components/AppCalculadora";
 import DatosTractor from "./pages/DatosTractor";
 import DatosLlantas from "./pages/DatosLlanta";
