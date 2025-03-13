@@ -1,8 +1,8 @@
 import React from "react";
 
-const TractorCard = ({ imageSrc, title, description }) => {
+const TractorCard = ({ imageSrc, link, title, description }) => {
   return (
-    <a href="#" className="block">
+    <a href={link} className="block">
       <div className="flex flex-col items-center w-80 h-120 bg-white pb-8 pt-4 shadow-md hover:bg-gray-100 transition duration-300 overflow-hidden">
         {/* Tractor image */}
         <div className="mb-6 p-4">
