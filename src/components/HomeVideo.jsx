@@ -11,7 +11,7 @@ const HomeVideo = ({ videoSrc }) => {
   }, []);
 
   return (
-    <section className="relative w-full h-[60vh] flex items-center justify-center overflow-hidden">
+    <section className="relative w-full h-[50vh] md:h-[60vh] lg:h-[70vh] flex items-center justify-center overflow-hidden mb-8">
       {/* Video con overlay */}
       <div className="absolute inset-0 w-full h-full">
         <video
@@ -29,7 +29,7 @@ const HomeVideo = ({ videoSrc }) => {
       </div>
 
       {/* Contenido sobre el video */}
-      <div className="absolute bottom-12 left-0 right-0 z-10 text-left text-white px-6 opacity-80 pointer-events-none">
+      <div className="absolute bottom-16 left-0 right-0 z-10 text-left text-white px-6 opacity-80 pointer-events-none">
         <h1 className="text-xl md:text-2xl font-medium transition-opacity duration-1000 max-w-md">
           {currentIndex === 0 && "Maquinaria Agrícola de Alta Calidad"}
           {currentIndex === 1 && "Tractores y Equipos para el Campo"}
@@ -43,7 +43,7 @@ const HomeVideo = ({ videoSrc }) => {
       </div>
 
       {/* Indicadores tipo carrusel */}
-      <div className="absolute bottom-4 right-6 flex space-x-1">
+      <div className="absolute bottom-6 right-6 flex space-x-1">
         {[0, 1, 2].map((index) => (
           <div
             key={index}
