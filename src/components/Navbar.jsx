@@ -42,7 +42,6 @@ const Navbar = () => {
             >
               Calculadora
             </Link>
-            {/* Eliminado el botón de login del menú móvil ya que ahora es visible siempre */}
           </div>
         </div>
       );
@@ -65,7 +64,8 @@ const Navbar = () => {
             >
               <span className="absolute -inset-0.5"></span>
               <span className="sr-only">Abrir menú principal</span>
-              
+
+              {/* # By condicional: */}
               {/* Icono cuando el menú está cerrado */}
               <svg 
                 className={`${isMenuOpen ? 'hidden' : 'block'} size-7`} 
@@ -95,13 +95,12 @@ const Navbar = () => {
           {/* Logo - Centrado en móvil, a la izquierda en desktop */}
           <div className="absolute left-0 right-0 flex justify-center sm:static sm:justify-start sm:flex-grow-0">
             <div className="flex-shrink-0">
-              <Logo size="large" color="#909d00" />
+              <Logo size="default" color="#909d00" link={true} />
             </div>
           </div>
           
-          {/* Área derecha: Navegación en desktop */}
           <div className="flex items-center">
-            {/* Enlaces de navegación - Ocultos en móvil */}
+            {/* Enlaces de navegación Desktop*/}
             <div className="hidden sm:flex sm:items-center sm:space-x-6 mr-6">
               <Link 
                 to="/" 
