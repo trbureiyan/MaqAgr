@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Logo from './assets/img/logo1.svg';
+import Icon from './assets/img/logo1.svg';
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -16,7 +16,7 @@ function App() {
       <link 
         rel="icon" 
         type="image/svg+xml" 
-        href={Logo} 
+        href={Icon} 
       />
       <div className="min-h-screen flex flex-col">
         <Navbar />
