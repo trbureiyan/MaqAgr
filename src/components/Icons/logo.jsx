@@ -3,19 +3,18 @@ import { Link } from 'react-router-dom';
 import LogoSVG from '../../assets/img/logo.svg';
 
 /**
- * Componente Logo que encapsula la imagen del logo y su estilización
  * @param {Object} props - Propiedades del componente
- * @param {string} [props.size='default'] - Tamaño del logo ('small', 'default', 'large')
- * @param {string} [props.color='#909d00'] - Color del logo (en formato hexadecimal)
- * @param {boolean} [props.link=true] - Si el logo debe ser un enlace a la página principal
- * @param {string} [props.className=''] - Clases CSS adicionales
+ * @param {string} [props.size='default'] - Tamaño del logo ('small', 'default', 'large') // Default: default
+ * @param {string} [props.color='#909d00'] - Color del logo (en formato HEX) // Default: color primario, contraste navbar 
+ * @param {boolean} [props.link=false] - Si el logo debe ser un enlace a la página principal // Default: sin link
+ * @param {string} [props.className=''] - Clases CSS adicionales // Permite agregar clases personalizadas al componente
  */
 
-const Logo = ({ size = 'default', color = '#909d00', link = true, className = '' }) => {
+const Logo = ({ size = 'default', color = '#909d00', link = false, className = '' }) => {
   // Mapeo de tamaños a clases de altura
   const sizeClasses = {
     small: 'h-10',
-    default: 'h-16',
+    default: 'h-14',
     large: 'h-20'
   };
   
