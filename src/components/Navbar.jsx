@@ -1,47 +1,38 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Logo from './Icons/logo';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+// Array de links: Datos de navegación centralizados
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/catalogo", label: "Catálogo" },
+    { to: "/sobre-nosotros", label: "Sobre Nosotros" },
+    { to: "/calculadora", label: "Calculadora" }
+  ];
 
   const renderMobileMenu = () => {
     if (isMenuOpen) {
       return (
         <div className="sm:hidden" id="mobile-menu">
           <div className="space-y-1 px-4 pt-3 pb-4">
-            <Link 
-              to="/" 
-              className="block rounded-md px-4 py-3 text-lg font-medium text-gray-100 hover:bg-[#909d00] hover:text-white"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link 
-              to="/catalogo" 
-              className="block rounded-md px-4 py-3 text-lg font-medium text-gray-100 hover:bg-[#909d00] hover:text-white"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Catálogo
-            </Link>
-            <Link 
-              to="/sobre-nosotro" 
-              className="block rounded-md px-4 py-3 text-lg font-medium text-gray-100 hover:bg-[#909d00] hover:text-white"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Sobre Nosotros
-            </Link>
-            <Link 
-              to="/calculadora" 
-              className="block rounded-md px-4 py-3 text-lg font-medium text-gray-100 hover:bg-[#909d00] hover:text-white"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Calculadora
-            </Link>
+            {navLinks.map(link => (
+              <Link 
+                key={link.to}
+                to={link.to} 
+                className="block rounded-md px-4 py-3 text-lg font-medium text-gray-100 hover:bg-[#909d00] hover:text-white"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
       );
@@ -53,7 +44,7 @@ const Navbar = () => {
     <nav className="bg-gray-800 py-3 shadow-lg">
       <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-7">
         <div className="relative flex h-13 items-center justify-between">
-          {/* Área izquierda: Botón del menú móvil */}
+          {/* Área izquierda: Botón del menú móvil */} 
           <div className="sm:hidden z-10 flex items-center">
             <button 
               type="button" 
@@ -92,40 +83,29 @@ const Navbar = () => {
             </button>
           </div>
           
-          {/* Logo - Centrado en móvil, a la izquierda en desktop */}
+          {/* Logo (Componente) - Centrado en móvil, a la izquierda en desktop */}
           <div className="absolute left-0 right-0 flex justify-center sm:static sm:justify-start sm:flex-grow-0">
             <div className="flex-shrink-0">
-              <Logo size="default" color="#909d00" link={true} />
+              <Logo size="default" color="#909d00" link={true} /> 
             </div>
           </div>
           
           <div className="flex items-center">
             {/* Enlaces de navegación Desktop*/}
             <div className="hidden sm:flex sm:items-center sm:space-x-6 mr-6">
-              <Link 
-                to="/" 
-                className="rounded-md px-4 py-2.5 text-base font-medium text-gray-100 hover:bg-[#909d00] hover:text-white transition duration-150"
-              >
-                Home
-              </Link>
-              <Link 
-                to="/catalogo" 
-                className="rounded-md px-4 py-2.5 text-base font-medium text-gray-100 hover:bg-[#909d00] hover:text-white transition duration-150"
-              >
-                Catálogo
-              </Link>
-              <Link 
-                to="/sobre-nosotro" 
-                className="rounded-md px-4 py-2.5 text-base font-medium text-gray-100 hover:bg-[#909d00] hover:text-white transition duration-150"
-              >
-                Sobre Nosotros
-              </Link>
-              <Link 
-                to="/calculadora" 
-                className="rounded-md px-4 py-2.5 text-base font-medium text-gray-100 hover:bg-[#909d00] hover:text-white transition duration-150"
-              >
-                Calculadora
-              </Link>
+              {navLinks.map(link => (
+                <Link 
+                  key={link.to}
+                  to={link.to} 
+                  className={`rounded-md px-4 py-2.5 text-base font-medium ${
+                    location.pathname === link.to 
+                      ? "bg-[#909d00] text-white" 
+                      : "text-gray-100 hover:bg-[#909d00] hover:text-white"
+                  } transition duration-150`}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
             
             {/* Botón de login - Visible en todas las pantallas */}
