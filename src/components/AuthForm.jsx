@@ -2,42 +2,52 @@ import React, { useState } from 'react';
 import backgroundImage from '../assets/img/fondo.jpg';
 
 const AuthForm = ({ formType }) => {
+  // Estado centralizado para todos los campos del formulario
+  // El valor inicial incluye campos para ambos tipos de formulario (login y registro)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
     confirmPassword: '',
-    userType: 'normal'
+    userType: 'normal' // Valor por defecto para el tipo de usuario
   });
 
+  // Función para manejar cambios en cualquier campo del formulario
+  // Utiliza la desestructuración para extraer propiedades del evento
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Actualiza solo el campo específico que cambió, manteniendo los demás valores
     setFormData(prev => ({
-      ...prev,
-      [name]: value
+      ...prev,  // Spread operator mantiene los valores anteriores
+      [name]: value  // Sintaxis de propiedad computada para actualizar campo dinámicamente
     }));
   };
 
+  // Función para manejar el envío del formulario
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault();  // Evita que la página se recargue al enviar el formulario
     console.log('Form submitted:', formData);
-    // Aquí iría la lógica de autenticación
+    // Aquí iría la lógica de autenticación - actualmente solo es un placeholder
   };
 
   return (
+    // Contenedor principal con imagen de fondo y overlay oscuro
     <div 
       className="min-h-screen flex items-center justify-center bg-gray-800 bg-opacity-85 bg-blend-overlay bg-cover bg-center bg-no-repeat w-full"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
       <div className="w-full py-8 px-4 sm:px-6 lg:py-12">
         <div className="w-full max-w-md mx-auto">
+          {/* Tarjeta del formulario con esquinas redondeadas */}
           <div className="bg-gray-800 rounded-3xl shadow-xl overflow-hidden">
             <div className="px-4 sm:px-8 pt-8 pb-10">
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Título dinámico basado en el tipo de formulario */}
                 <h2 className="text-center text-xl sm:text-2xl font-bold text-white mb-6 sm:mb-8">
                   {formType === 'login' ? 'LOGIN' : 'REGISTRO'}
                 </h2>
                 
+                {/* Campo de nombre - solo visible en modo registro */}
                 {formType === 'register' && (
                   <div>
                     <label htmlFor="name" className="block text-white font-bold mb-2 text-sm sm:text-base">
@@ -56,6 +66,7 @@ const AuthForm = ({ formType }) => {
                   </div>
                 )}
                 
+                {/* Campo de email - presente en ambos tipos de formulario */}
                 <div>
                   <label htmlFor="email" className="block text-white font-bold mb-2 text-sm sm:text-base">
                     Email
@@ -72,6 +83,7 @@ const AuthForm = ({ formType }) => {
                   />
                 </div>
                 
+                {/* Campo de contraseña - presente en ambos tipos de formulario */}
                 <div>
                   <label htmlFor="password" className="block text-white font-bold mb-2 text-sm sm:text-base">
                     Contraseña
@@ -82,14 +94,17 @@ const AuthForm = ({ formType }) => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
+                    // Placeholder dinámico según el tipo de formulario
                     placeholder={formType === 'login' ? "Digita tu contraseña" : "Digita una contraseña segura"}
                     className="w-full border-t-0 border-l-0 border-r-0 border-b-2 border-white bg-transparent text-white placeholder-gray-400 px-0 py-2 focus:ring-0 focus:border-yellow-400 text-sm sm:text-base"
                     required
                   />
                 </div>
                 
+                {/* Campos adicionales solo para registro */}
                 {formType === 'register' && (
                   <>
+                    {/* Campo de confirmación de contraseña */}
                     <div>
                       <label htmlFor="confirmPassword" className="block text-white font-bold mb-2 text-sm sm:text-base">
                         Confirmar Contraseña
@@ -106,8 +121,11 @@ const AuthForm = ({ formType }) => {
                       />
                     </div>
                     
+                    {/* Selección de tipo de usuario con radio buttons */}
                     <div className="mt-4">
+                      {/* Layout responsivo: vertical en móvil, horizontal en pantallas más grandes */}
                       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
+                        {/* Opción de usuario normal */}
                         <div className="flex items-center">
                           <input
                             id="normal"
@@ -122,6 +140,7 @@ const AuthForm = ({ formType }) => {
                             Usuario Normal
                           </label>
                         </div>
+                        {/* Opción de usuario educador */}
                         <div className="flex items-center">
                           <input
                             id="educator"
@@ -141,6 +160,7 @@ const AuthForm = ({ formType }) => {
                   </>
                 )}
                 
+                {/* Enlace para ir a registro - solo visible en modo login */}
                 {formType === 'login' && (
                   <div className="text-center">
                     <a href="/registro" className="text-white hover:text-yellow-200 text-sm sm:text-base">
@@ -149,6 +169,7 @@ const AuthForm = ({ formType }) => {
                   </div>
                 )}
                 
+                {/* Botón de envío */}
                 <div className="pt-4">
                   <button
                     type="submit"
