@@ -4,27 +4,16 @@ import demoImg from "../assets/img/1.png";
 import IconTrac from "../assets/img/IconTrac.png";
 import IconMac from "../assets/img/IconMac.png";
 import IconCamp from "../assets/img/IconCamp.png";
-import TractorCard from "./TractorCard";
+import TractorCard from "../components/TractorCard";
+import HomeVideo from "../components/HomeVideo";
+import Button from "../components/Buttons/Button";
 
 const Home = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      {/* Hero Section with Local Video */}
-      <section className="relative h-screen w-full">
-        {/* Video como GIF sin controles */}
-        <video
-          className="w-full h-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          disablePictureInPicture
-          disableRemotePlayback
-        >
-          <source src={demoVideo} type="video/mp4" />
-          Tu navegador no soporta videos HTML5.
-        </video>
-      </section>
+      {/* Aqui va el video */}
+      
+      <HomeVideo videoSrc={demoVideo} />
 
       {/* Tractores Destacados Section */}
       <section className="bg-gray-100 py-12">
@@ -50,12 +39,14 @@ const Home = () => {
                 alt="New Holland 8670"
                 className="w-full h-64 object-contain mb-4"
               />
-              <a
-                href="#"
-                className="bg-red-800 hover:bg-black text-white font-bold py-2 px-4 mt-auto self-start"
+              <Button 
+                variant="primary" 
+                color="#9f0712" 
+                shape="rounded"
+                className="mt-auto self-start"
               >
                 aprende más
-              </a>
+              </Button>
             </div>
 
             {/* Tractor 2 */}
@@ -74,12 +65,15 @@ const Home = () => {
                 alt="John Deere 5090E"
                 className="w-full h-64 object-contain mb-4"
               />
-              <a
-                href="#"
-                className="bg-red-800 hover:bg-black text-white font-bold py-2 px-4 mt-auto self-start"
+              <Button 
+                variant="primary" 
+                color="#9f0712" 
+                shape="rounded"
+                href="#" 
+                className="mt-auto self-start"
               >
                 aprende más
-              </a>
+              </Button>
             </div>
 
             {/* Tractor 3 */}
@@ -95,12 +89,15 @@ const Home = () => {
                 alt="Ford 4610"
                 className="w-full h-64 object-contain mb-4"
               />
-              <a
-                href="#"
-                className="bg-red-800 hover:bg-black text-white font-bold py-2 px-4 mt-auto self-start"
+              <Button 
+                variant="primary" 
+                color="#9f0712" 
+                shape="rounded"
+                href="#" 
+                className="mt-auto self-start"
               >
                 aprende más
-              </a>
+              </Button>
             </div>
           </div>
         </div>
@@ -130,12 +127,15 @@ const Home = () => {
                 alt="Arado de vertebras 975"
                 className="w-full h-64 object-contain mb-4"
               />
-              <a
-                href="#"
-                className="bg-red-800 hover:bg-black text-white font-bold py-2 px-4 mt-auto self-start"
+              <Button 
+                variant="primary" 
+                color="#9f0712" 
+                shape="rounded"
+                href="#" 
+                className="mt-auto self-start"
               >
                 aprende más
-              </a>
+              </Button>
             </div>
 
             {/* Maquina 2 */}
@@ -151,12 +151,15 @@ const Home = () => {
                 alt="Rastra Mx425"
                 className="w-full h-64 object-contain mb-4"
               />
-              <a
-                href="#"
-                className="bg-red-800 hover:bg-black text-white font-bold py-2 px-4 mt-auto self-start"
+              <Button 
+                variant="primary" 
+                color="#9f0712" 
+                shape="rounded"
+                href="#" 
+                className="mt-auto self-start"
               >
                 aprende más
-              </a>
+              </Button>
             </div>
 
             {/* Maquina 3 */}
@@ -174,12 +177,15 @@ const Home = () => {
                 alt="Cultivador Mx10"
                 className="w-full h-64 object-contain mb-4"
               />
-              <a
-                href="#"
-                className="bg-red-800 hover:bg-black text-white font-bold py-2 px-4 mt-auto self-start"
+              <Button 
+                variant="primary" 
+                color="#9f0712" 
+                shape="rounded"
+                href="#" 
+                className="mt-auto self-start"
               >
                 aprende más
-              </a>
+              </Button>
             </div>
           </div>
         </div>

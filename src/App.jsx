@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Icon from './assets/img/logo1.svg';
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Home from "./components/Home";
+import Home from "./pages/Home";
 import AppCalculadora from "./components/AppCalculadora";
-import Logo from './assets/img/logo.svg';
 import DatosTractor from "./pages/DatosTractor";
 import DatosLlantas from "./pages/DatosLlanta";
 import DatosClimaticos from "./pages/DatosClimativos";
@@ -16,8 +16,7 @@ function App() {
       <link 
         rel="icon" 
         type="image/svg+xml" 
-        href={Logo}
-        style={{ filter: "invert(34%) sepia(93%) saturate(1055%) hue-rotate(42deg) brightness(93%) contrast(101%)" }} 
+        href={Icon} 
       />
       <div className="min-h-screen flex flex-col">
         <Navbar />
