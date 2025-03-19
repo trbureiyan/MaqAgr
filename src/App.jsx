@@ -1,13 +1,15 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Home from "./components/Home";
+import Home from "./pages/Home";
 import AppCalculadora from "./components/AppCalculadora";
 import Logo from './assets/img/logo.svg';
 import DatosTractor from "./pages/DatosTractor";
 import DatosLlantas from "./pages/DatosLlanta";
 import DatosClimaticos from "./pages/DatosClimativos";
 import Resultados from "./pages/Resultados";
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
             <Route path="/DatosLlantas" element={<DatosLlantas/>}/>
             <Route path="/DatosClimaticos" element={<DatosClimaticos/>}/>
             <Route path="/Resultados" element={<Resultados/>}/>
+            <Route path="/login" element={<Login />} />
+            <Route path="/registro" element={<Register />} />
             {/* ++++++ Rutas adicionales ++++++ */}
             {/* <Route path="/catalogo" element={<Catalogo />} /> */}
             {/* <Route path="/sobre-nosotro" element={<SobreNosotros />} /> */}
