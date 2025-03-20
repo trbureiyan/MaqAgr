@@ -12,18 +12,18 @@ export default function DatosTractor() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
         <h1 className="text-3xl font-bold text-center mb-8">Datos del tractor</h1>
-        <div className="flex">
-          <div className="w-1/2">
+        <div className="flex flex-col md:flex-row">
+          <div className="w-full md:w-1/2">
             <img 
               src={Tractor} 
               alt="Imagen del tractor" 
               className="w-full h-auto rounded-lg"
             />
           </div>
-          <div className="w-1/2 pl-8">
+          <div className="w-full md:w-1/2 md:pl-8 mt-8 md:mt-0">
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-gray-700">Pb</label>
