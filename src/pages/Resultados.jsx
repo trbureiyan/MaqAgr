@@ -1,6 +1,8 @@
 import React from 'react';
 import Tractor from "../assets/img/Tractor Prueva.webp";
-import demoImg from "../assets/img/1.png";
+import TractorMachineCard from "../components/TractorMachineCard";
+import TractorImg from "../assets/img/1.png";
+import MachineImg from "../assets/img/2.png";
 
 export default function Resultados() {
   return (
@@ -50,36 +52,30 @@ export default function Resultados() {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <img 
-              src={demoImg}
-              alt="Arado de vertebras 975" 
-              className="w-full h-auto mb-4 rounded-lg"
+          {/* Maquina 1 */}
+          <TractorMachineCard 
+              imageSrc={TractorImg}
+              link="/Home"
+              title="Arado de vertebras 975"
+              description="Estilo clásico combinado con innovaciones modernas. Está en
+                nuestra herencia."
             />
-            <h3 className="text-xl font-bold mb-2">Arado de vertebras 975</h3>
-            <p className="text-gray-700 mb-4">Estilo clásico combinado con innovaciones modernas. Está en nuestra herencia.</p>
-            <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300">APRENDE MÁS</button>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <img 
-              src={demoImg} 
-              alt="Rastra Mx425" 
-              className="w-full h-auto mb-4 rounded-lg"
+            {/* Maquina 2 */}
+            <TractorMachineCard 
+              imageSrc={TractorImg}
+              link="/Home"
+              title="Rastra Mx425"
+              description="Peterbilt se asocia con PFC para ofrecer un programa FMV
+                inmejorable para los camiones"
             />
-            <h3 className="text-xl font-bold mb-2">Rastra Mx425</h3>
-            <p className="text-gray-700 mb-4">Peterbilt se asocia con PFC para ofrecer un programa FMV inmejorable para los camiones.</p>
-            <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300">APRENDE MÁS</button>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <img 
-              src={demoImg}
-              alt="Cultivador Mx10" 
-              className="w-full h-auto mb-4 rounded-lg"
+            {/* Maquina 3 */}
+            <TractorMachineCard 
+              imageSrc={TractorImg}
+              link="/Home"
+              title="Cultivador Mx10"
+              description="Peterbilt se asocia con PFC para ofrecer un programa FMV
+                inmejorable para los camiones"
             />
-            <h3 className="text-xl font-bold mb-2">Cultivador Mx10</h3>
-            <p className="text-gray-700 mb-4">Peterbilt se asocia con PFC para ofrecer un programa FMV inmejorable para los camiones.</p>
-            <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300">APRENDE MÁS</button>
-          </div>
         </div>
       </div>
     </div>
