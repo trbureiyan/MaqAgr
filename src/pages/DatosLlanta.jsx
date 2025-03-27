@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import Llanta from "../assets/img/LLANTAS-BKT-12-5.png"
+import Llanta from "../assets/img/LLANTAS-BKT-12-5.png";
 
 export default function DatosLlanta() {
   const navigate = useNavigate();
@@ -12,18 +12,18 @@ export default function DatosLlanta() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
-        <h1 className="text-3xl font-bold text-center mb-8">Datos de la llanta</h1>
-        <div className="flex">
-          <div className="w-1/2">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 sm:p-8">
+      <div className="bg-white p-4 sm:p-8 rounded-lg shadow-lg w-full max-w-4xl">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-8">Datos de la llanta</h1>
+        <div className="flex flex-col sm:flex-row">
+          <div className="w-full sm:w-1/2 mb-4 sm:mb-0">
             <img 
               src={Llanta}
               alt="Imagen de la llanta" 
               className="w-full h-auto rounded-lg"
             />
           </div>
-          <div className="w-1/2 pl-8">
+          <div className="w-full sm:w-1/2 sm:pl-8">
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-gray-700">Diámetro de la llanta</label>
