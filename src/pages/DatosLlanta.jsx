@@ -1,14 +1,14 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Llanta from "../assets/img/LLANTAS-BKT-12-5.png";
+import Button from "../components/ui/buttons/Button";
 
 export default function DatosLlanta() {
   const navigate = useNavigate();
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Aquí puedes agregar cualquier lógica adicional antes de la navegación
-    navigate("/DatosClimaticos"); // Reemplaza "/ruta-destino" con la ruta a la que quieres navegar
+    navigate("/DatosClimaticos");
   };
 
   return (
@@ -52,13 +52,23 @@ export default function DatosLlanta() {
                   <option value="item3">Item 3</option>
                 </select>
               </div>
-              <div className="text-right">
-                <button 
-                  type="submit" 
-                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300"
+              {/* Botones de navegación */}
+              <div className="text-right space-x-4 flex justify-end">
+                <Button
+                  variant="outline"
+                  color="#991b1b"
+                  type="button"
+                  onClick={() => navigate(-1)}
+                >
+                  VOLVER
+                </Button>
+                <Button
+                  variant="primary"
+                  color="#991b1b"
+                  type="submit"
                 >
                   SIGUIENTE
-                </button>
+                </Button>
               </div>
             </form>
           </div>
