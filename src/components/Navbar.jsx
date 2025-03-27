@@ -1,54 +1,38 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import Logo from '../assets/img/Logo.svg';
+import { Link, useLocation } from 'react-router-dom';
+import Logo from './Icons/logo';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+// Array de links: Datos de navegación centralizados
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/catalogo", label: "Catálogo" },
+    { to: "/sobre-nosotros", label: "Sobre Nosotros" },
+    { to: "/calculadora", label: "Calculadora" }
+  ];
 
   const renderMobileMenu = () => {
     if (isMenuOpen) {
       return (
         <div className="sm:hidden" id="mobile-menu">
           <div className="space-y-1 px-4 pt-3 pb-4">
-            <Link 
-              to="/" 
-              className="block rounded-md px-4 py-3 text-lg font-medium text-gray-100 hover:bg-[#6d7700] hover:text-white"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link 
-              to="/catalogo" 
-              className="block rounded-md px-4 py-3 text-lg font-medium text-gray-100 hover:bg-[#6d7700] hover:text-white"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Catálogo
-            </Link>
-            <Link 
-              to="/sobre-nosotro" 
-              className="block rounded-md px-4 py-3 text-lg font-medium text-gray-100 hover:bg-[#6d7700] hover:text-white"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Sobre Nosotros
-            </Link>
-            <Link 
-              to="/calculadora" 
-              className="block rounded-md px-4 py-3 text-lg font-medium text-gray-100 hover:bg-[#6d7700] hover:text-white"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Calculadora
-            </Link>
-            <Link 
-              to="/login" 
-              className="block rounded-md bg-[#df6573] px-4 py-3 text-lg font-medium text-white hover:bg-red-800"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Login
-            </Link>
+            {navLinks.map(link => (
+              <Link 
+                key={link.to}
+                to={link.to} 
+                className="block rounded-md px-4 py-3 text-lg font-medium text-gray-100 hover:bg-[#909d00] hover:text-white"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
       );
@@ -58,10 +42,10 @@ const Navbar = () => {
 
   return (
     <nav className="bg-gray-800 py-3 shadow-lg">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative flex h-20 items-center justify-between">
-          <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-            {/* Botón del menú móvil */}
+      <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-7">
+        <div className="relative flex h-13 items-center justify-between">
+          {/* Área izquierda: Botón del menú móvil */} 
+          <div className="sm:hidden z-10 flex items-center">
             <button 
               type="button" 
               className="relative inline-flex items-center justify-center rounded-md p-3 text-gray-100 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" 
@@ -71,7 +55,8 @@ const Navbar = () => {
             >
               <span className="absolute -inset-0.5"></span>
               <span className="sr-only">Abrir menú principal</span>
-              
+
+              {/* # By condicional: */}
               {/* Icono cuando el menú está cerrado */}
               <svg 
                 className={`${isMenuOpen ? 'hidden' : 'block'} size-7`} 
@@ -98,61 +83,43 @@ const Navbar = () => {
             </button>
           </div>
           
-          {/* Contenedor central con logo y enlaces */}
-          <div className="flex flex-1 items-center justify-center">
-            <div className="flex shrink-0 items-center">
-              <Link to="/">
-                <img 
-                  className="h-20 w-auto" 
-                  src={Logo} 
-                  alt="Logo" 
-                  style={{ filter: "invert(34%) sepia(93%) saturate(1055%) hue-rotate(42deg) brightness(93%) contrast(101%)" }} 
-                />
-              </Link>
-            </div>
-            <div className="hidden sm:ml-8 sm:block">
-              <div className="flex space-x-6">
-                <Link 
-                  to="/" 
-                  className="rounded-md px-4 py-2.5 text-base font-medium text-gray-100 hover:bg-[#6d7700] hover:text-white transition duration-150"
-                >
-                  Home
-                </Link>
-                <Link 
-                  to="/catalogo" 
-                  className="rounded-md px-4 py-2.5 text-base font-medium text-gray-100 hover:bg-[#6d7700] hover:text-white transition duration-150"
-                >
-                  Catálogo
-                </Link>
-                <Link 
-                  to="/sobre-nosotro" 
-                  className="rounded-md px-4 py-2.5 text-base font-medium text-gray-100 hover:bg-[#6d7700] hover:text-white transition duration-150"
-                >
-                  Sobre Nosotros
-                </Link>
-                <Link 
-                  to="/calculadora" 
-                  className="rounded-md px-4 py-2.5 text-base font-medium text-gray-100 hover:bg-[#6d7700] hover:text-white transition duration-150"
-                >
-                  Calculadora
-                </Link>
-              </div>
+          {/* Logo (Componente) - Centrado en móvil, a la izquierda en desktop */}
+          <div className="absolute left-0 right-0 flex justify-center sm:static sm:justify-start sm:flex-grow-0">
+            <div className="flex-shrink-0">
+              <Logo size="default" color="#909d00" link={true} /> 
             </div>
           </div>
           
-          {/* Botón de Login en la derecha */}
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+          <div className="flex items-center">
+            {/* Enlaces de navegación Desktop*/}
+            <div className="hidden sm:flex sm:items-center sm:space-x-6 mr-6">
+              {navLinks.map(link => (
                 <Link 
-                  to="/login" 
-                  className="relative rounded-md bg-[#df6573] px-5 py-2.5 text-base font-medium text-white hover:bg-[#c55765] transition duration-150"
+                  key={link.to}
+                  to={link.to} 
+                  className={`rounded-md px-4 py-2.5 text-base font-medium ${
+                    location.pathname === link.to 
+                      ? "bg-[#909d00] text-white" 
+                      : "text-gray-100 hover:bg-[#909d00] hover:text-white"
+                  } transition duration-150`}
                 >
-                  Login
+                  {link.label}
                 </Link>
-                </div>
-              </div>
-              </div>
+              ))}
+            </div>
+            
+            {/* Botón de login - Visible en todas las pantallas */}
+            <Link 
+              to="/login" 
+              className="rounded-md bg-[#df6573] px-5 py-2.5 text-base font-medium text-white hover:bg-[#c55765] transition duration-150 z-10"
+            >
+              Login
+            </Link>
+          </div>
+        </div>
+      </div>
 
-              {/* Menú móvil generado por la función renderMobileMenu */}
+      {/* Menú móvil */}
       {renderMobileMenu()}
     </nav>
   );
