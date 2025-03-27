@@ -1,5 +1,5 @@
 import React from 'react';
-import TractorCard from './TractorCard';
+import TractorCard from './ui/cards/TractorCard';
 import IconCamp from "../assets/img/IconCamp.png";
 import IconMac from "../assets/img/IconMac.png";
 import IconTrac from "../assets/img/IconTrac.png";
