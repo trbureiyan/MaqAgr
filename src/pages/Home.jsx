@@ -1,21 +1,18 @@
 import React from "react";
-import demoVideo from "../assets/video/1.mp4";
-import demoImg from "../assets/img/1.png";
-import IconTrac from "../assets/img/IconTrac.png";
-import IconMac from "../assets/img/IconMac.png";
-import IconCamp from "../assets/img/IconCamp.png";
-import TractorCard from "../components/TractorCard";
+import VideoPrueba from "../assets/video/1.mp4";
+import TractorImg from "../assets/img/1.png";
+import MachineImg from "../assets/img/2.png";
 import HomeVideo from "../components/HomeVideo";
 import Button from "../components/Buttons/Button";
+import TractorMachineCard from "../components/TractorMachineCard";
 
 const Home = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      {/* Aqui va el video */}
-      
-      <HomeVideo videoSrc={demoVideo} />
+      {/* Video inicio */}
+      <HomeVideo videoSrc={VideoPrueba} />
 
-      {/* Tractores Destacados Section */}
+      {/* Tractores  */}
       <section className="bg-gray-100 py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold text-red-800 text-center">
@@ -48,15 +45,19 @@ const Home = () => {
                 aprende más
               </Button>
             </div>
-
+            <TractorMachineCard 
+              imageSrc={TractorImg}
+              link="/Home"
+              title="New Holland 8670"
+              description="Tractor de marca new holland fabricado en españa se utiliza en
+                la región orinoquia"
+            />
             {/* Tractor 2 */}
-            <div className="flex flex-col">
-              <h2 className="text-xl font-bold text-red-900">
-                John Deere 5090E
-              </h2>
-              <div className="w-16 h-0.5 bg-red-800 my-2"></div>
-              <p className="text-gray-500 mb-4">
-                Trator marca Jhon Deere fabricado en argentina, se utiliza en la
+            <TractorMachineCard 
+              imageSrc={TractorImg}
+              link="/Home"
+              title="John Deere 5090E"
+              description="Trator marca Jhon Deere fabricado en argentina, se utiliza en la
                 región pacifica generalmente paralabores de transporte y
                 preparacion
               </p>
@@ -99,11 +100,21 @@ const Home = () => {
                 aprende más
               </Button>
             </div>
+                preparacion"
+            />
+            {/* Tractor 3 */}
+            <TractorMachineCard 
+              imageSrc={TractorImg}
+              link="/Home"
+              title="Ford 4610"
+              description="Tractor marca Ford, fabricado en EEUU, se utiliza en la región
+                Caribe. Generalmente para labores de transporte"
+            />
           </div>
         </div>
       </section>
 
-      {/* Maquinas Destacadas Section */}
+      {/* Maquinas seccion destacados */}
       <section className="bg-gray-100 py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl font-bold text-red-800 text-center">
@@ -187,6 +198,30 @@ const Home = () => {
                 aprende más
               </Button>
             </div>
+
+            <TractorMachineCard 
+              imageSrc={MachineImg}
+              link="/Home"
+              title="Arado de vertebras 975"
+              description="Estilo clásico combinado con innovaciones modernas. Está en
+                nuestra herencia."
+            />
+            {/* Maquina 2 */}
+            <TractorMachineCard 
+              imageSrc={MachineImg}
+              link="/Home"
+              title="Rastra Mx425"
+              description="Peterbilt se asocia con PFC para ofrecer un programa FMV
+                inmejorable para los camiones"
+            />
+            {/* Maquina 3 */}
+            <TractorMachineCard 
+              imageSrc={MachineImg}
+              link="/Home"
+              title="Cultivador Mx10"
+              description="Peterbilt se asocia con PFC para ofrecer un programa FMV
+                inmejorable para los camiones"
+            />
           </div>
         </div>
       </section>
