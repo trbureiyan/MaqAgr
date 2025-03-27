@@ -23,7 +23,7 @@ const TractorMachineCard = ({ imageSrc, link, title, description }) => {
           href={link}
           className="bg-red-800 hover:bg-black text-white font-bold py-2 px-4 rounded inline-block mt-auto self-start transition-colors duration-200"
         >
-          Aprende más
+          Aprender más 
         </a>
       </div>
     </div>
