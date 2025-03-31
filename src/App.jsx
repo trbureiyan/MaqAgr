@@ -10,6 +10,7 @@ import DatosClimaticos from "./pages/DatosClimativos";
 import Resultados from "./pages/Resultados";
 import Login from './pages/Login';
 import Register from './pages/Register';
+import TractorForm from "./pages/TractorForm";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="/Resultados" element={<Resultados/>}/>
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Register />} />
+            <Route path="/admin/tractor-form" element={<TractorForm />} />
             {/* ++++++ Rutas adicionales ++++++ */}
             {/* <Route path="/catalogo" element={<Catalogo />} /> */}
             {/* <Route path="/sobre-nosotro" element={<SobreNosotros />} /> */}
