@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import LogoSVG from '../../assets/img/logo.svg';
+import LogoSVG from '../../../assets/svg/logo.svg';
 
 /**
  * @param {Object} props - Propiedades del componente
