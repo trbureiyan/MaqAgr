@@ -13,7 +13,7 @@ const Navbar = () => {
 // Array de links: Datos de navegación centralizados
   const navLinks = [
     { to: "/", label: "Home" },
-    { to: "/catalogo", label: "Catálogo" },
+    { to: "/Catalogo", label: "Catálogo" },
     { to: "/sobre-nosotros", label: "Sobre Nosotros" },
     { to: "/calculadora", label: "Calculadora" }
   ];
