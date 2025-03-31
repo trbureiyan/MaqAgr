@@ -24,21 +24,21 @@ const Home = () => {
             {/* Tractor 1 */}
             <TractorMachineCard
               imageSrc={TractorImg}
-              link="/Home"
+              link="/tractor/1"
               title="New Holland 8670"
               description="Tractor de marca New Holland fabricado en España, utilizado en la región Orinoquía."
             />
             {/* Tractor 2 */}
             <TractorMachineCard
               imageSrc={TractorImg}
-              link="/Home"
+              link="/tractor/1"
               title="John Deere 5090E"
               description="Tractor marca John Deere fabricado en Argentina, utilizado en la región Pacífica para transporte y preparación."
             />
             {/* Tractor 3 */}
             <TractorMachineCard
               imageSrc={TractorImg}
-              link="/Home"
+              link="/tractor/1"
               title="Ford 4610"
               description="Tractor marca Ford, fabricado en EEUU, utilizado en la región Caribe para labores de transporte."
             />
@@ -58,21 +58,21 @@ const Home = () => {
             {/* Máquina 1 */}
             <TractorMachineCard
               imageSrc={MachineImg}
-              link="/Home"
+              link="/tractor/2"
               title="Arado de vértebras 975"
               description="Estilo clásico combinado con innovaciones modernas. Está en nuestra herencia."
             />
             {/* Máquina 2 */}
             <TractorMachineCard
               imageSrc={MachineImg}
-              link="/Home"
+              link="/tractor/2"
               title="Rastra Mx425"
               description="Peterbilt se asocia con PFC para ofrecer un programa FMV inmejorable para los camiones."
             />
             {/* Máquina 3 */}
             <TractorMachineCard
               imageSrc={MachineImg}
-              link="/Home"
+              link="/tractor/2"
               title="Cultivador Mx10"
               description="Peterbilt se asocia con PFC para ofrecer un programa FMV inmejorable para los camiones."
             />

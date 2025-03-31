@@ -11,6 +11,7 @@ import Resultados from "./pages/Resultados";
 import Login from './pages/Login';
 import Register from './pages/Register';
 import TractorForm from "./pages/TractorForm";
+import TractorMachineDetail from "./pages/TractorMachineDetail";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Register />} />
             <Route path="/admin/tractor-form" element={<TractorForm />} />
+            <Route path="/tractor/:id" element={<TractorMachineDetail />} />
             {/* ++++++ Rutas adicionales ++++++ */}
             {/* <Route path="/catalogo" element={<Catalogo />} /> */}
             {/* <Route path="/sobre-nosotro" element={<SobreNosotros />} /> */}
