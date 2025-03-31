@@ -9,6 +9,9 @@ import DatosClimaticos from "./pages/DatosClimativos";
 import Resultados from "./pages/Resultados";
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Catalogo from "./pages/Catalogo";
+import CatalogoTrac from "./pages/CatalogoTractores";
+import CatalogoMaq from "./pages/CatalogoMaquinas";
 
 function App() {
   return (
@@ -31,10 +34,9 @@ function App() {
             <Route path="/Resultados" element={<Resultados/>}/>
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Register />} />
-            {/* ++++++ Rutas adicionales ++++++ */}
-            {/* <Route path="/catalogo" element={<Catalogo />} /> */}
-            {/* <Route path="/sobre-nosotro" element={<SobreNosotros />} /> */}
-            {/* <Route path="/login" element={<Login />} /> */}
+            <Route path="/Catalogo" element={<Catalogo />} />
+            <Route path="/CatalogoTractor" element={<CatalogoTrac />} />
+            <Route path="/CatalogoMaquinas" element={<CatalogoMaq />} />
           </Routes>
         </main>
         <Footer />
