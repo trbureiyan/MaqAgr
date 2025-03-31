@@ -2,7 +2,6 @@ import React from 'react';
 import TractorMachineCard from '../components/TractorMachineCard';
 import Tractor from '../assets/img/Tractor Prueva.webp';
 
-
 export default function CatalogoTractores() {
   const tractors = [
     {
@@ -18,36 +17,36 @@ export default function CatalogoTractores() {
       description: 'Descripción breve del tractor modelo 2.',
     },
     {
-        imageSrc: [Tractor],
-        link: '/tractor2',
-        title: 'Tractor Modelo 2',
-        description: 'Descripción breve del tractor modelo 2.',
-      },
-      {
-        imageSrc: [Tractor],
-        link: '/tractor2',
-        title: 'Tractor Modelo 2',
-        description: 'Descripción breve del tractor modelo 2.',
-      },
-      {
-        imageSrc: [Tractor],
-        link: '/tractor2',
-        title: 'Tractor Modelo 2',
-        description: 'Descripción breve del tractor modelo 2.',
-      },
-      {
-        imageSrc: [Tractor],
-        link: '/tractor2',
-        title: 'Tractor Modelo 2',
-        description: 'Descripción breve del tractor modelo 2.',
-      },
+      imageSrc: [Tractor],
+      link: '/tractor3',
+      title: 'Tractor Modelo 3',
+      description: 'Descripción breve del tractor modelo 3.',
+    },
+    {
+      imageSrc: [Tractor],
+      link: '/tractor4',
+      title: 'Tractor Modelo 4',
+      description: 'Descripción breve del tractor modelo 4.',
+    },
+    {
+      imageSrc: [Tractor],
+      link: '/tractor5',
+      title: 'Tractor Modelo 5',
+      description: 'Descripción breve del tractor modelo 5.',
+    },
+    {
+      imageSrc: [Tractor],
+      link: '/tractor6',
+      title: 'Tractor Modelo 6',
+      description: 'Descripción breve del tractor modelo 6.',
+    },
     // Agrega más objetos según sea necesario
   ];
 
   return (
-    <div className="flex">
+    <div className="flex flex-col lg:flex-row">
       {/* Filtro lateral */}
-      <aside className="w-1/4 p-4 border-r border-gray-200">
+      <aside className="w-full lg:w-1/4 p-4 border-b lg:border-b-0 lg:border-r border-gray-200">
         <h2 className="text-lg font-bold mb-4">Filtros</h2>
         <div className="mb-4">
           <h3 className="font-semibold">Marca</h3>
@@ -75,8 +74,8 @@ export default function CatalogoTractores() {
       </aside>
 
       {/* Contenedor de tarjetas */}
-      <main className="w-3/4 p-4">
-        <div className="grid grid-cols-3 gap-4">
+      <main className="w-full lg:w-3/4 p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {tractors.map((tractor, index) => (
             <TractorMachineCard
               key={index}

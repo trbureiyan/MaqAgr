@@ -1,6 +1,6 @@
 import React from 'react';
 import TractorMachineCard from '../components/TractorMachineCard';
-import Maquina from '../assets/img/2.png'
+import Maquina from '../assets/img/2.png';
 
 export default function CatalogoMaquinas() {
   const machines = [
@@ -23,32 +23,32 @@ export default function CatalogoMaquinas() {
       description: 'Descripción breve de la máquina modelo 3.',
     },
     {
-        imageSrc: [Maquina],
-        link: '/machine3',
-        title: 'Máquina Modelo 4',
-        description: 'Descripción breve de la máquina modelo 4.',
-      },
-      {
-        imageSrc: [Maquina],
-        link: '/machine3',
-        title: 'Máquina Modelo 5',
-        description: 'Descripción breve de la máquina modelo 5.',
-      },
-      {
-        imageSrc: [Maquina],
-        link: '/machine3',
-        title: 'Máquina Modelo 6',
-        description: 'Descripción breve de la máquina modelo 6.',
-      },
+      imageSrc: [Maquina],
+      link: '/machine3',
+      title: 'Máquina Modelo 4',
+      description: 'Descripción breve de la máquina modelo 4.',
+    },
+    {
+      imageSrc: [Maquina],
+      link: '/machine3',
+      title: 'Máquina Modelo 5',
+      description: 'Descripción breve de la máquina modelo 5.',
+    },
+    {
+      imageSrc: [Maquina],
+      link: '/machine3',
+      title: 'Máquina Modelo 6',
+      description: 'Descripción breve de la máquina modelo 6.',
+    },
     // Agrega más objetos según sea necesario
   ];
 
   return (
-    <div className="flex">
+    <div className="flex flex-col lg:flex-row">
       {/* Filtro lateral */}
-      <aside className="w-1/4 p-4 border-r border-gray-200">
+      <aside className="w-full lg:w-1/4 p-4 border-b lg:border-b-0 lg:border-r border-gray-200">
         <h2 className="text-lg font-bold mb-4">Filtros</h2>
-       
+
         <div className="mb-4">
           <h3 className="font-semibold">Marca</h3>
           <ul>
@@ -70,8 +70,8 @@ export default function CatalogoMaquinas() {
       </aside>
 
       {/* Contenedor de tarjetas */}
-      <main className="w-3/4 p-4">
-        <div className="grid grid-cols-3 gap-4">
+      <main className="w-full lg:w-3/4 p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {machines.map((machine, index) => (
             <TractorMachineCard
               key={index}
