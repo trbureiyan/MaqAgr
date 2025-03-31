@@ -1,3 +1,7 @@
+![Screen Shot 2025-03-30 at 20 24 39](https://github.com/user-attachments/assets/eb8fe353-8bfd-4b10-8546-bfe3ed6a8f26)
+![Screen Shot 2025-03-30 at 20 25 35](https://github.com/user-attachments/assets/12e95a4e-018e-463e-a87d-d37a1a7c22c2)
+
+
 <details>
 <summary>React + Vite Setup</summary>
 
