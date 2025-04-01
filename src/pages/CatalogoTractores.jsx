@@ -1,46 +1,45 @@
 import React from 'react';
-import TractorMachineCard from '../components/TractorMachineCard';
+import TractorMachineCard from '../components/ui/cards/TractorMachineCard';
 import Tractor from '../assets/img/Tractor Prueva.webp';
 
 export default function CatalogoTractores() {
   const tractors = [
     {
-      imageSrc: [Tractor],
+      imageSrc: Tractor,
       link: '/tractor1',
       title: 'Tractor Modelo 1',
       description: 'Descripción breve del tractor modelo 1.',
     },
     {
-      imageSrc: [Tractor],
+      imageSrc: Tractor,
       link: '/tractor2',
       title: 'Tractor Modelo 2',
       description: 'Descripción breve del tractor modelo 2.',
     },
     {
-      imageSrc: [Tractor],
+      imageSrc: Tractor,
       link: '/tractor3',
       title: 'Tractor Modelo 3',
       description: 'Descripción breve del tractor modelo 3.',
     },
     {
-      imageSrc: [Tractor],
+      imageSrc: Tractor,
       link: '/tractor4',
       title: 'Tractor Modelo 4',
       description: 'Descripción breve del tractor modelo 4.',
     },
     {
-      imageSrc: [Tractor],
+      imageSrc: Tractor,
       link: '/tractor5',
       title: 'Tractor Modelo 5',
       description: 'Descripción breve del tractor modelo 5.',
     },
     {
-      imageSrc: [Tractor],
+      imageSrc: Tractor,
       link: '/tractor6',
       title: 'Tractor Modelo 6',
       description: 'Descripción breve del tractor modelo 6.',
     },
-    // Agrega más objetos según sea necesario
   ];
 
   return (
