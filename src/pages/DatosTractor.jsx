@@ -1,29 +1,29 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Tractor from "../assets/img/Tractor Prueva.webp";
+import Button from "../components/ui/buttons/Button";
 
 export default function DatosTractor() {
   const navigate = useNavigate();
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Aquí puedes agregar cualquier lógica adicional antes de la navegación
-    navigate("/DatosLlantas"); // Reemplaza "/ruta-destino" con la ruta a la que quieres navegar
+    navigate("/DatosLlantas");
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
         <h1 className="text-3xl font-bold text-center mb-8">Datos del tractor</h1>
-        <div className="flex">
-          <div className="w-1/2">
+        <div className="flex flex-col md:flex-row">
+          <div className="w-full md:w-1/2">
             <img 
               src={Tractor} 
               alt="Imagen del tractor" 
               className="w-full h-auto rounded-lg"
             />
           </div>
-          <div className="w-1/2 pl-8">
+          <div className="w-full md:w-1/2 md:pl-8 mt-8 md:mt-0">
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label className="block text-gray-700">Pb</label>
@@ -59,13 +59,23 @@ export default function DatosTractor() {
                   <option value="no">No</option>
                 </select>
               </div>
-              <div className="text-right">
-                <button 
-                  type="submit" 
-                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300"
+              {/* Botones de navegación */}
+              <div className="text-right space-x-4 flex justify-end">
+                <Button
+                  variant="outline"
+                  color="#991b1b"
+                  type="button"
+                  onClick={() => navigate(-1)}
+                >
+                  VOLVER
+                </Button>
+                <Button
+                  variant="primary"
+                  color="#991b1b"
+                  type="submit"
                 >
                   SIGUIENTE
-                </button>
+                </Button>
               </div>
             </form>
           </div>

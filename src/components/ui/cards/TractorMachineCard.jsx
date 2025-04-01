@@ -1,4 +1,5 @@
 import React from "react";
+import Button from "../buttons/Button";
 
 const TractorMachineCard = ({ imageSrc, link, title, description }) => {
   return (
@@ -18,13 +19,17 @@ const TractorMachineCard = ({ imageSrc, link, title, description }) => {
         <div className="w-16 h-0.5 bg-red-800 my-2"></div>
         <p className="text-gray-500 mb-4 flex-grow line-clamp-3">{description}</p>
         
-        {/* El botón siempre queda al final gracias al mt-auto */}
-        <a
-          href={link}
-          className="bg-red-800 hover:bg-black text-white font-bold py-2 px-4 rounded inline-block mt-auto self-start transition-colors duration-200"
+        {/* Reemplazo del anchor por el componente Button */}
+        <Button
+          to={link}
+          variant="primary"
+          color="#991b1b"
+          size="default"
+          shape="rounded"
+          className="self-start"
         >
-          Aprende más
-        </a>
+          Aprender más
+        </Button>
       </div>
     </div>
   );

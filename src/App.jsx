@@ -1,15 +1,17 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import Icon from './assets/svg/logo1.svg';
+import { Navbar, Footer } from "./components/layout"; // Index.js
 import Home from "./pages/Home";
 import AppCalculadora from "./components/AppCalculadora";
-import Logo from './assets/img/logo.svg';
 import DatosTractor from "./pages/DatosTractor";
 import DatosLlantas from "./pages/DatosLlanta";
 import DatosClimaticos from "./pages/DatosClimativos";
 import Resultados from "./pages/Resultados";
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Catalogo from "./pages/Catalogo";
+import CatalogoTrac from "./pages/CatalogoTractores";
+import CatalogoMaq from "./pages/CatalogoMaquinas";
 
 function App() {
   return (
@@ -18,8 +20,7 @@ function App() {
       <link 
         rel="icon" 
         type="image/svg+xml" 
-        href={Logo}
-        style={{ filter: "invert(34%) sepia(93%) saturate(1055%) hue-rotate(42deg) brightness(93%) contrast(101%)" }} 
+        href={Icon} 
       />
       <div className="min-h-screen flex flex-col">
         <Navbar />
@@ -33,10 +34,9 @@ function App() {
             <Route path="/Resultados" element={<Resultados/>}/>
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Register />} />
-            {/* ++++++ Rutas adicionales ++++++ */}
-            {/* <Route path="/catalogo" element={<Catalogo />} /> */}
-            {/* <Route path="/sobre-nosotro" element={<SobreNosotros />} /> */}
-            {/* <Route path="/login" element={<Login />} /> */}
+            <Route path="/Catalogo" element={<Catalogo />} />
+            <Route path="/CatalogoTractor" element={<CatalogoTrac />} />
+            <Route path="/CatalogoMaquinas" element={<CatalogoMaq />} />
           </Routes>
         </main>
         <Footer />
