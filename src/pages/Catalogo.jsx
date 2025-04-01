@@ -1,7 +1,6 @@
 import React from "react";
-import TractorCard from "../components/TractorCard";
-import Tractor from "../assets/img/IconTrac.png";
-import Maquina from "../assets/img/IconMac.png";
+import TractorCard from "../components/ui/cards/TractorCard";
+import { IconTrac as Tractor, IconMac as Maquina } from "../assets/img";
 
 export default function Catalogo() {
   return (

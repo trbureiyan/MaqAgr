@@ -1,5 +1,5 @@
 import React from 'react';
-import TractorMachineCard from '../components/TractorMachineCard';
+import TractorMachineCard from '../components/ui/cards/TractorMachineCard';
 import Maquina from '../assets/img/2.png';
 
 export default function CatalogoMaquinas() {
