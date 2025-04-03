@@ -6,37 +6,37 @@ export default function CatalogoMaquinas() {
   const machines = [
     {
       imageSrc: [Maquina],
-      link: '/machine1',
+      link: '/maquinaria/2',
       title: 'Máquina Modelo 1',
       description: 'Descripción breve de la máquina modelo 1.',
     },
     {
       imageSrc: [Maquina],
-      link: '/machine2',
+      link: '/maquinaria/2',
       title: 'Máquina Modelo 2',
       description: 'Descripción breve de la máquina modelo 2.',
     },
     {
       imageSrc: [Maquina],
-      link: '/machine3',
+      link: '/maquinaria/2',
       title: 'Máquina Modelo 3',
       description: 'Descripción breve de la máquina modelo 3.',
     },
     {
       imageSrc: [Maquina],
-      link: '/machine3',
+      link: '/maquinaria/2',
       title: 'Máquina Modelo 4',
       description: 'Descripción breve de la máquina modelo 4.',
     },
     {
       imageSrc: [Maquina],
-      link: '/machine3',
+      link: '/maquinaria/2',
       title: 'Máquina Modelo 5',
       description: 'Descripción breve de la máquina modelo 5.',
     },
     {
       imageSrc: [Maquina],
-      link: '/machine3',
+      link: '/maquinaria/2',
       title: 'Máquina Modelo 6',
       description: 'Descripción breve de la máquina modelo 6.',
     },
