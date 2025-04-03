@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import Logo from './Icons/logo';
+import Logo from '../common/icons/Logo';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,7 +13,7 @@ const Navbar = () => {
 // Array de links: Datos de navegación centralizados
   const navLinks = [
     { to: "/", label: "Home" },
-    { to: "/catalogo", label: "Catálogo" },
+    { to: "/Catalogo", label: "Catálogo" },
     { to: "/sobre-nosotros", label: "Sobre Nosotros" },
     { to: "/calculadora", label: "Calculadora" }
   ];

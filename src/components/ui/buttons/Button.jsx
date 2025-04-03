@@ -2,19 +2,70 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 /**
+ * Componente Button - Botón personalizable y reutilizable
+ * 
+ * @component
  * @param {Object} props - Propiedades del componente
- * @param {string} [props.variant='primary'] - Variante del botón ('primary', 'secondary', 'outline', 'text') // Presets
- * @param {string} [props.size='default'] - Tamaño del botón ('small', 'default', 'large')
- * @param {string} [props.shape='rounded'] - Forma del botón ('square', 'rounded', 'pill')
- * @param {string} [props.color='#9f0712'] - Color principal del botón (en formato HEX)
- * @param {boolean} [props.fullWidth=false] - Si el botón debe ocupar el ancho completo
- * @param {string} [props.to] - Destino del enlace (usa react-router si se proporciona)
- * @param {string} [props.href] - Enlace externo (href tradicional)
- * @param {string} [props.type='button'] - Tipo de botón ('button', 'submit', 'reset')
+ * 
+ * @param {string} [props.variant='primary'] - Estilo visual del botón
+ *  - 'primary': Botón principal con fondo sólido
+ *  - 'secondary': Botón secundario con opacidad reducida
+ *  - 'outline': Botón con borde y fondo transparente
+ *  - 'text': Botón tipo texto sin fondo
+ * 
+ * @param {string} [props.size='default'] - Tamaño del botón
+ *  - 'small': Padding reducido y texto pequeño
+ *  - 'default': Tamaño estándar
+ *  - 'large': Padding aumentado y texto grande
+ * 
+ * @param {string} [props.shape='rounded'] - Forma de los bordes
+ *  - 'square': Sin bordes redondeados
+ *  - 'rounded': Bordes ligeramente redondeados (8px)
+ *  - 'pill': Completamente redondeado
+ * 
+ * @param {string} [props.color='#9f0712'] - Color principal en formato HEX
+ *  - Afecta el fondo en variantes primary/secondary
+ *  - Afecta el borde y texto en variant outline
+ *  - Afecta el texto en variant text
+ * 
+ * @param {string} [props.textColor] - Color del texto (HEX o nombre)
+ *  - Sobrescribe el color de texto predeterminado
+ *  - Si no se especifica, usa blanco para primary/secondary
+ *  - Si no se especifica, usa color principal para outline/text
+ * 
+ * @param {boolean} [props.fullWidth=false] - Ocupar todo el ancho disponible
+ * @param {string} [props.to] - Ruta para navegación interna (React Router)
+ * @param {string} [props.href] - URL para enlaces externos
+ * @param {string} [props.type='button'] - Tipo de botón HTML ('button', 'submit', 'reset')
  * @param {function} [props.onClick] - Función a ejecutar al hacer clic
- * @param {boolean} [props.disabled=false] - Deshabilitar el botón
+ * @param {boolean} [props.disabled=false] - Deshabilitar interacciones
  * @param {string} [props.className=''] - Clases CSS adicionales
- * @param {React.ReactNode} props.children - Contenido del botón
+ * 
+ * @example
+ * # Botón primario básico
+ * <Button>Texto del Botón</Button>
+ * 
+ * @example
+ * # Botón de envío de formulario
+ * <Button
+ *   variant="primary"
+ *   type="submit"
+ *   color="#991b1b"
+ *   size="large"
+ * >
+ *   Enviar
+ * </Button>
+ * 
+ * @example
+ * # Botón de navegación
+ * <Button
+ *   variant="outline"
+ *   to="/ruta"
+ *   color="#991b1b"
+ *   textColor="black"
+ * >
+ *   Ir a página
+ * </Button>
  */
 
 const Button = ({
@@ -28,6 +79,7 @@ const Button = ({
   type = 'button',
   onClick,
   disabled = false,
+  textColor,
   className = '',
   children,
   ...rest
@@ -78,33 +130,33 @@ const Button = ({
     switch (variant) {
       case 'primary':
         return {
-            backgroundColor: color,         // Color principal como fondo
-            hoverBgColor: hoverColor,       // Color oscurecido para hover
-            textColor: 'white'              // Texto blanco para contraste
+          backgroundColor: color,
+          hoverBgColor: hoverColor,
+          textColor: textColor || 'white'  // Usar textColor si existe, sino blanco
         };
       case 'secondary':
         return {
           backgroundColor: color,
           hoverBgColor: hoverColor,
-          textColor: 'white'
+          textColor: textColor || 'white'
         };
       case 'outline':
         return {
           borderColor: color,
-          color: color,
-          hoverBgColor: color,              // Al pasar el mouse, el fondo se vuelve del color principal
-          hoverTextColor: 'white'
+          color: textColor || color,  // Usar textColor si existe, sino el color base
+          hoverBgColor: color,
+          hoverTextColor: textColor || 'white'
         };
       case 'text':
         return {
-          color: color,
-          hoverColor: hoverColor
+          color: textColor || color,  // Usar textColor si existe, sino el color base
+          hoverColor: darkenColor(textColor || color)
         };
       default:
         return {
           backgroundColor: color,
           hoverBgColor: hoverColor,
-          textColor: 'white'
+          textColor: textColor || 'white'
         };
     }
   };

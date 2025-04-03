@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Icon from './assets/img/logo1.svg';
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import Icon from './assets/svg/logo1.svg';
+import { Navbar, Footer } from "./components/layout"; // Index.js
 import Home from "./pages/Home";
 import AppCalculadora from "./components/AppCalculadora";
 import DatosTractor from "./pages/DatosTractor";
@@ -10,6 +9,9 @@ import DatosClimaticos from "./pages/DatosClimativos";
 import Resultados from "./pages/Resultados";
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Catalogo from "./pages/Catalogo";
+import CatalogoTrac from "./pages/CatalogoTractores";
+import CatalogoMaq from "./pages/CatalogoMaquinas";
 import TractorForm from "./pages/TractorForm";
 import TractorMachineDetail from "./pages/TractorMachineDetail";
 
@@ -34,6 +36,9 @@ function App() {
             <Route path="/Resultados" element={<Resultados/>}/>
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Register />} />
+            <Route path="/Catalogo" element={<Catalogo />} />
+            <Route path="/CatalogoTractor" element={<CatalogoTrac />} />
+            <Route path="/CatalogoMaquinas" element={<CatalogoMaq />} />
             <Route path="/admin/tractor-form" element={<TractorForm />} />
             <Route path="/tractor/:id" element={<TractorMachineDetail />} />
             {/* ++++++ Rutas adicionales ++++++ */}

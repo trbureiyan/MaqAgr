@@ -2,9 +2,8 @@ import React from "react";
 import VideoPrueba from "../assets/video/1.mp4";
 import TractorImg from "../assets/img/1.png";
 import MachineImg from "../assets/img/2.png";
-import HomeVideo from "../components/HomeVideo";
-import Button from "../components/Buttons/Button";
-import TractorMachineCard from "../components/TractorMachineCard";
+import HomeVideo from "../components/common/home/HomeVideo";
+import TractorMachineCard from "../components/ui/cards/TractorMachineCard";
 
 const Home = () => {
   return (

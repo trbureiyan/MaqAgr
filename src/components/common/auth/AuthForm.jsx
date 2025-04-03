@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import backgroundImage from '../assets/img/fondo.jpg';
+import backgroundImage from '../../../assets/img/fondo.jpg';
+import Button from '../../ui/buttons/Button';  // Añadir este import al inicio del archivo
 
 const AuthForm = ({ formType }) => {
   // Estado centralizado para todos los campos del formulario
@@ -171,12 +172,17 @@ const AuthForm = ({ formType }) => {
                 
                 {/* Botón de envío */}
                 <div className="pt-4">
-                  <button
+                  <Button
                     type="submit"
-                    className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2 sm:py-3 px-4 rounded-full uppercase text-sm sm:text-base"
+                    variant="primary"
+                    color="#EAB308"
+                    fullWidth
+                    size="large"
+                    shape="pill"
+                    textColor="#000000"
                   >
                     {formType === 'login' ? 'Enviar' : 'Enviar'}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>

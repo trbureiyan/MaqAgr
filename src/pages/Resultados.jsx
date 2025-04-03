@@ -1,6 +1,6 @@
 import React from 'react';
 import Tractor from "../assets/img/Tractor Prueva.webp";
-import TractorMachineCard from "../components/TractorMachineCard";
+import TractorMachineCard from "../components/ui/cards/TractorMachineCard";
 import TractorImg from "../assets/img/1.png";
 import MachineImg from "../assets/img/2.png";
 
