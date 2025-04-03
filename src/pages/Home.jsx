@@ -57,21 +57,21 @@ const Home = () => {
             {/* Máquina 1 */}
             <TractorMachineCard
               imageSrc={MachineImg}
-              link="/tractor/2"
+              link="/maquinaria/2"
               title="Arado de vértebras 975"
               description="Estilo clásico combinado con innovaciones modernas. Está en nuestra herencia."
             />
             {/* Máquina 2 */}
             <TractorMachineCard
               imageSrc={MachineImg}
-              link="/tractor/2"
+              link="/maquinaria/2"
               title="Rastra Mx425"
               description="Peterbilt se asocia con PFC para ofrecer un programa FMV inmejorable para los camiones."
             />
             {/* Máquina 3 */}
             <TractorMachineCard
               imageSrc={MachineImg}
-              link="/tractor/2"
+              link="/maquinaria/2"
               title="Cultivador Mx10"
               description="Peterbilt se asocia con PFC para ofrecer un programa FMV inmejorable para los camiones."
             />

@@ -41,6 +41,13 @@ function App() {
             <Route path="/Catalogo" element={<Catalogo />} />
             <Route path="/CatalogoTractor" element={<CatalogoTrac />} />
             <Route path="/CatalogoMaquinas" element={<CatalogoMaq />} />
+            <Route path="/admin/tractor-form" element={<TractorForm />} />
+            <Route path="/tractor/:id" element={<TractorMachineDetail />} />
+            <Route path="/maquinaria/:id" element={<TractorMachineDetail />} />
+            {/* ++++++ Rutas adicionales ++++++ */}
+            {/* <Route path="/catalogo" element={<Catalogo />} /> */}
+            {/* <Route path="/sobre-nosotro" element={<SobreNosotros />} /> */}
+            {/* <Route path="/login" element={<Login />} /> */}
           </Routes>
         </main>
         <Footer />
