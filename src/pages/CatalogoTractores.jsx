@@ -6,37 +6,37 @@ export default function CatalogoTractores() {
   const tractors = [
     {
       imageSrc: Tractor,
-      link: '/tractor1',
+      link: '/maquinaria/2',
       title: 'Tractor Modelo 1',
       description: 'Descripción breve del tractor modelo 1.',
     },
     {
       imageSrc: Tractor,
-      link: '/tractor2',
+      link: '/tractor/1',
       title: 'Tractor Modelo 2',
       description: 'Descripción breve del tractor modelo 2.',
     },
     {
       imageSrc: Tractor,
-      link: '/tractor3',
+      link: '/tractor/1',
       title: 'Tractor Modelo 3',
       description: 'Descripción breve del tractor modelo 3.',
     },
     {
       imageSrc: Tractor,
-      link: '/tractor4',
+      link: '/tractor/1',
       title: 'Tractor Modelo 4',
       description: 'Descripción breve del tractor modelo 4.',
     },
     {
       imageSrc: Tractor,
-      link: '/tractor5',
+      link: '/tractor/1',
       title: 'Tractor Modelo 5',
       description: 'Descripción breve del tractor modelo 5.',
     },
     {
       imageSrc: Tractor,
-      link: '/tractor6',
+      link: '/tractor/1',
       title: 'Tractor Modelo 6',
       description: 'Descripción breve del tractor modelo 6.',
     },
