@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import nube from "../assets/img/nubes.png";
+import Nube from "../assets/img/nubes.png";
 import Button from "../components/ui/buttons/Button";
+import TooltipInfo from "../components/ui/buttons/ToolTipInfo";
 
 function DatosClimativos() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ function DatosClimativos() {
         <div className="flex flex-col md:flex-row">
           <div className="w-full md:w-1/2 mb-4 md:mb-0">
             <img 
-              src={nube}
+              src={Nube}
               alt="Imagen del clima" 
               className="w-full h-auto rounded-lg"
             />
@@ -27,36 +28,48 @@ function DatosClimativos() {
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-700">Altura</label>
+                  <label className="block text-gray-700">
+                    Altura
+                    <TooltipInfo content="Altura sobre el nivel del mar en metros" />
+                  </label>
                   <input 
                     type="text" 
-                    placeholder="Ingrese la altura sobre el nivel del mar" 
+                    placeholder="Valor en msnm" 
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700">Temperatura ambiente</label>
+                  <label className="block text-gray-700">
+                    Temperatura ambiente
+                    <TooltipInfo content="Temperatura promedio en grados Celsius" />
+                  </label>
                   <input 
                     type="text" 
-                    placeholder="Ingrese la temperatura" 
+                    placeholder="Valor en °C" 
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-700">Pendiente</label>
+                  <label className="block text-gray-700">
+                    Pendiente
+                    <TooltipInfo content="Inclinación del terreno en porcentaje (%)" />
+                  </label>
                   <input 
                     type="text" 
-                    placeholder="Ingrese la pendiente" 
+                    placeholder="Valor en %" 
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700">Patinamiento</label>
+                  <label className="block text-gray-700">
+                    Patinamiento
+                    <TooltipInfo content="Porcentaje estimado de patinamiento de las ruedas" />
+                  </label>
                   <input 
                     type="text" 
-                    placeholder="Ingrese el patinamiento" 
+                    placeholder="Valor en %" 
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>

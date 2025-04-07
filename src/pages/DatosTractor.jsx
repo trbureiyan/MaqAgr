@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import Tractor from "../assets/img/Tractor Prueva.webp";
 import Button from "../components/ui/buttons/Button";
+import TooltipInfo from "../components/ui/buttons/ToolTipInfo";
 
 export default function DatosTractor() {
   const navigate = useNavigate();
@@ -26,31 +27,43 @@ export default function DatosTractor() {
           <div className="w-full md:w-1/2 md:pl-8 mt-8 md:mt-0">
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-gray-700">Pb</label>
+                <label className="block text-gray-700">
+                  Pb
+                  <TooltipInfo content="Potencia bruta del tractor expresada en caballos de fuerza (HP)" />
+                </label>
                 <input 
                   type="text" 
-                  placeholder="Ingrese el Pb" 
+                  placeholder="Ingrese valor en HP" 
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
               <div>
-                <label className="block text-gray-700">Pmax(tdp)</label>
+                <label className="block text-gray-700">
+                  Pmax(tdp)
+                  <TooltipInfo content="Potencia máxima en la toma de fuerza (TDF)" />
+                </label>
                 <input 
                   type="text" 
-                  placeholder="Ingrese el Pmax" 
+                  placeholder="Ingrese valor en HP" 
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
               <div>
-                <label className="block text-gray-700">Peso</label>
+                <label className="block text-gray-700">
+                  Peso
+                  <TooltipInfo content="Peso del tractor en kilogramos (kg)" />
+                </label>
                 <input 
                   type="text" 
-                  placeholder="Ingrese el peso del tractor" 
+                  placeholder="Ingrese valor en kg" 
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
               <div>
-                <label className="block text-gray-700">Turbo</label>
+                <label className="block text-gray-700">
+                  Turbo
+                  <TooltipInfo content="Indica si el motor cuenta con turbocompresor" />
+                </label>
                 <select 
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 >
