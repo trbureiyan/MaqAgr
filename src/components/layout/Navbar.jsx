@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import Logo from '../common/icons/Logo';
+import Logo from "../ui/Icons/logo";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,8 +14,8 @@ const Navbar = () => {
   const navLinks = [
     { to: "/", label: "Home" },
     { to: "/Catalogo", label: "Catálogo" },
-    { to: "/sobre-nosotros", label: "Sobre Nosotros" },
-    { to: "/calculadora", label: "Calculadora" }
+    { to: "/SobreNosotros", label: "Sobre Nosotros" },
+    { to: "/Calculadora", label: "Calculadora" }
   ];
 
   const renderMobileMenu = () => {

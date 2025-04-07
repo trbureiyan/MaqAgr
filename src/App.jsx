@@ -5,7 +5,7 @@ import Home from "./pages/Home";
 import AppCalculadora from "./components/AppCalculadora";
 import DatosTractor from "./pages/DatosTractor";
 import DatosLlantas from "./pages/DatosLlanta";
-import DatosClimaticos from "./pages/DatosClimativos";
+import DatosClimaticos from "./pages/DatosClimaticos";
 import Resultados from "./pages/Resultados";
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -27,13 +27,13 @@ function App() {
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/calculadora" element={<AppCalculadora />} />
+            <Route path="/Calculadora" element={<AppCalculadora />} />
             <Route path="/TengoTractor" element={<DatosTractor/>}/>
             <Route path="/DatosLlantas" element={<DatosLlantas/>}/>
             <Route path="/DatosClimaticos" element={<DatosClimaticos/>}/>
             <Route path="/Resultados" element={<Resultados/>}/>
-            <Route path="/login" element={<Login />} />
-            <Route path="/registro" element={<Register />} />
+            <Route path="/Login" element={<Login />} />
+            <Route path="/Registro" element={<Register />} />
             <Route path="/Catalogo" element={<Catalogo />} />
             <Route path="/CatalogoTractor" element={<CatalogoTrac />} />
             <Route path="/CatalogoMaquinas" element={<CatalogoMaq />} />

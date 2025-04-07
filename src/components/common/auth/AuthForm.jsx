@@ -164,7 +164,7 @@ const AuthForm = ({ formType }) => {
                 {/* Enlace para ir a registro - solo visible en modo login */}
                 {formType === 'login' && (
                   <div className="text-center">
-                    <a href="/registro" className="text-white hover:text-yellow-200 text-sm sm:text-base">
+                    <a href="/Registro" className="text-white hover:text-yellow-200 text-sm sm:text-base">
                       ¿Aun no estas registrado? Registrate aquí
                     </a>
                   </div>
