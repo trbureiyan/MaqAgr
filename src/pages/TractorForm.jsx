@@ -1,7 +1,15 @@
-// Archivo: TractorCRUD.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, FaEye, FaFileAlt, FaExternalLinkAlt } from 'react-icons/fa';
+import Button from "../components/ui/buttons/Button";
+import {
+  SearchIcon,
+  FilterIcon,
+  PlusIcon,
+  EditIcon,
+  DeleteIcon,
+  FileIcon,
+  ExternalLinkIcon
+} from "../components/ui/Icons";
 
 const TractorCRUD = () => {
   // Estados para el CRUD
@@ -203,12 +211,15 @@ const TractorCRUD = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-red-800 mb-4 md:mb-0">Gestión de Tractores</h1>
-        <button 
+        
+        <Button
+          variant="primary"
+          color="#991b1b"
           onClick={() => abrirModal()}
-          className="bg-red-800 hover:bg-red-900 text-white font-bold py-2 px-4 rounded flex items-center"
+          className="flex items-center"
         >
-          <FaPlus className="mr-2" /> Agregar Tractor
-        </button>
+          <PlusIcon size="small" /> <span className="ml-2">Agregar Tractor</span>
+        </Button>
       </div>
 
       {/* Barra de búsqueda y filtros */}
@@ -216,7 +227,7 @@ const TractorCRUD = () => {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaSearch className="text-gray-400" />
+              <SearchIcon size="small" className="text-gray-400" />
             </div>
             <input
               type="text"
@@ -226,12 +237,14 @@ const TractorCRUD = () => {
               onChange={(e) => setBusqueda(e.target.value)}
             />
           </div>
-          <button
-            className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded flex items-center"
+          <Button
+            variant="outline"
+            color="#6B7280"
             onClick={() => setMostrarFiltros(!mostrarFiltros)}
+            className="flex items-center"
           >
-            <FaFilter className="mr-2" /> Filtros
-          </button>
+            <FilterIcon size="small" className="mr-2" /> Filtros
+          </Button>
         </div>
 
         {/* Panel de filtros desplegable */}
@@ -337,33 +350,36 @@ const TractorCRUD = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {tractor.fichaTecnica && (
-                        <a 
-                          href={tractor.fichaTecnica} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-red-800 hover:text-red-900 flex items-center"
+                        <Button
+                          href={tractor.fichaTecnica}
+                          variant="text"
+                          color="#991b1b"
+                          className="flex items-center"
+                          textColor="#991b1b"
                         >
-                          <FaFileAlt className="mr-1" /> 
-                          <FaExternalLinkAlt className="ml-1 text-xs" />
-                        </a>
+                          <FileIcon size="small" className="mr-1" /> 
+                          <ExternalLinkIcon size="small" className="ml-1 text-xs" />
+                        </Button>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-1 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
-                        <button
+                        <Button
+                          variant="text"
+                          color="#2563EB"
                           onClick={() => abrirModal(tractor)}
-                          className="text-blue-600 hover:text-blue-900"
                           title="Editar"
                         >
-                          <FaEdit />
-                        </button>
-                        <button
+                          <EditIcon size="small" />
+                        </Button>
+                        <Button
+                          variant="text"
+                          color="#DC2626"
                           onClick={() => eliminarTractor(tractor.id)}
-                          className="text-red-600 hover:text-red-900"
                           title="Eliminar"
                         >
-                          <FaTrash />
-                        </button>
+                          <DeleteIcon size="small" />
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -384,17 +400,15 @@ const TractorCRUD = () => {
       {tractoresFiltrados.length > itemsPorPagina && (
         <div className="flex justify-center mt-4">
           <nav className="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-            <button
+            <Button
+              variant="outline"
+              color="#6B7280"
               onClick={() => cambiarPagina(paginaActual - 1)}
               disabled={paginaActual === 1}
-              className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                paginaActual === 1 
-                  ? 'text-gray-300 cursor-not-allowed' 
-                  : 'text-gray-500 hover:bg-gray-50'
-              }`}
+              className={paginaActual === 1 ? "opacity-50 cursor-not-allowed" : ""}
             >
               Anterior
-            </button>
+            </Button>
             
             {[...Array(Math.min(5, totalPaginas)).keys()].map((_, index) => {
               // Ajuste para mostrar páginas alrededor de la página actual
@@ -410,31 +424,27 @@ const TractorCRUD = () => {
               }
               
               return (
-                <button
+                <Button
                   key={pageNum}
+                  variant="outline"
+                  color="#6B7280"
                   onClick={() => cambiarPagina(pageNum)}
-                  className={`relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium ${
-                    paginaActual === pageNum
-                      ? 'bg-red-800 text-white border-red-800 z-10'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
+                  className={paginaActual === pageNum ? "bg-red-800 text-white border-red-800 z-10" : ""}
                 >
                   {pageNum}
-                </button>
+                </Button>
               );
             })}
             
-            <button
+            <Button
+              variant="outline"
+              color="#6B7280"
               onClick={() => cambiarPagina(paginaActual + 1)}
               disabled={paginaActual === totalPaginas}
-              className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                paginaActual === totalPaginas 
-                  ? 'text-gray-300 cursor-not-allowed' 
-                  : 'text-gray-500 hover:bg-gray-50'
-              }`}
+              className={paginaActual === totalPaginas ? "opacity-50 cursor-not-allowed" : ""}
             >
               Siguiente
-            </button>
+            </Button>
           </nav>
         </div>
       )}
@@ -634,7 +644,7 @@ const TractorCRUD = () => {
                               htmlFor="fichaTecnica"
                               className="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-800"
                             >
-                              <FaFileAlt className="mr-2" />
+                              <FileIcon size="small" className="mr-2" />
                               Subir
                             </label>
                           </div>
@@ -650,20 +660,22 @@ const TractorCRUD = () => {
                 </div>
               </div>
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <button
-                  type="button"
+                <Button
+                  variant="primary"
+                  color="#991b1b"
                   onClick={guardarTractor}
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-800 text-base font-medium text-white hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-800 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="w-full sm:w-auto sm:ml-3"
                 >
                   {modoEdicion ? 'Actualizar' : 'Guardar'}
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="outline"
+                  color="#6B7280"
                   onClick={cerrarModal}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-800 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  className="mt-3 w-full sm:mt-0 sm:ml-3 sm:w-auto"
                 >
                   Cancelar
-                </button>
+                </Button>
               </div>
             </div>
           </div>
