@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './';
 import backgroundImage from '../../../assets/img/fondo.jpg';
-import Button from '../../ui/buttons/Button';  // Añadir este import al inicio del archivo
+import Button from '../../ui/buttons/Button';
 
 const AuthForm = ({ formType }) => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  
   // Estado centralizado para todos los campos del formulario
   // El valor inicial incluye campos para ambos tipos de formulario (login y registro)
   const [formData, setFormData] = useState({
@@ -27,8 +32,24 @@ const AuthForm = ({ formType }) => {
   // Función para manejar el envío del formulario
   const handleSubmit = (e) => {
     e.preventDefault();  // Evita que la página se recargue al enviar el formulario
-    console.log('Form submitted:', formData);
-    // Aquí iría la lógica de autenticación - actualmente solo es un placeholder
+    
+    // Se implemente una logica breve de autenticacion para consola CRUD admin
+    
+    if (formType === 'login') {
+      // Llamamos a la función login del contexto con los datos del usuario
+      login({
+        email: formData.email,
+        name: formData.email.split('@')[0]
+      });
+      
+      // Redirigir a la página principal después del login
+      navigate('/');
+    } else {
+      // Para registro, podríamos hacer algo diferente
+      // Por ahora, en debug salta alerta:
+      alert('Registro exitoso. Por favor inicie sesión.');
+      navigate('/login');
+    }
   };
 
   return (
