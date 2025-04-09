@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../common/auth';
 import Logo from "../ui/Icons/logo";
+import { ProfileIcon } from "../ui/Icons";
+import Button from "../ui/buttons/Button";
 
 const Navbar = () => {
+  // State y hooks...
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth(); // Función logout desde el contexto
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-// Array de links: Datos de navegación centralizados
+  // Array de links: Datos de navegación centralizados
   const navLinks = [
     { to: "/", label: "Home" },
     { to: "/Catalogo", label: "Catálogo" },
@@ -18,7 +24,19 @@ const Navbar = () => {
     { to: "/Calculadora", label: "Calculadora" }
   ];
 
+  // Clic en perfil
+  const handleProfileClick = () => {
+    navigate('/admin/TractorForm');
+  };
+
+  // Logout
+  const handleLogout = () => {
+    logout();
+    navigate('/'); // Volver a página principal después de cerrar sesión
+  };
+
   const renderMobileMenu = () => {
+    // Renderizado condicional de elementos de UI
     if (isMenuOpen) {
       return (
         <div className="sm:hidden" id="mobile-menu">
@@ -33,6 +51,19 @@ const Navbar = () => {
                 {link.label}
               </Link>
             ))}
+            
+            {/* Opción de logout en el menú móvil cuando está autenticado */}
+            {isAuthenticated && (
+              <button
+                className="block w-full text-left rounded-md px-4 py-3 text-lg font-medium text-gray-100 hover:bg-red-700 hover:text-white"
+                onClick={() => {
+                  handleLogout();
+                  setIsMenuOpen(false);
+                }}
+              >
+                Cerrar Sesión
+              </button>
+            )}
           </div>
         </div>
       );
@@ -108,13 +139,38 @@ const Navbar = () => {
               ))}
             </div>
             
-            {/* Botón de login - Visible en todas las pantallas */}
-            <Link 
-              to="/login" 
-              className="rounded-md bg-[#df6573] px-5 py-2.5 text-base font-medium text-white hover:bg-[#c55765] transition duration-150 z-10"
-            >
-              Login
-            </Link>
+            {/* Botón de login o icono de perfil con logout dependiendo del estado de autenticación */}
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="primary"
+                  color="#df6573"
+                  onClick={handleProfileClick}
+                  shape="pill"
+                  className="p-2.5 z-10"
+                  title="Perfil de usuario"
+                >
+                  <ProfileIcon size="default" color="white" />
+                </Button>
+                <Button
+                  variant="primary"
+                  color="#ac4d58"
+                  onClick={handleLogout}
+                  className="hidden sm:block z-10"
+                >
+                  Salir
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="primary"
+                color="#df6573"
+                to="/login"
+                className="z-10"
+              >
+                Login
+              </Button>
+            )}
           </div>
         </div>
       </div>
