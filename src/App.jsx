@@ -43,7 +43,7 @@ function App() {
             <Route path="/Catalogo" element={<Catalogo />} />
             <Route path="/CatalogoTractor" element={<CatalogoTrac />} />
             <Route path="/CatalogoMaquinas" element={<CatalogoMaq />} />
-            <Route path="/admin/tractor-form" element={<TractorForm />} />
+            <Route path="/admin/TractorForm" element={<TractorForm />} />
             <Route path="/tractor/:id" element={<TractorMachineDetail />} />
             <Route path="/maquinaria/:id" element={<TractorMachineDetail />} />
           </Routes>
