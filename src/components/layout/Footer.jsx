@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-gray-100">
             © 2025 Copyright: 
-            <Link to="/sobre-nosotro" className="ml-1 text-[#97b55d] font-medium hover:underline">
+            <Link to="/SobreNosotros" className="ml-1 text-[#97b55d] font-medium hover:underline">
               Equipo de Maquinaria Agrícola
             </Link>
           </p>

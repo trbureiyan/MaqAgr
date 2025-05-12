@@ -1,11 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Icon from './assets/svg/logo1.svg';
 import { Navbar, Footer } from "./components/layout"; // Index.js
+import { AuthProvider } from './components/common/auth';
 import Home from "./pages/Home";
 import AppCalculadora from "./components/AppCalculadora";
 import DatosTractor from "./pages/DatosTractor";
 import DatosLlantas from "./pages/DatosLlanta";
-import DatosClimaticos from "./pages/DatosClimativos";
+import DatosClimaticos from "./pages/DatosClimaticos";
 import Resultados from "./pages/Resultados";
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -17,6 +18,7 @@ import TractorMachineDetail from "./pages/TractorMachineDetail";
 
 function App() {
   return (
+  <AuthProvider>
     <Router>
       {/* Favicon */}
       <link 
@@ -29,28 +31,27 @@ function App() {
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/calculadora" element={<AppCalculadora />} />
+            <Route path="/Calculadora" element={<AppCalculadora />} />
             <Route path="/TengoTractor" element={<DatosTractor/>}/>
             <Route path="/DatosLlantas" element={<DatosLlantas/>}/>
             <Route path="/DatosClimaticos" element={<DatosClimaticos/>}/>
             <Route path="/Resultados" element={<Resultados/>}/>
-            <Route path="/login" element={<Login />} />
-            <Route path="/registro" element={<Register />} />
+            <Route path="/Login" element={<Login />} />
+            <Route path="/Registro" element={<Register />} />
+            <Route path="/admin/TractorForm" element={<TractorForm />} />
+            <Route path="/tractor/:id" element={<TractorMachineDetail />} />
             <Route path="/Catalogo" element={<Catalogo />} />
             <Route path="/CatalogoTractor" element={<CatalogoTrac />} />
             <Route path="/CatalogoMaquinas" element={<CatalogoMaq />} />
-            <Route path="/admin/tractor-form" element={<TractorForm />} />
+            <Route path="/admin/TractorForm" element={<TractorForm />} />
             <Route path="/tractor/:id" element={<TractorMachineDetail />} />
             <Route path="/maquinaria/:id" element={<TractorMachineDetail />} />
-            {/* ++++++ Rutas adicionales ++++++ */}
-            {/* <Route path="/catalogo" element={<Catalogo />} /> */}
-            {/* <Route path="/sobre-nosotro" element={<SobreNosotros />} /> */}
-            {/* <Route path="/login" element={<Login />} /> */}
           </Routes>
         </main>
         <Footer />
       </div>
     </Router>
+  </AuthProvider>
   );
 }
 

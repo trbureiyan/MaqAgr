@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import Llanta from "../assets/img/LLANTAS-BKT-12-5.png";
 import Button from "../components/ui/buttons/Button";
+import TooltipInfo from "../components/ui/buttons/ToolTipInfo";
 
 export default function DatosLlanta() {
   const navigate = useNavigate();
@@ -26,30 +27,40 @@ export default function DatosLlanta() {
           <div className="w-full sm:w-1/2 sm:pl-8">
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-gray-700">Diámetro de la llanta</label>
+                <label className="block text-gray-700">
+                  Diámetro de la llanta
+                  <TooltipInfo content="Diámetro de la llanta en pulgadas" />
+                </label>
                 <input 
                   type="text" 
-                  placeholder="Ingrese el diámetro" 
+                  placeholder="Valor en pulgadas" 
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
               <div>
-                <label className="block text-gray-700">Presión de inflado</label>
+                <label className="block text-gray-700">
+                  Presión de inflado
+                  <TooltipInfo content="Presión de inflado recomendada en PSI" />
+                </label>
                 <input 
                   type="text" 
-                  placeholder="Ingrese la presión" 
+                  placeholder="Valor en PSI" 
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
               <div>
-                <label className="block text-gray-700">Tipo de suelo</label>
+                <label className="block text-gray-700">
+                  Tipo de suelo
+                  <TooltipInfo content="Tipo de terreno donde se utilizará el tractor" />
+                </label>
                 <select 
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 >
                   <option value="">Seleccione una opción</option>
-                  <option value="item1">Item 1</option>
-                  <option value="item2">Item 2</option>
-                  <option value="item3">Item 3</option>
+                  <option value="arcilloso">Arcilloso</option>
+                  <option value="arenoso">Arenoso</option>
+                  <option value="limoso">Limoso</option>
+                  <option value="franco">Franco</option>
                 </select>
               </div>
               {/* Botones de navegación */}

@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 /**
  * Componente Button - Botón personalizable y reutilizable
  * 
- * @component
+ * @component Button
+ * 
  * @param {Object} props - Propiedades del componente
  * 
  * @param {string} [props.variant='primary'] - Estilo visual del botón
