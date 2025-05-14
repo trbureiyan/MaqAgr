@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './';
+import { useAuth } from '.';
 import backgroundImage from '../../../assets/img/fondo.jpg';
 import Button from '../../ui/buttons/Button';
 
