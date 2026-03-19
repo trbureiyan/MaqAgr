@@ -10,7 +10,7 @@ import IconTrac from './IconTrac.png';
 import TractorImg from './1.png';
 import MachineImg from './2.png';
 import Tractor from './Tractor Prueva.webp';
-import Llanta from './LLANTAS-BKT-12-5.png';
+import Llanta from './Llanta.jpeg';
 import Nube from './nubes.png';
 import Fondo from './fondo.jpg';
 

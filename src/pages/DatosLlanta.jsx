@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import Llanta from "../assets/img/LLANTAS-BKT-12-5.png";
+import Llanta from "../assets/img/Llanta.jpeg";
 import Button from "../components/ui/buttons/Button";
 import TooltipInfo from "../components/ui/buttons/ToolTipInfo";
 
