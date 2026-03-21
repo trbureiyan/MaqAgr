@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const HomeVideo = ({ videoSrc }) => {
+const HomeVideo = ({ videoSrc, backgroundImageSrc }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -12,18 +12,25 @@ const HomeVideo = ({ videoSrc }) => {
 
   return (
     <section className="relative w-full h-[50vh] md:h-[60vh] lg:h-[70vh] flex items-center justify-center overflow-hidden mb-8">
-      {/* Video con overlay */}
+      {/* Hero media con fallback estatico cuando no hay video */}
       <div className="absolute inset-0 w-full h-full">
-        <video
-          className="w-full h-full object-cover opacity-80"
-          autoPlay
-          muted
-          loop
-          playsInline
-        >
-          <source src={videoSrc} type="video/mp4" />
-          Tu navegador no soporta videos HTML5.
-        </video>
+        {videoSrc ? (
+          <video
+            className="w-full h-full object-cover opacity-80"
+            autoPlay
+            muted
+            loop
+            playsInline
+          >
+            <source src={videoSrc} type="video/mp4" />
+            Tu navegador no soporta videos HTML5.
+          </video>
+        ) : (
+          <div
+            className="w-full h-full bg-cover bg-center opacity-85"
+            style={{ backgroundImage: `url(${backgroundImageSrc || ""})` }}
+          />
+        )}
         {/* Capa de degradado para suavizar el video */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/30 to-transparent"></div>
       </div>

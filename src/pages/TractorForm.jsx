@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import Button from "../components/ui/buttons/Button";
+import Pagination from "../components/common/Pagination";
 import {
   SearchIcon,
   FilterIcon,
@@ -16,15 +16,19 @@ const TractorCRUD = () => {
   const [tractores, setTractores] = useState([]);
   const [paginaActual, setPaginaActual] = useState(1);
   const [itemsPorPagina] = useState(10);
-  const [totalPaginas, setTotalPaginas] = useState(0);
   const [busqueda, setBusqueda] = useState('');
+  const [ordenamiento, setOrdenamiento] = useState('nombre_asc');
   const [filtros, setFiltros] = useState({
     marca: '',
     anio: '',
     turbo: ''
   });
+  const [cargando, setCargando] = useState(false);
+  const [errorCarga, setErrorCarga] = useState('');
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [modalConfirmacionAbierto, setModalConfirmacionAbierto] = useState(false);
+  const [tractorAEliminar, setTractorAEliminar] = useState(null);
   const [tractorActual, setTractorActual] = useState({
     nombre: '',
     marca: '',
@@ -44,57 +48,74 @@ const TractorCRUD = () => {
 
   // Datos de ejemplo (en una aplicación real, estos vendrían de una API)
   useEffect(() => {
-    // Simulación de datos de la API
-    const tractoresEjemplo = [
-      {
-        id: 1,
-        nombre: 'New Holland 8670',
-        marca: 'New Holland',
-        modelo: '8670',
-        anioFabricacion: '2023',
-        potenciaBruta: '290',
-        potenciaTDF: '270',
-        aspiracion: 'Turboalimentado',
-        longitud: '4500',
-        anchura: '2100',
-        altura: '3200',
-        peso: '8500',
-        fichaTecnica: 'https://ejemplo.com/ficha/nh8670.pdf'
-      },
-      {
-        id: 2,
-        nombre: 'John Deere 5090E',
-        marca: 'John Deere',
-        modelo: '5090E',
-        anioFabricacion: '2022',
-        potenciaBruta: '90',
-        potenciaTDF: '75',
-        aspiracion: 'Atmosférico',
-        longitud: '3800',
-        anchura: '1800',
-        altura: '2600',
-        peso: '3200',
-        fichaTecnica: 'https://ejemplo.com/ficha/jd5090e.pdf'
-      },
-      {
-        id: 3,
-        nombre: 'Ford 4610',
-        marca: 'Ford',
-        modelo: '4610',
-        anioFabricacion: '1995',
-        potenciaBruta: '63',
-        potenciaTDF: '54',
-        aspiracion: 'Atmosférico',
-        longitud: '3500',
-        anchura: '1700',
-        altura: '2400',
-        peso: '2800',
-        fichaTecnica: '/fichas/ford4610.pdf'
+    const cargarTractores = async () => {
+      setCargando(true);
+      setErrorCarga('');
+
+      try {
+        // Simulación de carga de API
+        const tractoresEjemplo = [
+          {
+            id: 1,
+            nombre: 'New Holland 8670',
+            marca: 'New Holland',
+            modelo: '8670',
+            anioFabricacion: '2023',
+            potenciaBruta: '290',
+            potenciaTDF: '270',
+            aspiracion: 'Turboalimentado',
+            longitud: '4500',
+            anchura: '2100',
+            altura: '3200',
+            peso: '8500',
+            fichaTecnica: 'https://ejemplo.com/ficha/nh8670.pdf'
+          },
+          {
+            id: 2,
+            nombre: 'John Deere 5090E',
+            marca: 'John Deere',
+            modelo: '5090E',
+            anioFabricacion: '2022',
+            potenciaBruta: '90',
+            potenciaTDF: '75',
+            aspiracion: 'Atmosférico',
+            longitud: '3800',
+            anchura: '1800',
+            altura: '2600',
+            peso: '3200',
+            fichaTecnica: 'https://ejemplo.com/ficha/jd5090e.pdf'
+          },
+          {
+            id: 3,
+            nombre: 'Ford 4610',
+            marca: 'Ford',
+            modelo: '4610',
+            anioFabricacion: '1995',
+            potenciaBruta: '63',
+            potenciaTDF: '54',
+            aspiracion: 'Atmosférico',
+            longitud: '3500',
+            anchura: '1700',
+            altura: '2400',
+            peso: '2800',
+            fichaTecnica: '/fichas/ford4610.pdf'
+          }
+        ];
+
+        setTractores(tractoresEjemplo);
+      } catch {
+        setErrorCarga('No se pudieron cargar los tractores. Intenta nuevamente.');
+      } finally {
+        setCargando(false);
       }
-    ];
-    setTractores(tractoresEjemplo);
-    setTotalPaginas(Math.ceil(tractoresEjemplo.length / itemsPorPagina));
-  }, [itemsPorPagina]);
+    };
+
+    cargarTractores();
+  }, []);
+
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [busqueda, filtros, ordenamiento]);
 
   // Funciones para el CRUD
   const abrirModal = (tractor = null) => {
@@ -172,11 +193,44 @@ const TractorCRUD = () => {
     cerrarModal();
   };
 
-  const eliminarTractor = (id) => {
-    if (window.confirm('¿Está seguro de que desea eliminar este tractor?')) {
-      const tractoresActualizados = tractores.filter(tractor => tractor.id !== id);
-      setTractores(tractoresActualizados);
-      // En una aplicación real, aquí se enviaría la petición a la API
+  const abrirConfirmacionEliminacion = (tractor) => {
+    setTractorAEliminar(tractor);
+    setModalConfirmacionAbierto(true);
+  };
+
+  const cerrarConfirmacionEliminacion = () => {
+    setModalConfirmacionAbierto(false);
+    setTractorAEliminar(null);
+  };
+
+  const confirmarEliminacionTractor = () => {
+    if (!tractorAEliminar) {
+      return;
+    }
+
+    const tractoresActualizados = tractores.filter(tractor => tractor.id !== tractorAEliminar.id);
+    setTractores(tractoresActualizados);
+    cerrarConfirmacionEliminacion();
+    // En una aplicación real, aquí se enviaría la petición a la API
+  };
+
+  const ordenarTractores = (lista) => {
+    const listaOrdenada = [...lista];
+
+    switch (ordenamiento) {
+      case 'nombre_desc':
+        return listaOrdenada.sort((a, b) => b.nombre.localeCompare(a.nombre));
+      case 'anio_desc':
+        return listaOrdenada.sort((a, b) => Number(b.anioFabricacion || 0) - Number(a.anioFabricacion || 0));
+      case 'anio_asc':
+        return listaOrdenada.sort((a, b) => Number(a.anioFabricacion || 0) - Number(b.anioFabricacion || 0));
+      case 'potencia_desc':
+        return listaOrdenada.sort((a, b) => Number(b.potenciaBruta || 0) - Number(a.potenciaBruta || 0));
+      case 'potencia_asc':
+        return listaOrdenada.sort((a, b) => Number(a.potenciaBruta || 0) - Number(b.potenciaBruta || 0));
+      case 'nombre_asc':
+      default:
+        return listaOrdenada.sort((a, b) => a.nombre.localeCompare(b.nombre));
     }
   };
 
@@ -194,12 +248,18 @@ const TractorCRUD = () => {
     return coincideBusqueda && coincideFiltroMarca && coincideFiltroAnio && coincideFiltroTurbo;
   });
 
+  const tractoresOrdenados = ordenarTractores(tractoresFiltrados);
+
   // Paginación
+  const totalPaginas = Math.max(1, Math.ceil(tractoresOrdenados.length / itemsPorPagina));
   const indiceUltimoItem = paginaActual * itemsPorPagina;
   const indicePrimerItem = indiceUltimoItem - itemsPorPagina;
-  const itemsActuales = tractoresFiltrados.slice(indicePrimerItem, indiceUltimoItem);
+  const itemsActuales = tractoresOrdenados.slice(indicePrimerItem, indiceUltimoItem);
 
   const cambiarPagina = (numeroPagina) => {
+    if (numeroPagina < 1 || numeroPagina > totalPaginas) {
+      return;
+    }
     setPaginaActual(numeroPagina);
   };
 
@@ -236,6 +296,20 @@ const TractorCRUD = () => {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
             />
+          </div>
+          <div className="w-full md:w-64">
+            <select
+              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800"
+              value={ordenamiento}
+              onChange={(e) => setOrdenamiento(e.target.value)}
+            >
+              <option value="nombre_asc">Ordenar por nombre (A-Z)</option>
+              <option value="nombre_desc">Ordenar por nombre (Z-A)</option>
+              <option value="anio_desc">Año más reciente</option>
+              <option value="anio_asc">Año más antiguo</option>
+              <option value="potencia_desc">Mayor potencia</option>
+              <option value="potencia_asc">Menor potencia</option>
+            </select>
           </div>
           <Button
             variant="outline"
@@ -295,6 +369,15 @@ const TractorCRUD = () => {
       {/* Tabla de tractores */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
         <div className="overflow-x-auto">
+          {cargando ? (
+            <div className="px-6 py-10 text-center text-sm text-gray-500">
+              Cargando tractores...
+            </div>
+          ) : errorCarga ? (
+            <div className="px-6 py-10 text-center text-sm text-red-700">
+              {errorCarga}
+            </div>
+          ) : (
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -375,7 +458,7 @@ const TractorCRUD = () => {
                         <Button
                           variant="text"
                           color="#DC2626"
-                          onClick={() => eliminarTractor(tractor.id)}
+                          onClick={() => abrirConfirmacionEliminacion(tractor)}
                           title="Eliminar"
                         >
                           <DeleteIcon size="small" />
@@ -387,67 +470,36 @@ const TractorCRUD = () => {
               ) : (
                 <tr>
                   <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">
-                    No se encontraron tractores con los criterios seleccionados
+                    {tractores.length === 0 ? (
+                      <div className="space-y-3">
+                        <p>No hay tractores registrados.</p>
+                        <Button
+                          variant="primary"
+                          color="#991b1b"
+                          onClick={() => abrirModal()}
+                          className="inline-flex items-center"
+                        >
+                          <PlusIcon size="small" /> <span className="ml-2">Añadir Tractor</span>
+                        </Button>
+                      </div>
+                    ) : (
+                      'No se encontraron tractores con los criterios seleccionados'
+                    )}
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+          )}
         </div>
       </div>
 
       {/* Paginación */}
-      {tractoresFiltrados.length > itemsPorPagina && (
-        <div className="flex justify-center mt-4">
-          <nav className="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-            <Button
-              variant="outline"
-              color="#6B7280"
-              onClick={() => cambiarPagina(paginaActual - 1)}
-              disabled={paginaActual === 1}
-              className={paginaActual === 1 ? "opacity-50 cursor-not-allowed" : ""}
-            >
-              Anterior
-            </Button>
-            
-            {[...Array(Math.min(5, totalPaginas)).keys()].map((_, index) => {
-              // Ajuste para mostrar páginas alrededor de la página actual
-              let pageNum;
-              if (totalPaginas <= 5) {
-                pageNum = index + 1;
-              } else if (paginaActual <= 3) {
-                pageNum = index + 1;
-              } else if (paginaActual >= totalPaginas - 2) {
-                pageNum = totalPaginas - 4 + index;
-              } else {
-                pageNum = paginaActual - 2 + index;
-              }
-              
-              return (
-                <Button
-                  key={pageNum}
-                  variant="outline"
-                  color="#6B7280"
-                  onClick={() => cambiarPagina(pageNum)}
-                  className={paginaActual === pageNum ? "bg-red-800 text-white border-red-800 z-10" : ""}
-                >
-                  {pageNum}
-                </Button>
-              );
-            })}
-            
-            <Button
-              variant="outline"
-              color="#6B7280"
-              onClick={() => cambiarPagina(paginaActual + 1)}
-              disabled={paginaActual === totalPaginas}
-              className={paginaActual === totalPaginas ? "opacity-50 cursor-not-allowed" : ""}
-            >
-              Siguiente
-            </Button>
-          </nav>
-        </div>
-      )}
+      <Pagination
+        paginaActual={paginaActual}
+        totalPaginas={totalPaginas}
+        onCambiarPagina={cambiarPagina}
+      />
 
       {/* Modal para crear/editar tractor */}
       {modalAbierto && (
@@ -463,7 +515,7 @@ const TractorCRUD = () => {
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                     <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                      {modoEdicion ? 'Editar Tractor' : 'Agregar Nuevo Tractor'}
+                      {modoEdicion ? 'Editar Tractor' : 'Añadir Tractor'}
                     </h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -666,7 +718,7 @@ const TractorCRUD = () => {
                   onClick={guardarTractor}
                   className="w-full sm:w-auto sm:ml-3"
                 >
-                  {modoEdicion ? 'Actualizar' : 'Guardar'}
+                  {modoEdicion ? 'Actualizar Tractor' : 'Crear Tractor'}
                 </Button>
                 <Button
                   variant="outline"
@@ -682,10 +734,50 @@ const TractorCRUD = () => {
         </div>
       )}
 
+      {/* Modal de confirmación para eliminar */}
+      {modalConfirmacionAbierto && tractorAEliminar && (
+        <div className="fixed inset-0 overflow-y-auto z-50">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-2">
+                  Confirmar eliminación
+                </h3>
+                <p className="text-sm text-gray-600">
+                  ¿Está seguro de eliminar el tractor <span className="font-semibold">{tractorAEliminar.nombre}</span>?
+                </p>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <Button
+                  variant="primary"
+                  color="#DC2626"
+                  onClick={confirmarEliminacionTractor}
+                  className="w-full sm:w-auto sm:ml-3"
+                >
+                  Eliminar Tractor
+                </Button>
+                <Button
+                  variant="outline"
+                  color="#6B7280"
+                  onClick={cerrarConfirmacionEliminacion}
+                  className="mt-3 w-full sm:mt-0 sm:w-auto"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mensaje de resultados y total */}
       <div className="mt-4 text-gray-600 text-sm flex flex-col sm:flex-row justify-between items-center">
         <div>
-          Mostrando {itemsActuales.length} de {tractoresFiltrados.length} tractores
+          Mostrando {itemsActuales.length} de {tractoresOrdenados.length} tractores
         </div>
         <div className="mt-2 sm:mt-0">
           Total de tractores registrados: {tractores.length}

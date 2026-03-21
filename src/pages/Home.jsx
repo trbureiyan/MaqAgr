@@ -1,5 +1,4 @@
 import React from "react";
-import VideoPrueba from "../assets/video/1.mp4";
 import TractorImg from "../assets/img/1.png";
 import MachineImg from "../assets/img/2.png";
 import HomeVideo from "../components/common/home/HomeVideo";
@@ -9,7 +8,7 @@ const Home = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       {/* Video inicio */}
-      <HomeVideo videoSrc={VideoPrueba} />
+      <HomeVideo backgroundImageSrc={MachineImg} />
 
       {/* Tractores Destacados */}
       <section className="bg-gray-100 py-12">

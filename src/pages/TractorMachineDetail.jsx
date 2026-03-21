@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import Button from '../components/ui/Buttons/Button';
+import Button from '../components/ui/buttons/Button';
 
 const TractorDetail = () => {
   const { id } = useParams();

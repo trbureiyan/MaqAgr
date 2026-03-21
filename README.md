@@ -1,21 +1,33 @@
-![Screen Shot 2025-03-30 at 20 24 39](https://github.com/user-attachments/assets/eb8fe353-8bfd-4b10-8546-bfe3ed6a8f26)
-![Screen Shot 2025-03-30 at 20 25 35](https://github.com/user-attachments/assets/12e95a4e-018e-463e-a87d-d37a1a7c22c2)
+# MaqAgr Frontend
 
+Repositorio frontend de MaqAgr orientado a despliegue serverless en Vercel y consumo de API externa.
 
-<details>
-<summary>React + Vite Setup</summary>
+## Estructura
 
-# React + Vite
+- `src/`: aplicacion React
+- `public assets`: en `src/assets/`
+- configuracion de build en `vite.config.js` y `vercel.json`
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Desarrollo local
 
-Currently, two official plugins are available:
+1. Instalar dependencias
+- `npm install`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+2. Ejecutar en local
+- `npm run dev`
 
-## Expanding the ESLint configuration
+## Scripts
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- `npm run dev`
+- `npm run build`
+- `npm run preview`
+- `npm run lint`
 
-</details>
+## Cambios Recientes
+
+- Migracion de estructura desde subcarpeta a jerarquia monolitica en la raiz del repositorio.
+- Estandarizacion de configuracion de despliegue para Vercel usando `vercel.json`.
+- Rewrite SPA para rutas de React Router hacia `index.html`.
+- Optimizacion de cache para assets estaticos en Vercel (`immutable`, 1 anio).
+- Eliminacion del video pesado del hero de inicio para reducir peso de build y tiempo de carga.
+- Hero de inicio actualizado para usar fondo estatico sin romper experiencia visual.
