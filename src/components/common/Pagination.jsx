@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '../ui/buttons/Button';
+import { Button } from '@/components/ui/button';
 
 const Pagination = ({ paginaActual, totalPaginas, onCambiarPagina }) => {
   if (totalPaginas <= 1) {
@@ -40,13 +40,11 @@ const Pagination = ({ paginaActual, totalPaginas, onCambiarPagina }) => {
 
   return (
     <div className="flex justify-center mt-4">
-      <nav className="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+      <nav className="inline-flex items-center gap-1" aria-label="Pagination">
         <Button
           variant="outline"
-          color="#6B7280"
           onClick={() => onCambiarPagina(paginaActual - 1)}
           disabled={paginaActual === 1}
-          className={paginaActual === 1 ? 'opacity-50 cursor-not-allowed' : ''}
         >
           Anterior
         </Button>
@@ -54,10 +52,8 @@ const Pagination = ({ paginaActual, totalPaginas, onCambiarPagina }) => {
         {paginasVisibles.map((pageNum) => (
           <Button
             key={pageNum}
-            variant="outline"
-            color="#6B7280"
+            variant={paginaActual === pageNum ? 'default' : 'outline'}
             onClick={() => onCambiarPagina(pageNum)}
-            className={paginaActual === pageNum ? 'bg-red-800 text-white border-red-800 z-10' : ''}
           >
             {pageNum}
           </Button>
@@ -65,10 +61,8 @@ const Pagination = ({ paginaActual, totalPaginas, onCambiarPagina }) => {
 
         <Button
           variant="outline"
-          color="#6B7280"
           onClick={() => onCambiarPagina(paginaActual + 1)}
           disabled={paginaActual === totalPaginas}
-          className={paginaActual === totalPaginas ? 'opacity-50 cursor-not-allowed' : ''}
         >
           Siguiente
         </Button>

@@ -1,196 +1,282 @@
-import React, { useState, useEffect } from 'react';
-import Button from "../components/ui/buttons/Button";
-import Pagination from "../components/common/Pagination";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import Pagination from '@/components/common/Pagination';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
-  SearchIcon,
-  FilterIcon,
-  PlusIcon,
-  EditIcon,
-  DeleteIcon,
-  FileIcon,
-  ExternalLinkIcon
-} from "../components/ui/Icons";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  ArrowDownAZ,
+  ArrowUpAZ,
+  Filter,
+  Gauge,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from 'lucide-react';
+import {
+  createTractor,
+  deleteTractor,
+  getTractors,
+  isRemoteTractorApiEnabled,
+  updateTractor,
+} from '@/services/tractorApi';
+
+const estadoInicialTractor = {
+  name: '',
+  brand: '',
+  model: '',
+  engine_power_hp: '',
+  weight_kg: '',
+  traction_force_kn: '',
+  traction_type: '4x4',
+  tire_type: '',
+  tire_width_mm: '',
+  tire_diameter_mm: '',
+  tire_pressure_psi: '',
+  status: 'available',
+};
+
+const ORDER_BY_FIELD = {
+  name: 'name',
+  engine_power_hp: 'engine_power_hp',
+  status: 'status',
+};
 
 const TractorCRUD = () => {
-  // Estados para el CRUD
+  const remoteApiEnabled = isRemoteTractorApiEnabled();
   const [tractores, setTractores] = useState([]);
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [itemsPorPagina] = useState(10);
-  const [busqueda, setBusqueda] = useState('');
-  const [ordenamiento, setOrdenamiento] = useState('nombre_asc');
-  const [filtros, setFiltros] = useState({
-    marca: '',
-    anio: '',
-    turbo: ''
-  });
   const [cargando, setCargando] = useState(false);
   const [errorCarga, setErrorCarga] = useState('');
+
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPorPagina = 10;
+
+  const [busqueda, setBusqueda] = useState('');
+  const [ordenamiento, setOrdenamiento] = useState({
+    sort: 'name',
+    order: 'asc',
+  });
+  const [filtros, setFiltros] = useState({
+    brand: '',
+    minPower: '',
+    maxPower: '',
+  });
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
+
   const [modalAbierto, setModalAbierto] = useState(false);
   const [modalConfirmacionAbierto, setModalConfirmacionAbierto] = useState(false);
   const [tractorAEliminar, setTractorAEliminar] = useState(null);
-  const [tractorActual, setTractorActual] = useState({
-    nombre: '',
-    marca: '',
-    modelo: '',
-    anioFabricacion: '',
-    potenciaBruta: '',
-    potenciaTDF: '',
-    aspiracion: 'Atmosférico',
-    longitud: '',
-    anchura: '',
-    altura: '',
-    peso: '',
-    fichaTecnica: ''
-  });
+  const [tractorActual, setTractorActual] = useState(estadoInicialTractor);
   const [modoEdicion, setModoEdicion] = useState(false);
-  const [archivo, setArchivo] = useState(null);
+  const [guardando, setGuardando] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
 
-  // Datos de ejemplo (en una aplicación real, estos vendrían de una API)
-  useEffect(() => {
-    const cargarTractores = async () => {
-      setCargando(true);
-      setErrorCarga('');
-
-      try {
-        // Simulación de carga de API
-        const tractoresEjemplo = [
-          {
-            id: 1,
-            nombre: 'New Holland 8670',
-            marca: 'New Holland',
-            modelo: '8670',
-            anioFabricacion: '2023',
-            potenciaBruta: '290',
-            potenciaTDF: '270',
-            aspiracion: 'Turboalimentado',
-            longitud: '4500',
-            anchura: '2100',
-            altura: '3200',
-            peso: '8500',
-            fichaTecnica: 'https://ejemplo.com/ficha/nh8670.pdf'
-          },
-          {
-            id: 2,
-            nombre: 'John Deere 5090E',
-            marca: 'John Deere',
-            modelo: '5090E',
-            anioFabricacion: '2022',
-            potenciaBruta: '90',
-            potenciaTDF: '75',
-            aspiracion: 'Atmosférico',
-            longitud: '3800',
-            anchura: '1800',
-            altura: '2600',
-            peso: '3200',
-            fichaTecnica: 'https://ejemplo.com/ficha/jd5090e.pdf'
-          },
-          {
-            id: 3,
-            nombre: 'Ford 4610',
-            marca: 'Ford',
-            modelo: '4610',
-            anioFabricacion: '1995',
-            potenciaBruta: '63',
-            potenciaTDF: '54',
-            aspiracion: 'Atmosférico',
-            longitud: '3500',
-            anchura: '1700',
-            altura: '2400',
-            peso: '2800',
-            fichaTecnica: '/fichas/ford4610.pdf'
-          }
-        ];
-
-        setTractores(tractoresEjemplo);
-      } catch {
-        setErrorCarga('No se pudieron cargar los tractores. Intenta nuevamente.');
-      } finally {
-        setCargando(false);
-      }
+  const consulta = useMemo(() => {
+    return {
+      page: paginaActual,
+      limit: itemsPorPagina,
+      sort: ordenamiento.sort,
+      order: ordenamiento.order,
+      search: busqueda.trim(),
+      brand: filtros.brand,
+      minPower: filtros.minPower,
+      maxPower: filtros.maxPower,
     };
+  }, [paginaActual, ordenamiento, busqueda, filtros]);
 
-    cargarTractores();
-  }, []);
+  const cargarTabla = useCallback(async () => {
+    setCargando(true);
+    setErrorCarga('');
+
+    try {
+      const response = await getTractors(consulta);
+      const datos = Array.isArray(response?.data) ? response.data : [];
+      const paginacion = response?.pagination || {};
+
+      setTractores(datos);
+      setTotalPaginas(Number(paginacion.totalPages || 1));
+      setTotalItems(Number(paginacion.total || datos.length));
+    } catch (error) {
+      setErrorCarga(error.message || 'No se pudieron cargar los tractores.');
+      setTractores([]);
+      setTotalPaginas(1);
+      setTotalItems(0);
+    } finally {
+      setCargando(false);
+    }
+  }, [consulta]);
+
+  useEffect(() => {
+    cargarTabla();
+  }, [cargarTabla]);
 
   useEffect(() => {
     setPaginaActual(1);
-  }, [busqueda, filtros, ordenamiento]);
+  }, [busqueda, filtros]);
 
-  // Funciones para el CRUD
   const abrirModal = (tractor = null) => {
     if (tractor) {
-      setTractorActual(tractor);
+      setTractorActual({
+        tractor_id: tractor.tractor_id,
+        name: tractor.name || '',
+        brand: tractor.brand || '',
+        model: tractor.model || '',
+        engine_power_hp: tractor.engine_power_hp ?? '',
+        weight_kg: tractor.weight_kg ?? '',
+        traction_force_kn: tractor.traction_force_kn ?? '',
+        traction_type: tractor.traction_type || '4x4',
+        tire_type: tractor.tire_type || '',
+        tire_width_mm: tractor.tire_width_mm ?? '',
+        tire_diameter_mm: tractor.tire_diameter_mm ?? '',
+        tire_pressure_psi: tractor.tire_pressure_psi ?? '',
+        status: tractor.status || 'available',
+      });
       setModoEdicion(true);
     } else {
-      setTractorActual({
-        nombre: '',
-        marca: '',
-        modelo: '',
-        anioFabricacion: '',
-        potenciaBruta: '',
-        potenciaTDF: '',
-        aspiracion: 'Atmosférico',
-        longitud: '',
-        anchura: '',
-        altura: '',
-        peso: '',
-        fichaTecnica: ''
-      });
+      setTractorActual(estadoInicialTractor);
       setModoEdicion(false);
     }
+
     setModalAbierto(true);
   };
 
   const cerrarModal = () => {
     setModalAbierto(false);
-    setArchivo(null);
+    setGuardando(false);
   };
 
-  const manejarCambio = (e) => {
-    const { name, value } = e.target;
-    setTractorActual({
-      ...tractorActual,
-      [name]: value
+  const manejarCambio = (event) => {
+    const { name, value } = event.target;
+    setTractorActual((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const obtenerPayload = () => {
+    const payload = {
+      name: tractorActual.name?.trim(),
+      brand: tractorActual.brand?.trim(),
+      model: tractorActual.model?.trim(),
+      engine_power_hp: tractorActual.engine_power_hp,
+      traction_type: tractorActual.traction_type,
+      status: tractorActual.status,
+    };
+
+    const optionalNumberFields = [
+      'weight_kg',
+      'traction_force_kn',
+      'tire_width_mm',
+      'tire_diameter_mm',
+      'tire_pressure_psi',
+    ];
+
+    optionalNumberFields.forEach((field) => {
+      const value = tractorActual[field];
+      if (value !== '' && value !== null && value !== undefined) {
+        payload[field] = Number(value);
+      }
     });
-  };
 
-  const manejarCambioArchivo = (e) => {
-    setArchivo(e.target.files[0]);
-    // En una aplicación real, aquí se haría el manejo del archivo
-    if (e.target.files[0]) {
-      // Simulación de URL para el archivo subido
-      setTractorActual({
-        ...tractorActual,
-        fichaTecnica: `/fichas/${e.target.files[0].name}`
-      });
+    if (tractorActual.tire_type?.trim()) {
+      payload.tire_type = tractorActual.tire_type.trim();
     }
+
+    payload.engine_power_hp = Number(payload.engine_power_hp);
+
+    return payload;
   };
 
-  const guardarTractor = () => {
-    // Validación básica
-    if (!tractorActual.nombre || !tractorActual.marca || !tractorActual.modelo) {
-      alert('Los campos Nombre, Marca y Modelo son obligatorios');
+  const validarFormulario = () => {
+    if (!tractorActual.name?.trim()) {
+      return 'El nombre es obligatorio.';
+    }
+    if (!tractorActual.brand?.trim()) {
+      return 'La marca es obligatoria.';
+    }
+    if (!tractorActual.model?.trim()) {
+      return 'El modelo es obligatorio.';
+    }
+    if (tractorActual.engine_power_hp === '' || Number(tractorActual.engine_power_hp) <= 0) {
+      return 'La potencia del motor debe ser mayor a 0.';
+    }
+    if (!tractorActual.traction_type) {
+      return 'El tipo de tracción es obligatorio.';
+    }
+
+    return null;
+  };
+
+  const guardarTractor = async () => {
+    const errorValidacion = validarFormulario();
+    if (errorValidacion) {
+      window.alert(errorValidacion);
       return;
     }
 
-    if (modoEdicion) {
-      // Actualizar tractor existente
-      const tractoresActualizados = tractores.map(tractor => 
-        tractor.id === tractorActual.id ? tractorActual : tractor
-      );
-      setTractores(tractoresActualizados);
-    } else {
-      // Crear nuevo tractor
-      const nuevoTractor = {
-        ...tractorActual,
-        id: tractores.length > 0 ? Math.max(...tractores.map(t => t.id)) + 1 : 1
-      };
-      setTractores([...tractores, nuevoTractor]);
-    }
+    setGuardando(true);
 
-    // En una aplicación real, aquí se enviarían los datos a la API
-    cerrarModal();
+    try {
+      const payload = obtenerPayload();
+
+      if (modoEdicion) {
+        await updateTractor(tractorActual.tractor_id, payload);
+      } else {
+        await createTractor(payload);
+      }
+
+      cerrarModal();
+      await cargarTabla();
+    } catch (error) {
+      const message = error.message?.includes('401') || error.message?.includes('403')
+        ? 'No autorizado. Necesitas un token válido y rol administrador para guardar cambios.'
+        : error.message || 'No se pudo guardar el tractor.';
+      window.alert(message);
+      setGuardando(false);
+    }
   };
 
   const abrirConfirmacionEliminacion = (tractor) => {
@@ -201,589 +287,455 @@ const TractorCRUD = () => {
   const cerrarConfirmacionEliminacion = () => {
     setModalConfirmacionAbierto(false);
     setTractorAEliminar(null);
+    setEliminando(false);
   };
 
-  const confirmarEliminacionTractor = () => {
-    if (!tractorAEliminar) {
+  const confirmarEliminacionTractor = async () => {
+    if (!tractorAEliminar?.tractor_id) {
       return;
     }
 
-    const tractoresActualizados = tractores.filter(tractor => tractor.id !== tractorAEliminar.id);
-    setTractores(tractoresActualizados);
-    cerrarConfirmacionEliminacion();
-    // En una aplicación real, aquí se enviaría la petición a la API
-  };
+    setEliminando(true);
 
-  const ordenarTractores = (lista) => {
-    const listaOrdenada = [...lista];
-
-    switch (ordenamiento) {
-      case 'nombre_desc':
-        return listaOrdenada.sort((a, b) => b.nombre.localeCompare(a.nombre));
-      case 'anio_desc':
-        return listaOrdenada.sort((a, b) => Number(b.anioFabricacion || 0) - Number(a.anioFabricacion || 0));
-      case 'anio_asc':
-        return listaOrdenada.sort((a, b) => Number(a.anioFabricacion || 0) - Number(b.anioFabricacion || 0));
-      case 'potencia_desc':
-        return listaOrdenada.sort((a, b) => Number(b.potenciaBruta || 0) - Number(a.potenciaBruta || 0));
-      case 'potencia_asc':
-        return listaOrdenada.sort((a, b) => Number(a.potenciaBruta || 0) - Number(b.potenciaBruta || 0));
-      case 'nombre_asc':
-      default:
-        return listaOrdenada.sort((a, b) => a.nombre.localeCompare(b.nombre));
+    try {
+      await deleteTractor(tractorAEliminar.tractor_id);
+      cerrarConfirmacionEliminacion();
+      await cargarTabla();
+    } catch (error) {
+      const message = error.message?.includes('401') || error.message?.includes('403')
+        ? 'No autorizado. Necesitas un token válido y rol administrador para eliminar.'
+        : error.message || 'No se pudo eliminar el tractor.';
+      window.alert(message);
+      setEliminando(false);
     }
   };
 
-  // Función para filtrar tractores
-  const tractoresFiltrados = tractores.filter(tractor => {
-    const coincideBusqueda = 
-      tractor.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      tractor.marca.toLowerCase().includes(busqueda.toLowerCase()) ||
-      tractor.modelo.toLowerCase().includes(busqueda.toLowerCase());
-    
-    const coincideFiltroMarca = filtros.marca ? tractor.marca === filtros.marca : true;
-    const coincideFiltroAnio = filtros.anio ? tractor.anioFabricacion === filtros.anio : true;
-    const coincideFiltroTurbo = filtros.turbo ? tractor.aspiracion === filtros.turbo : true;
+  const alternarOrden = (fieldKey) => {
+    const backendField = ORDER_BY_FIELD[fieldKey] || 'name';
 
-    return coincideBusqueda && coincideFiltroMarca && coincideFiltroAnio && coincideFiltroTurbo;
-  });
+    setOrdenamiento((prev) => {
+      if (prev.sort === backendField) {
+        return {
+          sort: backendField,
+          order: prev.order === 'asc' ? 'desc' : 'asc',
+        };
+      }
 
-  const tractoresOrdenados = ordenarTractores(tractoresFiltrados);
-
-  // Paginación
-  const totalPaginas = Math.max(1, Math.ceil(tractoresOrdenados.length / itemsPorPagina));
-  const indiceUltimoItem = paginaActual * itemsPorPagina;
-  const indicePrimerItem = indiceUltimoItem - itemsPorPagina;
-  const itemsActuales = tractoresOrdenados.slice(indicePrimerItem, indiceUltimoItem);
-
-  const cambiarPagina = (numeroPagina) => {
-    if (numeroPagina < 1 || numeroPagina > totalPaginas) {
-      return;
-    }
-    setPaginaActual(numeroPagina);
+      return {
+        sort: backendField,
+        order: 'asc',
+      };
+    });
   };
 
-  // Opciones para selectores
-  const marcasUnicas = [...new Set(tractores.map(t => t.marca))];
-  const aniosUnicos = [...new Set(tractores.map(t => t.anioFabricacion))];
+  const renderIndicadorOrden = (fieldKey) => {
+    const backendField = ORDER_BY_FIELD[fieldKey] || 'name';
+    if (ordenamiento.sort !== backendField) {
+      return <ArrowDownAZ className="ml-2" data-icon="inline-end" />;
+    }
+
+    return ordenamiento.order === 'asc' ? (
+      <ArrowDownAZ className="ml-2" data-icon="inline-end" />
+    ) : (
+      <ArrowUpAZ className="ml-2" data-icon="inline-end" />
+    );
+  };
+
+  const hayFiltrosActivos = Boolean(
+    busqueda.trim() || filtros.brand || filtros.minPower || filtros.maxPower
+  );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-red-800 mb-4 md:mb-0">Gestión de Tractores</h1>
-        
-        <Button
-          variant="primary"
-          color="#991b1b"
-          onClick={() => abrirModal()}
-          className="flex items-center"
-        >
-          <PlusIcon size="small" /> <span className="ml-2">Agregar Tractor</span>
+    <section className="container mx-auto px-4 py-8">
+      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Gestión de Tractores</h1>
+          <p className="text-sm text-muted-foreground">
+            {remoteApiEnabled
+              ? 'Modo API remota: paginación, filtros y ordenamiento server-side.'
+              : 'Modo local/mock: listo para frontend en Vercel mientras el VPS está en progreso.'}
+          </p>
+        </div>
+
+        <Button onClick={() => abrirModal()}>
+          <Plus data-icon="inline-start" />
+          Añadir Tractor
         </Button>
       </div>
 
-      {/* Barra de búsqueda y filtros */}
-      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <SearchIcon size="small" className="text-gray-400" />
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Búsqueda y filtros</CardTitle>
+          <CardDescription>
+            Filtra por marca y rango de potencia.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 lg:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute top-2 left-2.5 size-4 text-muted-foreground" />
+              <Input
+                className="pl-8"
+                placeholder="Buscar por nombre o marca"
+                value={busqueda}
+                onChange={(event) => setBusqueda(event.target.value)}
+              />
             </div>
-            <input
-              type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-800 focus:border-red-800"
-              placeholder="Buscar por nombre, marca o modelo..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-            />
-          </div>
-          <div className="w-full md:w-64">
-            <select
-              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800"
-              value={ordenamiento}
-              onChange={(e) => setOrdenamiento(e.target.value)}
-            >
-              <option value="nombre_asc">Ordenar por nombre (A-Z)</option>
-              <option value="nombre_desc">Ordenar por nombre (Z-A)</option>
-              <option value="anio_desc">Año más reciente</option>
-              <option value="anio_asc">Año más antiguo</option>
-              <option value="potencia_desc">Mayor potencia</option>
-              <option value="potencia_asc">Menor potencia</option>
-            </select>
-          </div>
-          <Button
-            variant="outline"
-            color="#6B7280"
-            onClick={() => setMostrarFiltros(!mostrarFiltros)}
-            className="flex items-center"
-          >
-            <FilterIcon size="small" className="mr-2" /> Filtros
-          </Button>
-        </div>
 
-        {/* Panel de filtros desplegable */}
-        {mostrarFiltros && (
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Marca</label>
-              <select
-                className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800"
-                value={filtros.marca}
-                onChange={(e) => setFiltros({...filtros, marca: e.target.value})}
-              >
-                <option value="">Todas las marcas</option>
-                {marcasUnicas.map((marca, index) => (
-                  <option key={index} value={marca}>{marca}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Año de fabricación</label>
-              <select
-                className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800"
-                value={filtros.anio}
-                onChange={(e) => setFiltros({...filtros, anio: e.target.value})}
-              >
-                <option value="">Todos los años</option>
-                {aniosUnicos.map((anio, index) => (
-                  <option key={index} value={anio}>{anio}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Aspiración</label>
-              <select
-                className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-red-800 focus:border-red-800"
-                value={filtros.turbo}
-                onChange={(e) => setFiltros({...filtros, turbo: e.target.value})}
-              >
-                <option value="">Todas</option>
-                <option value="Turboalimentado">Turboalimentado</option>
-                <option value="Atmosférico">Atmosférico</option>
-              </select>
-            </div>
+            <Button variant="outline" onClick={() => setMostrarFiltros((prev) => !prev)}>
+              <Filter data-icon="inline-start" />
+              {mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros'}
+            </Button>
           </div>
-        )}
-      </div>
 
-      {/* Tabla de tractores */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-        <div className="overflow-x-auto">
+          {mostrarFiltros && (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-foreground">Marca</label>
+                <Input
+                  placeholder="Ej: John Deere"
+                  value={filtros.brand}
+                  onChange={(event) =>
+                    setFiltros((prev) => ({ ...prev, brand: event.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-foreground">Potencia mínima (HP)</label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={filtros.minPower}
+                  onChange={(event) =>
+                    setFiltros((prev) => ({ ...prev, minPower: event.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-foreground">Potencia máxima (HP)</label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={filtros.maxPower}
+                  onChange={(event) =>
+                    setFiltros((prev) => ({ ...prev, maxPower: event.target.value }))
+                  }
+                />
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
           {cargando ? (
-            <div className="px-6 py-10 text-center text-sm text-gray-500">
-              Cargando tractores...
+            <div className="py-10 text-center text-sm text-muted-foreground">
+              Cargando tractores desde backend...
             </div>
           ) : errorCarga ? (
-            <div className="px-6 py-10 text-center text-sm text-red-700">
-              {errorCarga}
-            </div>
+            <div className="py-10 text-center text-sm text-destructive">{errorCarga}</div>
           ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nombre
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Marca / Modelo
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Año
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Potencia
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Aspiración
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ficha
-                </th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {itemsActuales.length > 0 ? (
-                itemsActuales.map((tractor) => (
-                  <tr key={tractor.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{tractor.nombre}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{tractor.marca}</div>
-                      <div className="text-sm text-gray-500">{tractor.modelo}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {tractor.anioFabricacion}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{tractor.potenciaBruta} HP</div>
-                      <div className="text-sm text-gray-500">TDF: {tractor.potenciaTDF} HP</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        tractor.aspiracion === 'Turboalimentado' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {tractor.aspiracion}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {tractor.fichaTecnica && (
-                        <Button
-                          href={tractor.fichaTecnica}
-                          variant="text"
-                          color="#991b1b"
-                          className="flex items-center"
-                          textColor="#991b1b"
-                        >
-                          <FileIcon size="small" className="mr-1" /> 
-                          <ExternalLinkIcon size="small" className="ml-1 text-xs" />
-                        </Button>
-                      )}
-                    </td>
-                    <td className="px-1 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="text"
-                          color="#2563EB"
-                          onClick={() => abrirModal(tractor)}
-                          title="Editar"
-                        >
-                          <EditIcon size="small" />
-                        </Button>
-                        <Button
-                          variant="text"
-                          color="#DC2626"
-                          onClick={() => abrirConfirmacionEliminacion(tractor)}
-                          title="Eliminar"
-                        >
-                          <DeleteIcon size="small" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">
-                    {tractores.length === 0 ? (
-                      <div className="space-y-3">
-                        <p>No hay tractores registrados.</p>
-                        <Button
-                          variant="primary"
-                          color="#991b1b"
-                          onClick={() => abrirModal()}
-                          className="inline-flex items-center"
-                        >
-                          <PlusIcon size="small" /> <span className="ml-2">Añadir Tractor</span>
-                        </Button>
-                      </div>
-                    ) : (
-                      'No se encontraron tractores con los criterios seleccionados'
-                    )}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          )}
-        </div>
-      </div>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>
+                      <Button variant="ghost" size="sm" onClick={() => alternarOrden('name')}>
+                        Nombre
+                        {renderIndicadorOrden('name')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>Marca / Modelo</TableHead>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => alternarOrden('engine_power_hp')}
+                      >
+                        Potencia
+                        {renderIndicadorOrden('engine_power_hp')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>Tracción</TableHead>
+                    <TableHead>
+                      <Button variant="ghost" size="sm" onClick={() => alternarOrden('status')}>
+                        Estado
+                        {renderIndicadorOrden('status')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>Peso</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tractores.length > 0 ? (
+                    tractores.map((tractor) => (
+                      <TableRow key={tractor.tractor_id}>
+                        <TableCell className="font-medium">{tractor.name}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span>{tractor.brand}</span>
+                            <span className="text-xs text-muted-foreground">{tractor.model}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center gap-1">
+                            <Gauge className="size-4" />
+                            {tractor.engine_power_hp} HP
+                          </span>
+                        </TableCell>
+                        <TableCell>{tractor.traction_type || '-'}</TableCell>
+                        <TableCell>
+                          <Badge variant={tractor.status === 'available' ? 'default' : 'secondary'}>
+                            {tractor.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {tractor.weight_kg ? `${tractor.weight_kg} kg` : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon-sm"
+                              onClick={() => abrirModal(tractor)}
+                              aria-label={`Editar ${tractor.name}`}
+                            >
+                              <Pencil />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="icon-sm"
+                              onClick={() => abrirConfirmacionEliminacion(tractor)}
+                              aria-label={`Eliminar ${tractor.name}`}
+                            >
+                              <Trash2 />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} className="py-10 text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <p className="text-muted-foreground">
+                            {hayFiltrosActivos
+                              ? 'No hay resultados para los filtros aplicados.'
+                              : 'No hay tractores registrados.'}
+                          </p>
+                          {hayFiltrosActivos ? (
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setBusqueda('');
+                                setFiltros({ brand: '', minPower: '', maxPower: '' });
+                              }}
+                            >
+                              Limpiar filtros
+                            </Button>
+                          ) : (
+                            <Button onClick={() => abrirModal()}>
+                              <Plus data-icon="inline-start" />
+                              Añadir Tractor
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
 
-      {/* Paginación */}
+              <div className="mt-4 flex flex-col items-center justify-between gap-2 text-sm text-muted-foreground sm:flex-row">
+                <span>
+                  Mostrando {tractores.length} de {totalItems} tractores
+                </span>
+                <span>Orden: {ordenamiento.sort} ({ordenamiento.order})</span>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       <Pagination
         paginaActual={paginaActual}
         totalPaginas={totalPaginas}
-        onCambiarPagina={cambiarPagina}
+        onCambiarPagina={setPaginaActual}
       />
 
-      {/* Modal para crear/editar tractor */}
-      {modalAbierto && (
-        <div className="fixed inset-0 overflow-y-auto z-50">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+      <Dialog open={modalAbierto} onOpenChange={setModalAbierto}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{modoEdicion ? 'Editar Tractor' : 'Añadir Tractor'}</DialogTitle>
+            <DialogDescription>
+              Formulario alineado al modelo tractor para transición sin fricción a API remota.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Nombre *</label>
+                <Input name="name" value={tractorActual.name} onChange={manejarCambio} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Marca *</label>
+                <Input name="brand" value={tractorActual.brand} onChange={manejarCambio} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Modelo *</label>
+                <Input name="model" value={tractorActual.model} onChange={manejarCambio} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Potencia del motor (HP) *</label>
+                <Input
+                  type="number"
+                  min="0"
+                  name="engine_power_hp"
+                  value={tractorActual.engine_power_hp}
+                  onChange={manejarCambio}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Peso (kg)</label>
+                <Input
+                  type="number"
+                  min="0"
+                  name="weight_kg"
+                  value={tractorActual.weight_kg}
+                  onChange={manejarCambio}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Fuerza de tracción (kN)</label>
+                <Input
+                  type="number"
+                  min="0"
+                  name="traction_force_kn"
+                  value={tractorActual.traction_force_kn}
+                  onChange={manejarCambio}
+                />
+              </div>
             </div>
 
-            {/* Modal content */}
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                      {modoEdicion ? 'Editar Tractor' : 'Añadir Tractor'}
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Columna izquierda */}
-                      <div>
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Nombre*
-                          </label>
-                          <input
-                            type="text"
-                            name="nombre"
-                            value={tractorActual.nombre}
-                            onChange={manejarCambio}
-                            className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            required
-                          />
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Marca*
-                          </label>
-                          <input
-                            type="text"
-                            name="marca"
-                            value={tractorActual.marca}
-                            onChange={manejarCambio}
-                            className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            required
-                          />
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Modelo*
-                          </label>
-                          <input
-                            type="text"
-                            name="modelo"
-                            value={tractorActual.modelo}
-                            onChange={manejarCambio}
-                            className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            required
-                          />
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Año de fabricación
-                          </label>
-                          <input
-                            type="number"
-                            name="anioFabricacion"
-                            value={tractorActual.anioFabricacion}
-                            onChange={manejarCambio}
-                            className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                          />
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Potencia bruta (HP)
-                          </label>
-                          <input
-                            type="number"
-                            name="potenciaBruta"
-                            value={tractorActual.potenciaBruta}
-                            onChange={manejarCambio}
-                            className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                          />
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Potencia TDF (HP)
-                          </label>
-                          <input
-                            type="number"
-                            name="potenciaTDF"
-                            value={tractorActual.potenciaTDF}
-                            onChange={manejarCambio}
-                            className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Columna derecha */}
-                      <div>
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Aspiración
-                          </label>
-                          <select
-                            name="aspiracion"
-                            value={tractorActual.aspiracion}
-                            onChange={manejarCambio}
-                            className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                          >
-                            <option value="Atmosférico">Atmosférico</option>
-                            <option value="Turboalimentado">Turboalimentado</option>
-                          </select>
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Longitud (mm)
-                          </label>
-                          <input
-                            type="number"
-                            name="longitud"
-                            value={tractorActual.longitud}
-                            onChange={manejarCambio}
-                            className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                          />
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Anchura (mm)
-                          </label>
-                          <input
-                            type="number"
-                            name="anchura"
-                            value={tractorActual.anchura}
-                            onChange={manejarCambio}
-                            className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                          />
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Altura (mm)
-                          </label>
-                          <input
-                            type="number"
-                            name="altura"
-                            value={tractorActual.altura}
-                            onChange={manejarCambio}
-                            className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                          />
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Peso (kg)
-                          </label>
-                          <input
-                            type="number"
-                            name="peso"
-                            value={tractorActual.peso}
-                            onChange={manejarCambio}
-                            className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                          />
-                        </div>
-                        
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Ficha Técnica
-                          </label>
-                          <div className="flex items-center">
-                            <input
-                              type="file"
-                              accept=".pdf,.doc,.docx"
-                              onChange={manejarCambioArchivo}
-                              className="hidden"
-                              id="fichaTecnica"
-                            />
-                            <input
-                              type="text"
-                              name="fichaTecnica"
-                              value={tractorActual.fichaTecnica}
-                              onChange={manejarCambio}
-                              placeholder="URL o ruta del archivo"
-                              className="mt-1 focus:ring-red-800 focus:border-red-800 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            />
-                            <label
-                              htmlFor="fichaTecnica"
-                              className="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-800"
-                            >
-                              <FileIcon size="small" className="mr-2" />
-                              Subir
-                            </label>
-                          </div>
-                          {archivo && (
-                            <p className="mt-1 text-sm text-gray-500">
-                              Archivo seleccionado: {archivo.name}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Tipo de tracción *</label>
+                <Select
+                  value={tractorActual.traction_type}
+                  onValueChange={(value) =>
+                    setTractorActual((prev) => ({ ...prev, traction_type: value }))
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona tracción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="4x2">4x2</SelectItem>
+                      <SelectItem value="4x4">4x4</SelectItem>
+                      <SelectItem value="track">track</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <Button
-                  variant="primary"
-                  color="#991b1b"
-                  onClick={guardarTractor}
-                  className="w-full sm:w-auto sm:ml-3"
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Estado</label>
+                <Select
+                  value={tractorActual.status}
+                  onValueChange={(value) =>
+                    setTractorActual((prev) => ({ ...prev, status: value }))
+                  }
                 >
-                  {modoEdicion ? 'Actualizar Tractor' : 'Crear Tractor'}
-                </Button>
-                <Button
-                  variant="outline"
-                  color="#6B7280"
-                  onClick={cerrarModal}
-                  className="mt-3 w-full sm:mt-0 sm:ml-3 sm:w-auto"
-                >
-                  Cancelar
-                </Button>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="available">available</SelectItem>
+                      <SelectItem value="maintenance">maintenance</SelectItem>
+                      <SelectItem value="inactive">inactive</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Tipo de llanta</label>
+                <Input name="tire_type" value={tractorActual.tire_type} onChange={manejarCambio} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Ancho de llanta (mm)</label>
+                <Input
+                  type="number"
+                  min="0"
+                  name="tire_width_mm"
+                  value={tractorActual.tire_width_mm}
+                  onChange={manejarCambio}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Diámetro de llanta (mm)</label>
+                <Input
+                  type="number"
+                  min="0"
+                  name="tire_diameter_mm"
+                  value={tractorActual.tire_diameter_mm}
+                  onChange={manejarCambio}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Presión de llanta (psi)</label>
+                <Input
+                  type="number"
+                  min="0"
+                  name="tire_pressure_psi"
+                  value={tractorActual.tire_pressure_psi}
+                  onChange={manejarCambio}
+                />
               </div>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Modal de confirmación para eliminar */}
-      {modalConfirmacionAbierto && tractorAEliminar && (
-        <div className="fixed inset-0 overflow-y-auto z-50">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={cerrarModal} disabled={guardando}>
+              Cancelar
+            </Button>
+            <Button onClick={guardarTractor} disabled={guardando}>
+              {guardando
+                ? 'Guardando...'
+                : modoEdicion
+                  ? 'Actualizar Tractor'
+                  : 'Guardar Tractor'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-2">
-                  Confirmar eliminación
-                </h3>
-                <p className="text-sm text-gray-600">
-                  ¿Está seguro de eliminar el tractor <span className="font-semibold">{tractorAEliminar.nombre}</span>?
-                </p>
-              </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <Button
-                  variant="primary"
-                  color="#DC2626"
-                  onClick={confirmarEliminacionTractor}
-                  className="w-full sm:w-auto sm:ml-3"
-                >
-                  Eliminar Tractor
-                </Button>
-                <Button
-                  variant="outline"
-                  color="#6B7280"
-                  onClick={cerrarConfirmacionEliminacion}
-                  className="mt-3 w-full sm:mt-0 sm:w-auto"
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Mensaje de resultados y total */}
-      <div className="mt-4 text-gray-600 text-sm flex flex-col sm:flex-row justify-between items-center">
-        <div>
-          Mostrando {itemsActuales.length} de {tractoresOrdenados.length} tractores
-        </div>
-        <div className="mt-2 sm:mt-0">
-          Total de tractores registrados: {tractores.length}
-        </div>
-      </div>
-    </div>
+      <AlertDialog open={modalConfirmacionAbierto} onOpenChange={setModalConfirmacionAbierto}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tractorAEliminar
+                ? `¿Está seguro de eliminar el tractor ${tractorAEliminar.name}?`
+                : 'Esta acción no se puede deshacer.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cerrarConfirmacionEliminacion} disabled={eliminando}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmarEliminacionTractor} disabled={eliminando}>
+              {eliminando ? 'Eliminando...' : 'Eliminar Tractor'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </section>
   );
 };
 
