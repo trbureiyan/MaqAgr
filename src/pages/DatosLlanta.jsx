@@ -27,33 +27,36 @@ export default function DatosLlanta() {
           <div className="w-full sm:w-1/2 sm:pl-8">
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-gray-700">
+                <label htmlFor="diametro-llanta" className="block text-gray-700">
                   Diámetro de la llanta
                   <TooltipInfo content="Diámetro de la llanta en pulgadas" />
                 </label>
                 <input 
+                  id="diametro-llanta"
                   type="text" 
                   placeholder="Valor en pulgadas" 
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
               <div>
-                <label className="block text-gray-700">
+                <label htmlFor="presion-inflado" className="block text-gray-700">
                   Presión de inflado
                   <TooltipInfo content="Presión de inflado recomendada en PSI" />
                 </label>
                 <input 
+                  id="presion-inflado"
                   type="text" 
                   placeholder="Valor en PSI" 
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
               <div>
-                <label className="block text-gray-700">
+                <label htmlFor="tipo-suelo" className="block text-gray-700">
                   Tipo de suelo
                   <TooltipInfo content="Tipo de terreno donde se utilizará el tractor" />
                 </label>
                 <select 
+                  id="tipo-suelo"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 >
                   <option value="">Seleccione una opción</option>
