@@ -1,26 +1,86 @@
-import React from "react";
+/**
+ * @fileoverview Tarjeta de categoría para la página de Catálogo principal.
+ *
+ * Componente de UI que actúa como enlace de navegación hacia una subcategoría
+ * del catálogo (Tractores o Maquinaria). Toda la tarjeta es clickeable gracias
+ * al wrapper `<Link>` de React Router.
+ *
+ * @module components/ui/cards/TractorCard
+ */
 
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+// ---------------------------------------------------------------------------
+// Componente principal
+// ---------------------------------------------------------------------------
+
+/**
+ * TractorCard — Tarjeta de categoría del catálogo principal.
+ *
+ * Renderiza una tarjeta completamente clickeable que navega a la ruta
+ * especificada en `link`. Muestra una imagen representativa de la categoría,
+ * un título y una descripción breve centrados.
+ *
+ * Diseñada para usarse en grillas de 1 columna (móvil) y 2 columnas (sm+).
+ * El ancho máximo `max-w-sm` evita que la tarjeta se estire demasiado en
+ * pantallas grandes cuando hay pocas columnas.
+ *
+ * @component
+ *
+ * @param {Object} props
+ * @param {string} props.imageSrc    - URL de la imagen representativa de la categoría.
+ * @param {string} props.link        - Ruta interna de React Router al catálogo de la categoría.
+ * @param {string} props.title       - Nombre de la categoría (ej. "Tractores", "Maquinaria").
+ * @param {string} props.description - Descripción breve de la categoría.
+ *
+ * @returns {JSX.Element} Tarjeta-enlace con imagen y texto centrado.
+ *
+ * @example
+ * <TractorCard
+ *   imageSrc={IconTrac}
+ *   link="/CatalogoTractor"
+ *   title="Tractores"
+ *   description="Encuentra implementos agrícolas compatibles con su tractor."
+ * />
+ */
 const TractorCard = ({ imageSrc, link, title, description }) => {
   return (
-    <a href={link} className="block max-w-xs md:max-w-xs lg:max-w-xs mx-auto">
-      <div className="flex flex-col items-center w-full max-w-xs md:max-w-xs lg:max-w-xs h-96 bg-white pb-8 pt-4 shadow-md hover:bg-gray-100 transition duration-300 overflow-hidden">
-        {/* Tractor image */}
-        <div className="mb-6 p-4">
-          <img 
-            src={imageSrc} 
-            alt="Icono de tractor" 
-            className="w-full h-40 object-contain"
+    /* Toda la tarjeta es un enlace de navegación */
+    <Link
+      to={link}
+      className="group block w-full max-w-sm"
+      aria-label={`Ir al catálogo de ${title}`}
+    >
+      <div
+        className="overflow-hidden rounded-lg bg-card shadow-sm
+                   hover:shadow-md
+                   transition-transform duration-200 hover:-translate-y-1"
+      >
+        {/* ── Área de imagen — altura adaptable por breakpoint ── */}
+        <div className="flex items-center justify-center bg-muted/30 p-5 sm:p-6">
+          <img
+            src={imageSrc}
+            alt={`Categoría ${title}`}
+            className="h-36 sm:h-40 w-full object-contain"
+            loading="lazy"
           />
         </div>
-        {/* Text content */}
-        <div className="text-center px-4 py-2">
-          <h2 className="text-xl font-bold mb-2">{title}</h2>
-          <p className="text-center px-4 overflow-hidden">
-            <span className="text-gray-500">{description}</span> 
+
+        {/* ── Bloque de texto centrado ── */}
+        <div className="p-4 sm:p-5 text-center">
+          {/* Título de la categoría */}
+          <h3 className="text-base sm:text-lg font-bold text-[#893d46]">
+            {title}
+          </h3>
+
+          {/* Descripción breve — limitada a ~26 caracteres por línea */}
+          <p className="mx-auto mt-1.5 max-w-[26ch] text-sm leading-relaxed text-muted-foreground">
+            {description}
           </p>
         </div>
       </div>
-    </a>
+    </Link>
   );
 };
 
