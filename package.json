@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "npm run lint:frontend",
+    "lint:frontend": "eslint src --ext js,jsx",
+    "lint:backend": "eslint .backend --ext js,jsx",
+    "lint:all": "eslint . --ext js,jsx",
     "preview": "vite preview"
   },
   "dependencies": {

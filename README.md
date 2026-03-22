@@ -47,7 +47,23 @@ Ejemplo para pruebas con API remota:
 - `npm run dev`
 - `npm run build`
 - `npm run preview`
-- `npm run lint`
+- `npm run lint` (alias de `lint:frontend` para el gate de release frontend)
+- `npm run lint:frontend`
+- `npm run lint:backend`
+- `npm run lint:all`
+
+## Convenciones de naming críticas para despliegue en Vercel/Linux
+
+- Evitar imports por directorio si el archivo real no es exactamente `index.js`.
+- Mantener coincidencia exacta entre el nombre del archivo y el import (mayúsculas/minúsculas).
+- En el módulo auth actual, mientras existan `Index.js` y `UseAuth.js`, los imports deben referenciar exactamente ese casing.
+
+## Performance budget inicial
+
+- JS inicial por ruta principal: objetivo < `250 kB` gzip total combinado.
+- Assets críticos por ruta: objetivo < `500 kB` cuando sea posible.
+- Imagen hero/fondo: revisar y optimizar cualquier asset > `1 MB` antes de producción.
+- No usar video hero autoplay en producción sin lazy loading, poster y justificación explícita.
 
 ## Cambios Recientes
 
