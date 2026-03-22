@@ -55,3 +55,6 @@ temp/
 skills-lock.json
 .agent
 .agents/
+
+# Backend
+.backend/
