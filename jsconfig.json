@@ -1,5 +1,5 @@
-// This is a jsconfig.json file for a JavaScript project. It specifies the compiler options for the project, including the base URL and path aliases for easier imports. The "include" field specifies that all files in the "src" directory should be included in the project.
 {
+  "_comment": "This is a jsconfig.json file for a JavaScript project. It specifies the compiler options for the project, including the base URL and path aliases for easier imports. The 'include' field specifies that all files in the 'src' directory should be included in the project.",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
