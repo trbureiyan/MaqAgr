@@ -1,0 +1,185 @@
+/**
+ * @fileoverview Componente raíz de la aplicación MaqAgr.
+ *
+ * Configura el árbol de proveedores (AuthProvider), el enrutador (BrowserRouter)
+ * y el layout global (Navbar + main + Footer). Las rutas no críticas se cargan
+ * de forma diferida con `React.lazy` + `Suspense` para mejorar el tiempo de
+ * carga inicial (code splitting).
+ *
+ * Estructura del árbol de componentes:
+ * ```
+ * AuthProvider
+ *   └── Router
+ *         └── div.min-h-screen.flex.flex-col
+ *               ├── Navbar
+ *               ├── main.flex-grow
+ *               │     └── Suspense (fallback: PageLoader)
+ *               │           └── Routes
+ *               └── Footer
+ * ```
+ *
+ * Rutas registradas:
+ *  - /                    → Home
+ *  - /Calculadora         → AppCalculadora
+ *  - /TengoTractor        → DatosTractor
+ *  - /DatosLlantas        → DatosLlantas
+ *  - /DatosClimaticos     → DatosClimaticos
+ *  - /Resultados          → Resultados
+ *  - /Login               → Login
+ *  - /Registro            → Register
+ *  - /admin/TractorForm   → TractorForm (protegida)
+ *  - /tractor/:id         → TractorMachineDetail
+ *  - /maquinaria/:id      → TractorMachineDetail
+ *  - /Catalogo            → Catalogo
+ *  - /CatalogoTractor     → CatalogoTractores
+ *  - /CatalogoMaquinas    → CatalogoMaquinas
+ *
+ * @module App
+ */
+
+import { lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Navbar, Footer } from './components/layout';
+import { AuthProvider } from './components/common/auth';
+import Home from './pages/Home';
+
+// ---------------------------------------------------------------------------
+// Lazy imports — code splitting para rutas no críticas
+// ---------------------------------------------------------------------------
+
+/*
+ * Las rutas no críticas se cargan de forma diferida para reducir el bundle
+ * inicial. `Home` se importa de forma estática porque es la ruta más visitada
+ * y debe estar disponible inmediatamente.
+ */
+
+/** Calculadora de compatibilidad tractor-implemento. */
+const AppCalculadora = lazy(() => import('./components/AppCalculadora'));
+
+/** Formulario de datos del tractor para la calculadora. */
+const DatosTractor = lazy(() => import('./pages/DatosTractor'));
+
+/** Formulario de datos de llantas para la calculadora. */
+const DatosLlantas = lazy(() => import('./pages/DatosLlanta'));
+
+/** Formulario de datos climáticos para la calculadora. */
+const DatosClimaticos = lazy(() => import('./pages/DatosClimaticos'));
+
+/** Página de resultados de la calculadora. */
+const Resultados = lazy(() => import('./pages/Resultados'));
+
+/** Página de inicio de sesión. */
+const Login = lazy(() => import('./pages/Login'));
+
+/** Página de registro de usuario. */
+const Register = lazy(() => import('./pages/Register'));
+
+/** Página principal del catálogo (selección de categoría). */
+const Catalogo = lazy(() => import('./pages/Catalogo'));
+
+/** Catálogo de tractores con filtros. */
+const CatalogoTrac = lazy(() => import('./pages/CatalogoTractores'));
+
+/** Catálogo de maquinaria con filtros. */
+const CatalogoMaq = lazy(() => import('./pages/CatalogoMaquinas'));
+
+/** Panel CRUD de administración de tractores (ruta protegida). */
+const TractorForm = lazy(() => import('./pages/TractorForm'));
+
+/** Página de detalle de tractor o máquina agrícola. */
+const TractorMachineDetail = lazy(() => import('./pages/TractorMachineDetail'));
+
+// ---------------------------------------------------------------------------
+// Componente de carga (fallback de Suspense)
+// ---------------------------------------------------------------------------
+
+/**
+ * PageLoader — Indicador de carga para rutas lazy.
+ *
+ * Se muestra mientras React carga el chunk de la ruta solicitada.
+ * Centrado verticalmente en el área de contenido principal.
+ *
+ * @returns {JSX.Element} Spinner de carga centrado.
+ */
+const PageLoader = () => (
+  <div
+    className="flex items-center justify-center min-h-[60vh]"
+    role="status"
+    aria-label="Cargando página"
+  >
+    <div className="w-10 h-10 border-4 border-red-800 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
+
+// ---------------------------------------------------------------------------
+// Componente raíz
+// ---------------------------------------------------------------------------
+
+/**
+ * App — Componente raíz de la aplicación MaqAgr.
+ *
+ * Envuelve toda la aplicación en `AuthProvider` para acceso global al contexto
+ * de autenticación. El layout usa `flex flex-col min-h-screen` para que el
+ * footer siempre quede al final de la pantalla, independientemente del
+ * contenido de la página.
+ *
+ * @component
+ * @returns {JSX.Element} Árbol completo de la aplicación con rutas y layout.
+ */
+function App() {
+  return (
+    /* Proveedor de autenticación — disponible en todo el árbol */
+    <AuthProvider>
+      <Router>
+        {/*
+         * Layout principal:
+         *  - `min-h-screen` garantiza que el footer siempre esté al fondo
+         *  - `flex flex-col` permite que `main` crezca con `flex-grow`
+         */}
+        <div className="min-h-screen flex flex-col">
+
+          {/* Barra de navegación global */}
+          <Navbar />
+
+          {/* Área de contenido principal — crece para empujar el footer */}
+          <main className="flex-grow">
+            {/*
+             * Suspense envuelve todas las rutas lazy.
+             * PageLoader se muestra mientras se descarga el chunk de la ruta.
+             */}
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* ── Rutas públicas ── */}
+                <Route path="/"                  element={<Home />} />
+                <Route path="/Calculadora"       element={<AppCalculadora />} />
+                <Route path="/TengoTractor"      element={<DatosTractor />} />
+                <Route path="/DatosLlantas"      element={<DatosLlantas />} />
+                <Route path="/DatosClimaticos"   element={<DatosClimaticos />} />
+                <Route path="/Resultados"        element={<Resultados />} />
+                <Route path="/Login"             element={<Login />} />
+                <Route path="/Registro"          element={<Register />} />
+
+                {/* ── Catálogo ── */}
+                <Route path="/Catalogo"          element={<Catalogo />} />
+                <Route path="/CatalogoTractor"   element={<CatalogoTrac />} />
+                <Route path="/CatalogoMaquinas"  element={<CatalogoMaq />} />
+
+                {/* ── Detalle de equipo (tractor o máquina) ── */}
+                <Route path="/tractor/:id"       element={<TractorMachineDetail />} />
+                <Route path="/maquinaria/:id"    element={<TractorMachineDetail />} />
+
+                {/* ── Ruta protegida: panel de administración ── */}
+                <Route path="/admin/TractorForm" element={<TractorForm />} />
+              </Routes>
+            </Suspense>
+          </main>
+
+          {/* Pie de página global */}
+          <Footer />
+        </div>
+      </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;
