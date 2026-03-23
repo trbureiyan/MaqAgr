@@ -171,3 +171,13 @@ Este diseño permite iterar sobre el frontend de forma completamente independien
 ---
 
 *Semillero de Investigación **Devurity** — Universidad Surcolombiana.*
+---
+Referencias y Autores
+
+- Backend: BackMaqagr (repositorio de backend) — https://github.com/David9604/BackMaqagr
+- Origen del proyecto MaqAgr: Este repositorio (https://github.com/trbureiyan/MaqAgr) es un fork del proyecto original MaqAgr de https://github.com/David9604/Maqagr.
+- Autores:
+  - [David9604](https://github.com/David9604)
+  - [FlacoAfk](https://github.com/FlacoAfk)
+  - [JercOmg](https://github.com/JercOmg)
+  - [trbureiyan](https://github.com/trbureiyan)
