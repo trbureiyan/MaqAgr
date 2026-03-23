@@ -1,5 +1,5 @@
 import { AuthProvider, AuthContext } from './AuthContext';
-import { useAuth } from './useAuth';
+import { useAuth } from './useAuth.js';
 
 export {
   AuthProvider,
