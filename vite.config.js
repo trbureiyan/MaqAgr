@@ -4,6 +4,8 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Excluir carpetas de herramientas y backend del escaneo de archivos
+  publicDir: 'public',
   plugins: [
     react({
       fastRefresh: true,
@@ -35,6 +37,15 @@ export default defineConfig({
   },
 
   server: {
+    watch: {
+      ignored: [
+        '**/.backend/**',
+        '**/.agents/**',
+        '**/.skills/**',
+        '**/.docs/**',
+        '**/dist/**'
+      ]
+    },
     hmr: {
       timeout: 1000,
     }
