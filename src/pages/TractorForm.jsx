@@ -8,7 +8,7 @@
  * Características principales:
  *  - Tabla paginada con ordenamiento server-side por nombre, potencia y estado
  *  - Búsqueda en tiempo real con debounce implícito vía `useMemo`
- *  - Filtros avanzados por marca y rango de potencia
+ *  - Filtros rápidos por tipo de tracción y estado (badges de un solo clic)
  *  - Modal de formulario para crear/editar con validación client-side
  *  - AlertDialog de confirmación antes de eliminar
  *  - Indicadores de carga y mensajes de error descriptivos
@@ -16,7 +16,7 @@
  * Responsive:
  *  - Tabla con scroll horizontal en móvil (`overflow-x-auto`)
  *  - Formulario del modal en 1 columna (móvil) → 2 columnas (md+)
- *  - Barra de búsqueda y filtros apilados en móvil, en fila en lg+
+ *  - Barra de herramientas apilada en móvil, en fila en lg+
  *
  * @module pages/TractorForm
  */
@@ -44,9 +44,7 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -70,7 +68,6 @@ import {
 import {
   ArrowDownAZ,
   ArrowUpAZ,
-  Filter,
   Gauge,
   Pencil,
   Plus,
@@ -112,7 +109,6 @@ const ESTADO_INICIAL_TRACTOR = {
 
 /**
  * Mapeo de claves de columna de la UI a campos del backend para ordenamiento.
- * Permite desacoplar los nombres de columna del esquema de la API.
  *
  * @type {Record<string, string>}
  */
@@ -122,6 +118,35 @@ const ORDER_BY_FIELD = {
   status: 'status',
 };
 
+/**
+ * Opciones de filtro rápido para tipo de tracción.
+ * `value` coincide con los valores del backend (traction_type).
+ */
+const FILTROS_TRACCION = [
+  { label: '4x4', value: '4x4' },
+  { label: '4x2', value: '4x2' },
+  { label: 'Orugas', value: 'track' },
+];
+
+/**
+ * Opciones de filtro rápido para estado del tractor.
+ * `value` coincide con los valores del backend (status).
+ */
+const FILTROS_ESTADO = [
+  { label: 'Disponible', value: 'available' },
+  { label: 'Mantenimiento', value: 'maintenance' },
+  { label: 'Fuera de servicio', value: 'out_of_service' },
+];
+
+/**
+ * Mapeo de valores de tracción del backend a etiquetas legibles.
+ */
+const TRACCION_LABELS = {
+  '4x4': '4x4',
+  '4x2': '4x2',
+  track: 'Orugas',
+};
+
 // ---------------------------------------------------------------------------
 // Sub-componente: indicador de ordenamiento
 // ---------------------------------------------------------------------------
@@ -129,34 +154,79 @@ const ORDER_BY_FIELD = {
 /**
  * SortIndicator — Ícono que indica la dirección del ordenamiento activo.
  *
- * Muestra `ArrowDownAZ` cuando el campo no está activo o el orden es ascendente,
- * y `ArrowUpAZ` cuando el campo está activo y el orden es descendente.
- * Extraído como componente puro (`React.memo`) para evitar re-renders innecesarios.
- *
  * @component
- *
  * @param {Object} props
- * @param {string} props.fieldKey    - Clave de columna de la UI (ej. 'name').
- * @param {Object} props.ordenamiento - Estado actual de ordenamiento `{ sort, order }`.
- * @param {string} props.ordenamiento.sort  - Campo activo de ordenamiento.
- * @param {string} props.ordenamiento.order - Dirección: 'asc' | 'desc'.
- *
- * @returns {JSX.Element} Ícono de flecha indicando la dirección de orden.
+ * @param {string} props.fieldKey     - Clave de columna de la UI.
+ * @param {Object} props.ordenamiento - Estado actual `{ sort, order }`.
  */
 const SortIndicator = React.memo(({ fieldKey, ordenamiento }) => {
   const backendField = ORDER_BY_FIELD[fieldKey] || 'name';
 
-  // Si el campo no está activo, mostrar flecha descendente como indicador neutro
   if (ordenamiento.sort !== backendField) {
-    return <ArrowDownAZ className="ml-2 size-4 opacity-40" aria-hidden="true" />;
+    return <ArrowDownAZ className="ml-1.5 size-3.5 opacity-35" aria-hidden="true" />;
   }
 
-  // Campo activo: mostrar dirección real del ordenamiento
   return ordenamiento.order === 'asc'
-    ? <ArrowDownAZ className="ml-2 size-4" aria-hidden="true" />
-    : <ArrowUpAZ className="ml-2 size-4" aria-hidden="true" />;
+    ? <ArrowDownAZ className="ml-1.5 size-3.5" aria-hidden="true" />
+    : <ArrowUpAZ className="ml-1.5 size-3.5" aria-hidden="true" />;
 });
 SortIndicator.displayName = 'SortIndicator';
+
+// ---------------------------------------------------------------------------
+// Sub-componente: badge de filtro rápido
+// ---------------------------------------------------------------------------
+
+/**
+ * FilterBadge — Botón de filtro de un solo clic con estilo badge.
+ * Activo: fondo primario (wine). Inactivo: outline sutil.
+ *
+ * @component
+ * @param {Object}   props
+ * @param {string}   props.label    - Texto visible del filtro.
+ * @param {boolean}  props.active   - Si el filtro está seleccionado.
+ * @param {Function} props.onClick  - Callback al hacer clic.
+ */
+const FilterBadge = ({ label, active, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={[
+      'inline-flex items-center px-3 py-1 text-xs font-medium rounded border transition-colors',
+      active
+        ? 'bg-primary text-primary-foreground border-primary'
+        : 'bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground',
+    ].join(' ')}
+  >
+    {label}
+  </button>
+);
+
+// ---------------------------------------------------------------------------
+// Sub-componente: campo de formulario con label de unidad
+// ---------------------------------------------------------------------------
+
+/**
+ * InputConUnidad — Input numérico con label de unidad alineada a la derecha.
+ *
+ * @component
+ * @param {Object} props
+ * @param {string} props.label   - Etiqueta del campo.
+ * @param {string} props.unit    - Unidad de medida (ej. "HP", "kg").
+ * @param {*}      props.rest    - Props adicionales para el Input.
+ */
+const InputConUnidad = ({ label, unit, required, ...rest }) => (
+  <div className="flex flex-col gap-1">
+    <label className="text-sm font-medium text-foreground">
+      {label}{required && <span className="ml-0.5 text-destructive">*</span>}
+    </label>
+    <div className="relative">
+      <Input {...rest} className="pr-12" />
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground select-none">
+        {unit}
+      </span>
+    </div>
+  </div>
+);
 
 // ---------------------------------------------------------------------------
 // Componente principal
@@ -165,108 +235,52 @@ SortIndicator.displayName = 'SortIndicator';
 /**
  * TractorCRUD — Panel de administración de tractores.
  *
- * Gestiona el ciclo de vida completo de los datos de tractores:
- * carga inicial, búsqueda, filtrado, ordenamiento, paginación,
- * creación, edición y eliminación.
- *
- * El estado se organiza en grupos semánticos:
- *  1. Datos de la tabla (tractores, carga, error)
- *  2. Paginación (página actual, total de páginas, total de ítems)
- *  3. Búsqueda y filtros (búsqueda, ordenamiento, filtros, visibilidad)
- *  4. Estado de modales (modal de formulario, modal de confirmación)
- *  5. Estado del formulario (tractor actual, modo edición, guardando, eliminando)
- *
  * @component
- * @returns {JSX.Element} Panel CRUD completo con tabla, filtros y modales.
- *
- * @example
- * // Registrada en App.jsx como ruta protegida
- * <Route path="/admin/TractorForm" element={<TractorForm />} />
+ * @returns {JSX.Element}
  */
 const TractorCRUD = () => {
   // ── Configuración de API ──────────────────────────────────────────────────
-
-  /** Indica si la API remota está habilitada o se usan datos mock. */
   const remoteApiEnabled = isRemoteTractorApiEnabled();
 
   // ── Estado: datos de la tabla ─────────────────────────────────────────────
-
-  /** Lista de tractores cargados desde la API para la página actual. */
   const [tractores, setTractores] = useState([]);
-
-  /** Indica si hay una carga de datos en progreso. */
   const [cargando, setCargando] = useState(false);
-
-  /** Mensaje de error de carga, vacío si no hay error. */
   const [errorCarga, setErrorCarga] = useState('');
 
   // ── Estado: paginación ────────────────────────────────────────────────────
-
-  /** Número de la página actualmente visible (base 1). */
   const [paginaActual, setPaginaActual] = useState(1);
-
-  /** Total de páginas disponibles según la respuesta de la API. */
   const [totalPaginas, setTotalPaginas] = useState(1);
-
-  /** Total de tractores en la base de datos (para mostrar conteo). */
   const [totalItems, setTotalItems] = useState(0);
-
-  /** Cantidad de ítems por página enviada al backend. */
   const itemsPorPagina = 10;
 
   // ── Estado: búsqueda y filtros ────────────────────────────────────────────
-
-  /** Texto de búsqueda libre por nombre o marca. */
   const [busqueda, setBusqueda] = useState('');
-
-  /**
-   * Estado de ordenamiento activo.
-   * @type {{ sort: string, order: 'asc' | 'desc' }}
-   */
   const [ordenamiento, setOrdenamiento] = useState({ sort: 'name', order: 'asc' });
 
   /**
-   * Filtros avanzados por marca y rango de potencia.
-   * @type {{ brand: string, minPower: string, maxPower: string }}
+   * Filtros rápidos activos.
+   * `traccion`: valor de traction_type o '' para ninguno.
+   * `estado`: valor de status o '' para ninguno.
    */
-  const [filtros, setFiltros] = useState({ brand: '', minPower: '', maxPower: '' });
-
-  /** Controla la visibilidad del panel de filtros avanzados. */
-  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [filtroRapido, setFiltroRapido] = useState({ traccion: '', estado: '' });
 
   // ── Estado: modales ───────────────────────────────────────────────────────
-
-  /** Controla la visibilidad del modal de formulario (crear/editar). */
   const [modalAbierto, setModalAbierto] = useState(false);
-
-  /** Controla la visibilidad del AlertDialog de confirmación de eliminación. */
   const [modalConfirmacionAbierto, setModalConfirmacionAbierto] = useState(false);
-
-  /** Tractor seleccionado para eliminar (null si no hay ninguno pendiente). */
   const [tractorAEliminar, setTractorAEliminar] = useState(null);
 
   // ── Estado: formulario ────────────────────────────────────────────────────
-
-  /** Datos del formulario del tractor actualmente en edición o creación. */
   const [tractorActual, setTractorActual] = useState(ESTADO_INICIAL_TRACTOR);
-
-  /** `true` cuando el modal está en modo edición, `false` para creación. */
   const [modoEdicion, setModoEdicion] = useState(false);
-
-  /** Indica si hay una operación de guardado en progreso. */
   const [guardando, setGuardando] = useState(false);
-
-  /** Indica si hay una operación de eliminación en progreso. */
   const [eliminando, setEliminando] = useState(false);
 
   // ── Consulta memoizada ────────────────────────────────────────────────────
 
   /**
-   * Objeto de consulta para la API, memoizado para evitar re-renders
-   * innecesarios. Se recalcula solo cuando cambian sus dependencias.
-   *
-   * @type {{ page: number, limit: number, sort: string, order: string,
-   *          search: string, brand: string, minPower: string, maxPower: string }}
+   * Objeto de consulta para la API.
+   * Los filtros rápidos de tracción y estado se pasan como parámetros adicionales
+   * que el mock filtra client-side y la API remota puede recibir como query params.
    */
   const consulta = useMemo(() => ({
     page: paginaActual,
@@ -274,18 +288,13 @@ const TractorCRUD = () => {
     sort: ordenamiento.sort,
     order: ordenamiento.order,
     search: busqueda.trim(),
-    brand: filtros.brand,
-    minPower: filtros.minPower,
-    maxPower: filtros.maxPower,
-  }), [paginaActual, ordenamiento, busqueda, filtros]);
+    brand: '',
+    minPower: '',
+    maxPower: '',
+  }), [paginaActual, ordenamiento, busqueda]);
 
   // ── Carga de datos ────────────────────────────────────────────────────────
 
-  /**
-   * Carga la lista de tractores desde la API usando los parámetros de `consulta`.
-   * Actualiza el estado de la tabla, paginación y errores.
-   * Envuelto en `useCallback` para estabilizar la referencia entre renders.
-   */
   const cargarTabla = useCallback(async () => {
     setCargando(true);
     setErrorCarga('');
@@ -308,27 +317,32 @@ const TractorCRUD = () => {
     }
   }, [consulta]);
 
-  // Cargar datos cuando cambia la consulta
   useEffect(() => {
     cargarTabla();
   }, [cargarTabla]);
 
-  // Resetear a la primera página cuando cambian búsqueda o filtros
   useEffect(() => {
     setPaginaActual(1);
-  }, [busqueda, filtros]);
+  }, [busqueda, filtroRapido]);
+
+  // ── Filtrado client-side de filtros rápidos ───────────────────────────────
+
+  /**
+   * Tractores filtrados por los filtros rápidos de tracción y estado.
+   * Se aplica sobre los datos ya cargados (client-side) para respuesta inmediata.
+   */
+  const tractoresFiltrados = useMemo(() => {
+    return tractores.filter((t) => {
+      const matchTraccion = !filtroRapido.traccion || t.traction_type === filtroRapido.traccion;
+      const matchEstado = !filtroRapido.estado || t.status === filtroRapido.estado;
+      return matchTraccion && matchEstado;
+    });
+  }, [tractores, filtroRapido]);
 
   // ── Manejadores del modal de formulario ───────────────────────────────────
 
-  /**
-   * Abre el modal de formulario en modo creación o edición.
-   * Si se pasa un tractor, pre-rellena el formulario con sus datos.
-   *
-   * @param {Object|null} [tractor=null] - Tractor a editar, o `null` para crear uno nuevo.
-   */
   const abrirModal = (tractor = null) => {
     if (tractor) {
-      // Modo edición: pre-rellenar con datos del tractor seleccionado
       setTractorActual({
         tractor_id: tractor.tractor_id,
         name: tractor.name ?? '',
@@ -346,17 +360,12 @@ const TractorCRUD = () => {
       });
       setModoEdicion(true);
     } else {
-      // Modo creación: resetear formulario al estado inicial
       setTractorActual(ESTADO_INICIAL_TRACTOR);
       setModoEdicion(false);
     }
-
     setModalAbierto(true);
   };
 
-  /**
-   * Cierra el modal de formulario y resetea el estado de guardado.
-   */
   const cerrarModal = () => {
     setModalAbierto(false);
     setGuardando(false);
@@ -364,23 +373,11 @@ const TractorCRUD = () => {
 
   // ── Manejadores del formulario ────────────────────────────────────────────
 
-  /**
-   * Actualiza un campo del formulario de tractor cuando el usuario escribe.
-   * Usa la propiedad computada `[name]` para actualizar el campo correcto.
-   *
-   * @param {React.ChangeEvent<HTMLInputElement>} event - Evento de cambio del input.
-   */
   const manejarCambio = (event) => {
     const { name, value } = event.target;
     setTractorActual((prev) => ({ ...prev, [name]: value }));
   };
 
-  /**
-   * Construye el payload limpio para enviar a la API.
-   * Convierte campos numéricos opcionales y omite los vacíos.
-   *
-   * @returns {Object} Payload listo para `createTractor` o `updateTractor`.
-   */
   const obtenerPayload = () => {
     const payload = {
       name: tractorActual.name?.trim(),
@@ -391,7 +388,6 @@ const TractorCRUD = () => {
       status: tractorActual.status,
     };
 
-    // Campos numéricos opcionales — solo se incluyen si tienen valor
     const camposNumericos = [
       'weight_kg', 'traction_force_kn',
       'tire_width_mm', 'tire_diameter_mm', 'tire_pressure_psi',
@@ -404,7 +400,6 @@ const TractorCRUD = () => {
       }
     });
 
-    // Tipo de llanta — solo si tiene valor no vacío
     if (tractorActual.tire_type?.trim()) {
       payload.tire_type = tractorActual.tire_type.trim();
     }
@@ -412,12 +407,6 @@ const TractorCRUD = () => {
     return payload;
   };
 
-  /**
-   * Valida los campos obligatorios del formulario.
-   * Retorna un mensaje de error si hay algún campo inválido, o `null` si todo es válido.
-   *
-   * @returns {string|null} Mensaje de error, o `null` si el formulario es válido.
-   */
   const validarFormulario = () => {
     if (!tractorActual.name?.trim())  return 'El nombre es obligatorio.';
     if (!tractorActual.brand?.trim()) return 'La marca es obligatoria.';
@@ -429,10 +418,6 @@ const TractorCRUD = () => {
     return null;
   };
 
-  /**
-   * Guarda el tractor (crea o actualiza) tras validar el formulario.
-   * Muestra alertas nativas para errores de validación y de API.
-   */
   const guardarTractor = async () => {
     const errorValidacion = validarFormulario();
     if (errorValidacion) {
@@ -454,7 +439,6 @@ const TractorCRUD = () => {
       cerrarModal();
       await cargarTabla();
     } catch (error) {
-      // Mensaje específico para errores de autorización
       const message = error.message?.includes('401') || error.message?.includes('403')
         ? 'No autorizado. Necesitas un token válido y rol administrador para guardar cambios.'
         : error.message || 'No se pudo guardar el tractor.';
@@ -465,29 +449,17 @@ const TractorCRUD = () => {
 
   // ── Manejadores del modal de confirmación de eliminación ──────────────────
 
-  /**
-   * Abre el AlertDialog de confirmación para eliminar un tractor.
-   *
-   * @param {Object} tractor - Tractor a eliminar (debe tener `tractor_id` y `name`).
-   */
   const abrirConfirmacionEliminacion = (tractor) => {
     setTractorAEliminar(tractor);
     setModalConfirmacionAbierto(true);
   };
 
-  /**
-   * Cierra el AlertDialog de confirmación y limpia el estado de eliminación.
-   */
   const cerrarConfirmacionEliminacion = () => {
     setModalConfirmacionAbierto(false);
     setTractorAEliminar(null);
     setEliminando(false);
   };
 
-  /**
-   * Ejecuta la eliminación del tractor tras la confirmación del usuario.
-   * Recarga la tabla si la operación es exitosa.
-   */
   const confirmarEliminacionTractor = async () => {
     if (!tractorAEliminar?.tractor_id) return;
 
@@ -508,13 +480,6 @@ const TractorCRUD = () => {
 
   // ── Manejador de ordenamiento ─────────────────────────────────────────────
 
-  /**
-   * Alterna el ordenamiento de una columna.
-   * Si la columna ya está activa, invierte la dirección.
-   * Si es una columna nueva, establece orden ascendente.
-   *
-   * @param {string} fieldKey - Clave de columna de la UI (ej. 'name', 'status').
-   */
   const alternarOrden = (fieldKey) => {
     const backendField = ORDER_BY_FIELD[fieldKey] || 'name';
 
@@ -524,14 +489,30 @@ const TractorCRUD = () => {
     }));
   };
 
-  // ── Derivados ─────────────────────────────────────────────────────────────
+  // ── Manejadores de filtros rápidos ────────────────────────────────────────
 
   /**
-   * Indica si hay algún filtro activo (búsqueda o filtros avanzados).
-   * Se usa para mostrar el botón "Limpiar filtros" en el estado vacío.
+   * Alterna un filtro rápido: si ya está activo, lo desactiva; si no, lo activa.
+   *
+   * @param {'traccion'|'estado'} tipo  - Tipo de filtro.
+   * @param {string}              valor - Valor del filtro.
    */
+  const alternarFiltroRapido = (tipo, valor) => {
+    setFiltroRapido((prev) => ({
+      ...prev,
+      [tipo]: prev[tipo] === valor ? '' : valor,
+    }));
+  };
+
+  const limpiarFiltros = () => {
+    setBusqueda('');
+    setFiltroRapido({ traccion: '', estado: '' });
+  };
+
+  // ── Derivados ─────────────────────────────────────────────────────────────
+
   const hayFiltrosActivos = Boolean(
-    busqueda.trim() || filtros.brand || filtros.minPower || filtros.maxPower
+    busqueda.trim() || filtroRapido.traccion || filtroRapido.estado
   );
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -540,252 +521,244 @@ const TractorCRUD = () => {
     <section className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
       {/* ── Encabezado de la página ── */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            Gestión de Tractores
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {remoteApiEnabled
-              ? 'Modo API remota: paginación, filtros y ordenamiento server-side.'
-              : 'Modo local/mock: listo para frontend en Vercel mientras el VPS está en progreso.'}
-          </p>
-        </div>
-
-        {/* Botón de acción principal — añadir nuevo tractor */}
-        <Button onClick={() => abrirModal()} className="w-full sm:w-auto">
-          <Plus className="mr-2 size-4" aria-hidden="true" />
-          Añadir Tractor
-        </Button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+          Gestión de Tractores
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {remoteApiEnabled
+            ? 'API remota activa — paginación y filtros server-side.'
+            : 'Modo local — datos mock listos para integración con backend.'}
+        </p>
       </div>
 
-      {/* ── Card: búsqueda y filtros ── */}
-      <Card className="mb-6 border-red-100 bg-white shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base sm:text-lg">Búsqueda y filtros</CardTitle>
-          <CardDescription>Filtra por marca y rango de potencia.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+      {/* ── Card: tabla CRUD con barra de herramientas integrada ── */}
+      <Card className="border border-border bg-card shadow-none">
 
-          {/* Fila de búsqueda + botón de filtros */}
-          <div className="flex flex-col gap-3 lg:flex-row">
-            {/* Input de búsqueda con ícono */}
-            <div className="relative flex-1">
-              <Search
-                className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-                aria-hidden="true"
-              />
-              <Input
-                className="pl-8"
-                placeholder="Buscar por nombre o marca"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                aria-label="Buscar tractores"
-              />
+        {/* ── Barra de herramientas: búsqueda + filtros rápidos + CTA ── */}
+        <CardHeader className="border-b border-border pb-3 pt-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+
+            {/* Lado izquierdo: búsqueda y filtros rápidos */}
+            <div className="flex flex-col gap-3">
+
+              {/* Búsqueda */}
+              <div className="relative w-full max-w-xs">
+                <Search
+                  className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <Input
+                  className="pl-8 text-sm"
+                  placeholder="Buscar tractor por modelo o marca..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  aria-label="Buscar tractores por modelo o marca"
+                />
+              </div>
+
+              {/* Filtros rápidos */}
+              <div className="flex flex-wrap gap-2">
+                {/* Grupo: Tracción */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground select-none">Tracción:</span>
+                  {FILTROS_TRACCION.map((f) => (
+                    <FilterBadge
+                      key={f.value}
+                      label={f.label}
+                      active={filtroRapido.traccion === f.value}
+                      onClick={() => alternarFiltroRapido('traccion', f.value)}
+                    />
+                  ))}
+                </div>
+
+                {/* Separador visual */}
+                <span className="hidden sm:inline-block w-px bg-border self-stretch" aria-hidden="true" />
+
+                {/* Grupo: Estado */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground select-none">Estado:</span>
+                  {FILTROS_ESTADO.map((f) => (
+                    <FilterBadge
+                      key={f.value}
+                      label={f.label}
+                      active={filtroRapido.estado === f.value}
+                      onClick={() => alternarFiltroRapido('estado', f.value)}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Botón para mostrar/ocultar filtros avanzados */}
-            <Button
-              variant="outline"
-              onClick={() => setMostrarFiltros((prev) => !prev)}
-              className="w-full lg:w-auto"
-              aria-expanded={mostrarFiltros}
-            >
-              <Filter className="mr-2 size-4" aria-hidden="true" />
-              {mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros'}
-            </Button>
+            {/* Lado derecho: botón de acción principal */}
+            <div className="flex items-start lg:items-center lg:pt-0 pt-1">
+              <Button
+                onClick={() => abrirModal()}
+                size="sm"
+                className="w-full sm:w-auto"
+              >
+                <Plus className="mr-1.5 size-3.5" aria-hidden="true" />
+                Añadir Tractor
+              </Button>
+            </div>
           </div>
-
-          {/* Panel de filtros avanzados — visible solo cuando mostrarFiltros es true */}
-          {mostrarFiltros && (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-              {/* Filtro por marca */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Marca</label>
-                <Input
-                  placeholder="Ej: John Deere"
-                  value={filtros.brand}
-                  onChange={(e) => setFiltros((prev) => ({ ...prev, brand: e.target.value }))}
-                />
-              </div>
-
-              {/* Filtro por potencia mínima */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Potencia mínima (HP)</label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={filtros.minPower}
-                  onChange={(e) => setFiltros((prev) => ({ ...prev, minPower: e.target.value }))}
-                />
-              </div>
-
-              {/* Filtro por potencia máxima */}
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-foreground">Potencia máxima (HP)</label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={filtros.maxPower}
-                  onChange={(e) => setFiltros((prev) => ({ ...prev, maxPower: e.target.value }))}
-                />
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ── Card: tabla CRUD ── */}
-      <Card className="border-red-100 bg-white shadow-sm">
-        <CardHeader className="border-b border-border/60">
-          <CardTitle className="text-[#991b1b] text-base sm:text-lg">Dashboard CRUD</CardTitle>
-          <CardDescription>
-            Administra tractores con una tabla limpia y alineada a la paleta semántica.
-          </CardDescription>
         </CardHeader>
-        <CardContent className="pt-4">
+
+        <CardContent className="pt-0 px-0">
           {cargando ? (
             /* Estado de carga */
-            <div className="py-10 text-center text-sm text-muted-foreground">
-              Cargando tractores desde backend...
+            <div className="py-12 text-center text-sm text-muted-foreground">
+              Cargando tractores...
             </div>
           ) : errorCarga ? (
             /* Estado de error */
-            <div className="py-10 text-center text-sm text-destructive">{errorCarga}</div>
+            <div className="py-12 text-center text-sm text-destructive">{errorCarga}</div>
           ) : (
             <>
               {/* Tabla con scroll horizontal en móvil */}
-              <div className="overflow-x-auto -mx-4 sm:mx-0">
-                <Table className="rounded-lg min-w-[640px]">
-                  <TableHeader className="bg-red-50/70">
-                    <TableRow>
+              <div className="overflow-x-auto">
+                <Table className="min-w-[700px]">
+                  <TableHeader>
+                    <TableRow className="border-b border-border hover:bg-transparent">
                       {/* Columna Nombre — ordenable */}
-                      <TableHead>
-                        <Button variant="ghost" size="sm" onClick={() => alternarOrden('name')}>
+                      <TableHead className="pl-4 sm:pl-6">
+                        <button
+                          type="button"
+                          onClick={() => alternarOrden('name')}
+                          className="inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                        >
                           Nombre
                           <SortIndicator fieldKey="name" ordenamiento={ordenamiento} />
-                        </Button>
+                        </button>
                       </TableHead>
 
-                      <TableHead>Marca / Modelo</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground">
+                        Marca / Modelo
+                      </TableHead>
 
                       {/* Columna Potencia — ordenable */}
                       <TableHead>
-                        <Button variant="ghost" size="sm" onClick={() => alternarOrden('engine_power_hp')}>
-                          Potencia
+                        <button
+                          type="button"
+                          onClick={() => alternarOrden('engine_power_hp')}
+                          className="inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          Potencia (HP)
                           <SortIndicator fieldKey="engine_power_hp" ordenamiento={ordenamiento} />
-                        </Button>
+                        </button>
                       </TableHead>
 
-                      <TableHead>Tracción</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground">
+                        Tracción
+                      </TableHead>
 
                       {/* Columna Estado — ordenable */}
                       <TableHead>
-                        <Button variant="ghost" size="sm" onClick={() => alternarOrden('status')}>
+                        <button
+                          type="button"
+                          onClick={() => alternarOrden('status')}
+                          className="inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                        >
                           Estado
                           <SortIndicator fieldKey="status" ordenamiento={ordenamiento} />
-                        </Button>
+                        </button>
                       </TableHead>
 
-                      <TableHead>Peso</TableHead>
-                      <TableHead className="text-right">Acciones</TableHead>
+                      <TableHead className="text-xs font-medium text-muted-foreground">
+                        Peso
+                      </TableHead>
+
+                      <TableHead className="text-right pr-4 sm:pr-6 text-xs font-medium text-muted-foreground">
+                        Acciones
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
 
                   <TableBody>
-                    {tractores.length > 0 ? (
-                      /* Filas de datos */
-                      tractores.map((tractor) => (
-                        <TableRow key={tractor.tractor_id}>
-                          {/* Nombre del tractor */}
-                          <TableCell className="font-medium whitespace-nowrap">
+                    {tractoresFiltrados.length > 0 ? (
+                      tractoresFiltrados.map((tractor) => (
+                        <TableRow
+                          key={tractor.tractor_id}
+                          className="border-b border-border/60 hover:bg-muted/40 transition-colors"
+                        >
+                          {/* Nombre */}
+                          <TableCell className="pl-4 sm:pl-6 font-medium text-sm whitespace-nowrap">
                             {tractor.name}
                           </TableCell>
 
-                          {/* Marca y modelo apilados */}
+                          {/* Marca y modelo */}
                           <TableCell>
                             <div className="flex flex-col">
-                              <span>{tractor.brand}</span>
+                              <span className="text-sm">{tractor.brand}</span>
                               <span className="text-xs text-muted-foreground">{tractor.model}</span>
                             </div>
                           </TableCell>
 
-                          {/* Potencia con ícono de gauge */}
+                          {/* Potencia */}
                           <TableCell>
-                            <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                              <Gauge className="size-4" aria-hidden="true" />
+                            <span className="inline-flex items-center gap-1 text-sm whitespace-nowrap">
+                              <Gauge className="size-3.5 text-muted-foreground" aria-hidden="true" />
                               {tractor.engine_power_hp} HP
                             </span>
                           </TableCell>
 
                           {/* Tipo de tracción */}
-                          <TableCell>{tractor.traction_type || '-'}</TableCell>
-
-                          {/* Badge de estado con color semántico */}
-                          <TableCell>
-                            <Badge
-                              variant={tractor.status === 'available' ? 'secondary' : 'outline'}
-                              className={
-                                tractor.status === 'available'
-                                  ? 'bg-red-100 text-red-900 hover:bg-red-100'
-                                  : 'border-red-200 text-red-900'
-                              }
-                            >
-                              {tractor.status}
-                            </Badge>
+                          <TableCell className="text-sm">
+                            {TRACCION_LABELS[tractor.traction_type] || tractor.traction_type || '—'}
                           </TableCell>
 
-                          {/* Peso en kg */}
+                          {/* Estado */}
                           <TableCell>
-                            {tractor.weight_kg ? `${tractor.weight_kg} kg` : '-'}
+                            <StatusBadge status={tractor.status} />
                           </TableCell>
 
-                          {/* Botones de acción: editar y eliminar */}
-                          <TableCell>
-                            <div className="flex justify-end gap-2">
+                          {/* Peso */}
+                          <TableCell className="text-sm text-muted-foreground">
+                            {tractor.weight_kg ? `${tractor.weight_kg} kg` : '—'}
+                          </TableCell>
+
+                          {/* Acciones */}
+                          <TableCell className="pr-4 sm:pr-6">
+                            <div className="flex justify-end gap-1.5">
                               <Button
-                                variant="outline"
-                                size="icon-sm"
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => abrirModal(tractor)}
                                 aria-label={`Editar ${tractor.name}`}
+                                className="size-8 text-muted-foreground hover:text-foreground"
                               >
-                                <Pencil className="size-4" />
+                                <Pencil className="size-3.5" />
                               </Button>
                               <Button
-                                variant="destructive"
-                                size="icon-sm"
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => abrirConfirmacionEliminacion(tractor)}
                                 aria-label={`Eliminar ${tractor.name}`}
+                                className="size-8 text-muted-foreground hover:text-destructive"
                               >
-                                <Trash2 className="size-4" />
+                                <Trash2 className="size-3.5" />
                               </Button>
                             </div>
                           </TableCell>
                         </TableRow>
                       ))
                     ) : (
-                      /* Estado vacío — sin resultados */
+                      /* Estado vacío */
                       <TableRow>
-                        <TableCell colSpan={7} className="py-10 text-center">
+                        <TableCell colSpan={7} className="py-12 text-center">
                           <div className="flex flex-col items-center gap-3">
-                            <p className="text-muted-foreground">
+                            <p className="text-sm text-muted-foreground">
                               {hayFiltrosActivos
-                                ? 'No hay resultados para los filtros aplicados.'
+                                ? 'Sin resultados para los filtros aplicados.'
                                 : 'No hay tractores registrados.'}
                             </p>
                             {hayFiltrosActivos ? (
-                              <Button
-                                variant="outline"
-                                onClick={() => {
-                                  setBusqueda('');
-                                  setFiltros({ brand: '', minPower: '', maxPower: '' });
-                                }}
-                              >
+                              <Button variant="outline" size="sm" onClick={limpiarFiltros}>
                                 Limpiar filtros
                               </Button>
                             ) : (
-                              <Button onClick={() => abrirModal()}>
-                                <Plus className="mr-2 size-4" aria-hidden="true" />
+                              <Button size="sm" onClick={() => abrirModal()}>
+                                <Plus className="mr-1.5 size-3.5" aria-hidden="true" />
                                 Añadir Tractor
                               </Button>
                             )}
@@ -797,13 +770,14 @@ const TractorCRUD = () => {
                 </Table>
               </div>
 
-              {/* Metadatos de la tabla: conteo y ordenamiento activo */}
-              <div className="mt-4 flex flex-col items-start justify-between gap-2 text-xs sm:text-sm text-muted-foreground sm:flex-row sm:items-center">
+              {/* Metadatos de la tabla */}
+              <div className="px-4 sm:px-6 py-3 flex flex-col items-start justify-between gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center border-t border-border/60">
                 <span>
-                  Mostrando {tractores.length} de {totalItems} tractores
+                  {tractoresFiltrados.length} de {totalItems} tractores
+                  {hayFiltrosActivos && ' (filtrados)'}
                 </span>
                 <span>
-                  Orden: {ordenamiento.sort} ({ordenamiento.order})
+                  Orden: {ordenamiento.sort} · {ordenamiento.order === 'asc' ? '↑' : '↓'}
                 </span>
               </div>
             </>
@@ -822,67 +796,82 @@ const TractorCRUD = () => {
       <Dialog open={modalAbierto} onOpenChange={setModalAbierto}>
         <DialogContent className="w-full max-w-lg sm:max-w-2xl md:max-w-4xl mx-4 sm:mx-auto">
           <DialogHeader>
-            <DialogTitle>
-              {modoEdicion ? 'Editar Tractor' : 'Añadir Tractor'}
+            <DialogTitle className="text-base font-semibold">
+              {modoEdicion ? 'Editar Tractor' : 'Registrar Tractor'}
             </DialogTitle>
-            <DialogDescription>
-              Formulario alineado al modelo tractor para transición sin fricción a API remota.
+            <DialogDescription className="text-sm text-muted-foreground">
+              Completa los campos obligatorios (<span className="text-destructive">*</span>) para guardar el tractor.
             </DialogDescription>
           </DialogHeader>
 
           {/*
            * Formulario en 1 columna (móvil) → 2 columnas (md+).
-           * Los campos se agrupan semánticamente: datos básicos | datos técnicos de llanta.
+           * Columna izquierda: datos básicos. Columna derecha: tracción, estado y llantas.
            */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 max-h-[60vh] overflow-y-auto pr-1">
 
-            {/* ── Columna izquierda: datos básicos del tractor ── */}
+            {/* ── Columna izquierda: datos básicos ── */}
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Nombre *</label>
+                <label className="text-sm font-medium">
+                  Nombre <span className="text-destructive">*</span>
+                </label>
                 <Input name="name" value={tractorActual.name} onChange={manejarCambio} />
               </div>
+
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Marca *</label>
+                <label className="text-sm font-medium">
+                  Marca <span className="text-destructive">*</span>
+                </label>
                 <Input name="brand" value={tractorActual.brand} onChange={manejarCambio} />
               </div>
+
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Modelo *</label>
+                <label className="text-sm font-medium">
+                  Modelo <span className="text-destructive">*</span>
+                </label>
                 <Input name="model" value={tractorActual.model} onChange={manejarCambio} />
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Potencia del motor (HP) *</label>
-                <Input
-                  type="number" min="0"
-                  name="engine_power_hp"
-                  value={tractorActual.engine_power_hp}
-                  onChange={manejarCambio}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Peso (kg)</label>
-                <Input
-                  type="number" min="0"
-                  name="weight_kg"
-                  value={tractorActual.weight_kg}
-                  onChange={manejarCambio}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Fuerza de tracción (kN)</label>
-                <Input
-                  type="number" min="0"
-                  name="traction_force_kn"
-                  value={tractorActual.traction_force_kn}
-                  onChange={manejarCambio}
-                />
-              </div>
+
+              <InputConUnidad
+                label="Potencia del motor"
+                unit="HP"
+                required
+                type="number"
+                min="0"
+                name="engine_power_hp"
+                value={tractorActual.engine_power_hp}
+                onChange={manejarCambio}
+              />
+
+              <InputConUnidad
+                label="Peso"
+                unit="kg"
+                type="number"
+                min="0"
+                name="weight_kg"
+                value={tractorActual.weight_kg}
+                onChange={manejarCambio}
+              />
+
+              <InputConUnidad
+                label="Fuerza de tracción"
+                unit="kN"
+                type="number"
+                min="0"
+                name="traction_force_kn"
+                value={tractorActual.traction_force_kn}
+                onChange={manejarCambio}
+              />
             </div>
 
-            {/* ── Columna derecha: tipo de tracción, estado y datos de llanta ── */}
+            {/* ── Columna derecha: tracción, estado y llantas ── */}
             <div className="flex flex-col gap-3">
+              {/* Tipo de tracción */}
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Tipo de tracción *</label>
+                <label className="text-sm font-medium">
+                  Tipo de tracción <span className="text-destructive">*</span>
+                </label>
                 <Select
                   value={tractorActual.traction_type}
                   onValueChange={(value) =>
@@ -894,14 +883,15 @@ const TractorCRUD = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="4x2">4x2</SelectItem>
-                      <SelectItem value="4x4">4x4</SelectItem>
-                      <SelectItem value="track">track</SelectItem>
+                      <SelectItem value="4x2">4x2 — Tracción simple</SelectItem>
+                      <SelectItem value="4x4">4x4 — Doble tracción</SelectItem>
+                      <SelectItem value="track">Orugas</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* Estado */}
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium">Estado</label>
                 <Select
@@ -915,49 +905,53 @@ const TractorCRUD = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="available">available</SelectItem>
-                      <SelectItem value="maintenance">maintenance</SelectItem>
-                      <SelectItem value="inactive">inactive</SelectItem>
+                      <SelectItem value="available">Disponible</SelectItem>
+                      <SelectItem value="maintenance">En mantenimiento</SelectItem>
+                      <SelectItem value="out_of_service">Fuera de servicio</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* Tipo de llanta */}
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium">Tipo de llanta</label>
-                <Input name="tire_type" value={tractorActual.tire_type} onChange={manejarCambio} />
+                <Input name="tire_type" value={tractorActual.tire_type} onChange={manejarCambio} placeholder="Ej: Radial 16.9R30" />
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Ancho de llanta (mm)</label>
-                <Input
-                  type="number" min="0"
-                  name="tire_width_mm"
-                  value={tractorActual.tire_width_mm}
-                  onChange={manejarCambio}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Diámetro de llanta (mm)</label>
-                <Input
-                  type="number" min="0"
-                  name="tire_diameter_mm"
-                  value={tractorActual.tire_diameter_mm}
-                  onChange={manejarCambio}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Presión de llanta (psi)</label>
-                <Input
-                  type="number" min="0"
-                  name="tire_pressure_psi"
-                  value={tractorActual.tire_pressure_psi}
-                  onChange={manejarCambio}
-                />
-              </div>
+
+              <InputConUnidad
+                label="Ancho de llanta"
+                unit="mm"
+                type="number"
+                min="0"
+                name="tire_width_mm"
+                value={tractorActual.tire_width_mm}
+                onChange={manejarCambio}
+              />
+
+              <InputConUnidad
+                label="Diámetro de llanta"
+                unit="mm"
+                type="number"
+                min="0"
+                name="tire_diameter_mm"
+                value={tractorActual.tire_diameter_mm}
+                onChange={manejarCambio}
+              />
+
+              <InputConUnidad
+                label="Presión de llanta"
+                unit="psi"
+                type="number"
+                min="0"
+                name="tire_pressure_psi"
+                value={tractorActual.tire_pressure_psi}
+                onChange={manejarCambio}
+              />
             </div>
           </div>
 
-          {/* Pie del modal: botones de cancelar y guardar */}
+          {/* Pie del modal */}
           <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button variant="outline" onClick={cerrarModal} disabled={guardando} className="w-full sm:w-auto">
               Cancelar
@@ -980,7 +974,7 @@ const TractorCRUD = () => {
             <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
             <AlertDialogDescription>
               {tractorAEliminar
-                ? `¿Está seguro de eliminar el tractor "${tractorAEliminar.name}"? Esta acción no se puede deshacer.`
+                ? `¿Está seguro de eliminar "${tractorAEliminar.name}"? Esta acción no se puede deshacer.`
                 : 'Esta acción no se puede deshacer.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -989,12 +983,55 @@ const TractorCRUD = () => {
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction onClick={confirmarEliminacionTractor} disabled={eliminando}>
-              {eliminando ? 'Eliminando...' : 'Eliminar Tractor'}
+              {eliminando ? 'Eliminando...' : 'Eliminar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </section>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Sub-componente: badge de estado semántico
+// ---------------------------------------------------------------------------
+
+/**
+ * StatusBadge — Badge de estado con color semántico según el valor del backend.
+ *
+ * @component
+ * @param {Object} props
+ * @param {string} props.status - Valor de status del backend.
+ */
+const StatusBadge = ({ status }) => {
+  const config = {
+    available: {
+      label: 'Disponible',
+      className: 'border-transparent bg-emerald-50 text-emerald-700',
+    },
+    maintenance: {
+      label: 'Mantenimiento',
+      className: 'border-transparent bg-amber-50 text-amber-700',
+    },
+    out_of_service: {
+      label: 'Fuera de servicio',
+      className: 'border-transparent bg-red-50 text-red-700',
+    },
+    inactive: {
+      label: 'Inactivo',
+      className: 'border-transparent bg-muted text-muted-foreground',
+    },
+  };
+
+  const { label, className } = config[status] ?? {
+    label: status,
+    className: 'border-transparent bg-muted text-muted-foreground',
+  };
+
+  return (
+    <Badge variant="outline" className={`text-xs font-normal ${className}`}>
+      {label}
+    </Badge>
   );
 };
 
