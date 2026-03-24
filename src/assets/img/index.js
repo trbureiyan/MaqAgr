@@ -13,6 +13,7 @@ import Tractor from './Tractor Prueva.webp';
 import Llanta from './Llanta.jpeg';
 import Nube from './nubes.png';
 import Fondo from './fondo.jpg';
+import Suelo from './suelo.png';
 
 export {
   IconCamp,
@@ -23,5 +24,6 @@ export {
   Tractor,
   Llanta,
   Nube,
-  Fondo
+  Fondo,
+  Suelo,
 };
