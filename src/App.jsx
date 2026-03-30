@@ -19,20 +19,23 @@
  * ```
  *
  * Rutas registradas:
- *  - /                    → Home
- *  - /Calculadora         → AppCalculadora
- *  - /TengoTractor        → DatosTractor
- *  - /DatosLlantas        → DatosLlantas
- *  - /DatosClimaticos     → DatosClimaticos
- *  - /Resultados          → Resultados
- *  - /Login               → Login
- *  - /Registro            → Register
- *  - /admin/TractorForm   → TractorForm (protegida)
- *  - /tractor/:id         → TractorMachineDetail
- *  - /maquinaria/:id      → TractorMachineDetail
- *  - /Catalogo            → Catalogo
- *  - /CatalogoTractor     → CatalogoTractores
- *  - /CatalogoMaquinas    → CatalogoMaquinas
+ *  - /                         → Home
+ *  - /Calculadora              → AppCalculadora
+ *  - /TengoTractor             → DatosTractor
+ *  - /DatosLlantas             → DatosLlantas
+ *  - /DatosClimaticos          → DatosClimaticos
+ *  - /Resultados               → Resultados
+ *  - /Login                    → Login
+ *  - /Registro                 → Register
+ *  - /admin/TractorForm        → TractorForm (protegida)
+ *  - /tractor/:id              → TractorMachineDetail
+ *  - /maquinaria/:id           → TractorMachineDetail
+ *  - /Catalogo                 → Catalogo
+ *  - /CatalogoTractor          → CatalogoTractores
+ *  - /CatalogoMaquinas         → CatalogoMaquinas
+ *  - /TengoMaquinaria          → DatosImplemento  (flujo implemento paso 1)
+ *  - /TipoSueloImplemento      → TipoSueloImplemento (flujo implemento paso 2)
+ *  - /ResultadosImplemento     → ResultadosImplemento (flujo implemento paso 3)
  *
  * @module App
  */
@@ -74,6 +77,9 @@ const Login = lazy(() => import('./pages/Login'));
 /** Página de registro de usuario. */
 const Register = lazy(() => import('./pages/Register'));
 
+/** Página Sobre Nosotros. */
+const SobreNosotros = lazy(() => import('./pages/SobreNosotros'));
+
 /** Página principal del catálogo (selección de categoría). */
 const Catalogo = lazy(() => import('./pages/Catalogo'));
 
@@ -86,8 +92,24 @@ const CatalogoMaq = lazy(() => import('./pages/CatalogoMaquinas'));
 /** Panel CRUD de administración de tractores (ruta protegida). */
 const TractorForm = lazy(() => import('./pages/TractorForm'));
 
+/** Panel CRUD de administración de implementos (ruta protegida). */
+const ImplementForm = lazy(() => import('./pages/ImplementForm'));
+
 /** Página de detalle de tractor o máquina agrícola. */
 const TractorMachineDetail = lazy(() => import('./pages/TractorMachineDetail'));
+
+// ---------------------------------------------------------------------------
+// Flujo "Tengo Maquinaria" — lazy imports
+// ---------------------------------------------------------------------------
+
+/** Paso 1: datos técnicos del implemento. */
+const DatosImplemento = lazy(() => import('./pages/DatosImplemento'));
+
+/** Paso 2: tipo de suelo donde se usará el implemento. */
+const TipoSueloImplemento = lazy(() => import('./pages/TipoSueloImplemento'));
+
+/** Paso 3: resultados + tractores recomendados. */
+const ResultadosImplemento = lazy(() => import('./pages/ResultadosImplemento'));
 
 // ---------------------------------------------------------------------------
 // Componente de carga (fallback de Suspense)
@@ -158,6 +180,7 @@ function App() {
                 <Route path="/Resultados"        element={<Resultados />} />
                 <Route path="/Login"             element={<Login />} />
                 <Route path="/Registro"          element={<Register />} />
+                <Route path="/SobreNosotros"     element={<SobreNosotros />} />
 
                 {/* ── Catálogo ── */}
                 <Route path="/Catalogo"          element={<Catalogo />} />
@@ -168,8 +191,14 @@ function App() {
                 <Route path="/tractor/:id"       element={<TractorMachineDetail />} />
                 <Route path="/maquinaria/:id"    element={<TractorMachineDetail />} />
 
-                {/* ── Ruta protegida: panel de administración ── */}
+                {/* ── Rutas protegidas: panel de administración ── */}
                 <Route path="/admin/TractorForm" element={<TractorForm />} />
+                <Route path="/admin/ImplementForm" element={<ImplementForm />} />
+
+                {/* ── Flujo: Tengo Maquinaria (3 pasos) ── */}
+                <Route path="/TengoMaquinaria"      element={<DatosImplemento />} />
+                <Route path="/TipoSueloImplemento"  element={<TipoSueloImplemento />} />
+                <Route path="/ResultadosImplemento" element={<ResultadosImplemento />} />
               </Routes>
             </Suspense>
           </main>
