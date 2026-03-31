@@ -17,6 +17,7 @@ import { useAuth } from '../common/auth';
 import Logo from '../ui/Icons/logo';
 import { ProfileIcon } from '../ui/Icons';
 import Button from '../ui/buttons/Button';
+import { NotificationDropdown } from './NotificationDropdown';
 
 // ---------------------------------------------------------------------------
 // Datos estáticos
@@ -164,9 +165,12 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* Controles de sesión: perfil + salir / login */}
+            {/* Controles de sesión: perfil + notificaciones + salir / login */}
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
+                {/* Botón de notificaciones */}
+                <NotificationDropdown />
+
                 {/* Botón de perfil — siempre visible cuando autenticado */}
                 <Button
                   variant="primary"

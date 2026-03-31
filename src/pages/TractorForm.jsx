@@ -81,6 +81,11 @@ import {
   isRemoteTractorApiEnabled,
   updateTractor,
 } from '@/services/tractorApi';
+import { 
+  notifyTractorAvailable, 
+  notifyError, 
+  notifySuccess 
+} from '@/services/notificationService';
 
 // ---------------------------------------------------------------------------
 // Constantes y estado inicial
@@ -421,7 +426,7 @@ const TractorCRUD = () => {
   const guardarTractor = async () => {
     const errorValidacion = validarFormulario();
     if (errorValidacion) {
-      window.alert(errorValidacion);
+      notifyError('Error de validación', errorValidacion);
       return;
     }
 
@@ -432,8 +437,10 @@ const TractorCRUD = () => {
 
       if (modoEdicion) {
         await updateTractor(tractorActual.tractor_id, payload);
+        notifySuccess('Tractor Actualizado', `El tractor ${payload.name} se actualizó correctamente.`);
       } else {
         await createTractor(payload);
+        notifyTractorAvailable(null, payload.name);
       }
 
       cerrarModal();
@@ -442,7 +449,7 @@ const TractorCRUD = () => {
       const message = error.message?.includes('401') || error.message?.includes('403')
         ? 'No autorizado. Necesitas un token válido y rol administrador para guardar cambios.'
         : error.message || 'No se pudo guardar el tractor.';
-      window.alert(message);
+      notifyError('No se pudo guardar', message);
       setGuardando(false);
     }
   };
@@ -467,13 +474,14 @@ const TractorCRUD = () => {
 
     try {
       await deleteTractor(tractorAEliminar.tractor_id);
+      notifySuccess('Tractor Eliminado', `El tractor fue eliminado.`);
       cerrarConfirmacionEliminacion();
       await cargarTabla();
     } catch (error) {
       const message = error.message?.includes('401') || error.message?.includes('403')
         ? 'No autorizado. Necesitas un token válido y rol administrador para eliminar.'
         : error.message || 'No se pudo eliminar el tractor.';
-      window.alert(message);
+      notifyError('No se pudo eliminar', message);
       setEliminando(false);
     }
   };
