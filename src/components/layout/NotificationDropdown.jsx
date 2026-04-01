@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, Check, Trash2, CheckCircle, Info, AlertCircle, Tractor } from 'lucide-react';
-import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from '../../services/notificationApi';
+import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from '@/services/notificationApi';
 
 const getIconForType = (type) => {
   switch (type) {
