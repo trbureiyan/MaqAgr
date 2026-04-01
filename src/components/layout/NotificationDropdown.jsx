@@ -103,6 +103,8 @@ export const NotificationDropdown = () => {
         onClick={toggleDropdown}
         className="relative p-2.5 rounded-full bg-transparent hover:bg-white/10 text-white transition-colors focus:outline-none"
         aria-label="Notificaciones"
+        aria-expanded={isOpen}
+        aria-controls="notification-panel"
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
@@ -113,7 +115,7 @@ export const NotificationDropdown = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right rounded-lg bg-card shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden border border-border">
+        <div id="notification-panel" className="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right rounded-lg bg-card shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden border border-border">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40">
             <h3 className="text-sm font-semibold text-foreground">Notificaciones</h3>
             {unreadCount > 0 && (
