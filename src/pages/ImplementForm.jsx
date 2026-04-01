@@ -57,6 +57,10 @@ import {
   isRemoteImplementApiEnabled,
   updateImplement,
 } from '@/services/implementApi';
+import { 
+  notifyError, 
+  notifySuccess 
+} from '@/services/notificationService';
 
 const ESTADO_INICIAL_IMPLEMENTO = {
   implement_name: '',
@@ -277,7 +281,7 @@ const ImplementCRUD = () => {
   const guardarImplemento = async () => {
     const errorValidacion = validarFormulario();
     if (errorValidacion) {
-      window.alert(errorValidacion);
+      notifyError('Error de validación', errorValidacion);
       return;
     }
 
@@ -288,8 +292,10 @@ const ImplementCRUD = () => {
 
       if (modoEdicion) {
         await updateImplement(implementoActual.implement_id, payload);
+        notifySuccess('Implemento Actualizado', `El implemento ${payload.implement_name} se actualizó correctamente.`);
       } else {
         await createImplement(payload);
+        notifySuccess('Implemento Creado', `El implemento ${payload.implement_name} fue registrado con éxito.`);
       }
 
       cerrarModal();
@@ -298,7 +304,7 @@ const ImplementCRUD = () => {
       const message = error.message?.includes('401') || error.message?.includes('403')
         ? 'No autorizado. Necesitas un token válido y rol administrador para guardar cambios.'
         : error.message || 'No se pudo guardar el implemento.';
-      window.alert(message);
+      notifyError('No se pudo guardar', message);
       setGuardando(false);
     }
   };
@@ -321,13 +327,14 @@ const ImplementCRUD = () => {
 
     try {
       await deleteImplement(implementoAEliminar.implement_id);
+      notifySuccess('Implemento Eliminado', `El implemento fue eliminado.`);
       cerrarConfirmacionEliminacion();
       await cargarTabla();
     } catch (error) {
       const message = error.message?.includes('401') || error.message?.includes('403')
         ? 'No autorizado. Necesitas un token válido y rol administrador para eliminar.'
         : error.message || 'No se pudo eliminar el implemento.';
-      window.alert(message);
+      notifyError('No se pudo eliminar', message);
       setEliminando(false);
     }
   };

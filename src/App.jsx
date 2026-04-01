@@ -44,6 +44,8 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navbar, Footer } from './components/layout';
 import { AuthProvider } from './components/common/auth';
+import { Toaster } from 'sileo';
+import 'sileo/styles.css';
 import Home from './pages/Home';
 
 // ---------------------------------------------------------------------------
@@ -159,6 +161,7 @@ function App() {
          *  - `flex flex-col` permite que `main` crezca con `flex-grow`
          */}
         <div className="min-h-screen flex flex-col">
+          <Toaster position="top-right" />
 
           {/* Barra de navegación global */}
           <Navbar />
