@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { sileo } from 'sileo';
-import { CheckCircle, Info, AlertTriangle, AlertCircle, Bell, Tractor } from 'lucide-react';
+import { CheckCircle, AlertCircle, Bell, Tractor } from 'lucide-react';
 
 export const NOTIFICATION_TYPES = {
   RECOMMENDATION: 'recommendation',
