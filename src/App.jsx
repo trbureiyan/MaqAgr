@@ -101,6 +101,13 @@ const ImplementForm = lazy(() => import('./pages/ImplementForm'));
 const TractorMachineDetail = lazy(() => import('./pages/TractorMachineDetail'));
 
 // ---------------------------------------------------------------------------
+// Vistas de Error (401, 403, 404) — lazy imports
+// ---------------------------------------------------------------------------
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Unauthorized = lazy(() => import('./pages/Unauthorized'));
+const Forbidden = lazy(() => import('./pages/Forbidden'));
+
+// ---------------------------------------------------------------------------
 // Flujo "Tengo Maquinaria" — lazy imports
 // ---------------------------------------------------------------------------
 
@@ -202,6 +209,11 @@ function App() {
                 <Route path="/TengoMaquinaria"      element={<DatosImplemento />} />
                 <Route path="/TipoSueloImplemento"  element={<TipoSueloImplemento />} />
                 <Route path="/ResultadosImplemento" element={<ResultadosImplemento />} />
+
+                {/* ── Estados de Error y Fallback ── */}
+                <Route path="/unauthorized"         element={<Unauthorized />} />
+                <Route path="/forbidden"            element={<Forbidden />} />
+                <Route path="*"                     element={<NotFound />} />
               </Routes>
             </Suspense>
           </main>
