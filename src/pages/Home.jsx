@@ -16,6 +16,7 @@
 import React from 'react';
 import TractorImg from '../assets/img/1.png';
 import MachineImg from '../assets/img/2.png';
+import HeroBg from '../assets/img/hero_bg.png';
 import HomeVideo from '../components/common/home/HomeVideo';
 import TractorMachineCard from '../components/ui/cards/TractorMachineCard';
 
@@ -136,7 +137,7 @@ const Home = () => {
     <div className="flex min-h-screen flex-col bg-background">
 
       {/* ── 1. Hero multimedia con carrusel de mensajes ── */}
-      <HomeVideo backgroundImageSrc={MachineImg} />
+      <HomeVideo backgroundImageSrc={HeroBg} />
 
       {/* ── 2. Sección: Tractores Destacados ── */}
       <section className="py-12 sm:py-16" aria-labelledby="tractores-heading">

@@ -101,6 +101,13 @@ const ImplementForm = lazy(() => import('./pages/ImplementForm'));
 const TractorMachineDetail = lazy(() => import('./pages/TractorMachineDetail'));
 
 // ---------------------------------------------------------------------------
+// Vistas de Error (401, 403, 404) — lazy imports
+// ---------------------------------------------------------------------------
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Unauthorized = lazy(() => import('./pages/Unauthorized'));
+const Forbidden = lazy(() => import('./pages/Forbidden'));
+
+// ---------------------------------------------------------------------------
 // Flujo "Tengo Maquinaria" — lazy imports
 // ---------------------------------------------------------------------------
 
@@ -112,6 +119,11 @@ const TipoSueloImplemento = lazy(() => import('./pages/TipoSueloImplemento'));
 
 /** Paso 3: resultados + tractores recomendados. */
 const ResultadosImplemento = lazy(() => import('./pages/ResultadosImplemento'));
+
+// ---------------------------------------------------------------------------
+// Flujo "Busco Equipo" — lazy import
+// ---------------------------------------------------------------------------
+const BuscoEquipo = lazy(() => import('./pages/BuscoEquipo'));
 
 // ---------------------------------------------------------------------------
 // Componente de carga (fallback de Suspense)
@@ -202,6 +214,14 @@ function App() {
                 <Route path="/TengoMaquinaria"      element={<DatosImplemento />} />
                 <Route path="/TipoSueloImplemento"  element={<TipoSueloImplemento />} />
                 <Route path="/ResultadosImplemento" element={<ResultadosImplemento />} />
+
+                {/* ── Flujo: Busco Equipo ── */}
+                <Route path="/BuscoEquipo"          element={<BuscoEquipo />} />
+
+                {/* ── Estados de Error y Fallback ── */}
+                <Route path="/unauthorized"         element={<Unauthorized />} />
+                <Route path="/forbidden"            element={<Forbidden />} />
+                <Route path="*"                     element={<NotFound />} />
               </Routes>
             </Suspense>
           </main>
