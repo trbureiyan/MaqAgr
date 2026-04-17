@@ -102,11 +102,12 @@ const applySort = (items, sort = 'implement_name', order = 'asc') => {
   return list;
 };
 
-const applyFilters = (items, { search = '', type = '', minPower = '', maxPower = '' }) => {
+const applyFilters = (items, { search = '', type = '', minPower = '', maxPower = '', maxWeight = '' }) => {
   const searchLower = search.toLowerCase();
   const typeLower = type.toLowerCase();
   const minPowerNum = toNumberOrNull(minPower);
   const maxPowerNum = toNumberOrNull(maxPower);
+  const maxWeightNum = toNumberOrNull(maxWeight);
 
   return items.filter((implement) => {
     const matchesSearch = !searchLower
@@ -126,7 +127,11 @@ const applyFilters = (items, { search = '', type = '', minPower = '', maxPower =
       ? true
       : Number(implement.power_requirement_hp || 0) <= maxPowerNum;
 
-    return matchesSearch && matchesType && matchesMinPower && matchesMaxPower;
+    const matchesMaxWeight = maxWeightNum === null
+      ? true
+      : Number(implement.weight_kg || 0) <= maxWeightNum;
+
+    return matchesSearch && matchesType && matchesMinPower && matchesMaxPower && matchesMaxWeight;
   });
 };
 
@@ -140,9 +145,10 @@ const getMockImplements = async (query = {}) => {
     type = '',
     minPower = '',
     maxPower = '',
+    maxWeight = '',
   } = query;
 
-  const filtered = applyFilters(mockImplements, { search, type, minPower, maxPower });
+  const filtered = applyFilters(mockImplements, { search, type, minPower, maxPower, maxWeight });
   const sorted = applySort(filtered, sort, order);
 
   const safeLimit = Number(limit) > 0 ? Number(limit) : 10;
@@ -179,9 +185,10 @@ export const getImplements = async (query = {}) => {
     type = '',
     minPower = '',
     maxPower = '',
+    maxWeight = '',
   } = query;
 
-  const shouldUseSearchEndpoint = Boolean(search || type || minPower || maxPower);
+  const shouldUseSearchEndpoint = Boolean(search || type || minPower || maxPower || maxWeight);
   const endpoint = shouldUseSearchEndpoint ? `${IMPLEMENT_BASE_URL}/search` : IMPLEMENT_BASE_URL;
 
   const queryString = buildQueryString({
@@ -193,6 +200,7 @@ export const getImplements = async (query = {}) => {
     type,
     minPower,
     maxPower,
+    maxWeight,
   });
 
   return requestJson(`${endpoint}?${queryString}`);

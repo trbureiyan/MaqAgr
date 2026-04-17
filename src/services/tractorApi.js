@@ -111,11 +111,12 @@ const applySort = (items, sort = 'name', order = 'asc') => {
   return list;
 };
 
-const applyFilters = (items, { search = '', brand = '', minPower = '', maxPower = '' }) => {
+const applyFilters = (items, { search = '', brand = '', minPower = '', maxPower = '', maxWeight = '' }) => {
   const searchLower = search.toLowerCase();
   const brandLower = brand.toLowerCase();
   const minPowerNum = toNumberOrNull(minPower);
   const maxPowerNum = toNumberOrNull(maxPower);
+  const maxWeightNum = toNumberOrNull(maxWeight);
 
   return items.filter((tractor) => {
     const matchesSearch = !searchLower
@@ -135,7 +136,11 @@ const applyFilters = (items, { search = '', brand = '', minPower = '', maxPower 
       ? true
       : Number(tractor.engine_power_hp || 0) <= maxPowerNum;
 
-    return matchesSearch && matchesBrand && matchesMinPower && matchesMaxPower;
+    const matchesMaxWeight = maxWeightNum === null
+      ? true
+      : Number(tractor.weight_kg || 0) <= maxWeightNum;
+
+    return matchesSearch && matchesBrand && matchesMinPower && matchesMaxPower && matchesMaxWeight;
   });
 };
 
@@ -149,9 +154,10 @@ const getMockTractors = async (query = {}) => {
     brand = '',
     minPower = '',
     maxPower = '',
+    maxWeight = '',
   } = query;
 
-  const filtered = applyFilters(mockTractors, { search, brand, minPower, maxPower });
+  const filtered = applyFilters(mockTractors, { search, brand, minPower, maxPower, maxWeight });
   const sorted = applySort(filtered, sort, order);
 
   const safeLimit = Number(limit) > 0 ? Number(limit) : 10;
@@ -188,9 +194,10 @@ export const getTractors = async (query = {}) => {
     brand = '',
     minPower = '',
     maxPower = '',
+    maxWeight = '',
   } = query;
 
-  const shouldUseSearchEndpoint = Boolean(search || brand || minPower || maxPower);
+  const shouldUseSearchEndpoint = Boolean(search || brand || minPower || maxPower || maxWeight);
   const endpoint = shouldUseSearchEndpoint ? `${TRACTOR_BASE_URL}/search` : TRACTOR_BASE_URL;
 
   const queryString = buildQueryString({
@@ -202,6 +209,7 @@ export const getTractors = async (query = {}) => {
     brand,
     minPower,
     maxPower,
+    maxWeight,
   });
 
   return requestJson(`${endpoint}?${queryString}`);

@@ -1,3 +1,26 @@
+/**
+ * @fileoverview Panel de administración CRUD para implementos mecánicos (ImplementForm).
+ *
+ * Página protegida accesible solo para usuarios autenticados con rol administrador.
+ * Implementa operaciones completas de Crear, Leer, Actualizar y Eliminar implementos
+ * contra la API remota (o datos mock cuando la API no está disponible).
+ *
+ * Características principales:
+ *  - Tabla paginada con ordenamiento server-side por nombre, potencia y estado
+ *  - Búsqueda en tiempo real con debounce implícito vía `useMemo`
+ *  - Filtros rápidos por tipo de implemento y estado (badges de un solo clic)
+ *  - Modal de formulario para crear/editar con validación client-side
+ *  - AlertDialog de confirmación antes de eliminar
+ *  - Indicadores de carga y mensajes de error descriptivos
+ *
+ * Responsive:
+ *  - Tabla con scroll horizontal en móvil (`overflow-x-auto`)
+ *  - Formulario del modal en 1 columna (móvil) → 2 columnas (md+)
+ *  - Barra de herramientas apilada en móvil, en fila en lg+
+ *
+ * @module pages/ImplementForm
+ */
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Pagination from '@/components/common/Pagination';
 import { Button } from '@/components/ui/button';
@@ -27,6 +50,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -62,6 +86,16 @@ import {
   notifySuccess 
 } from '@/services/notificationService';
 
+// ---------------------------------------------------------------------------
+// Constantes y estado inicial
+// ---------------------------------------------------------------------------
+
+/**
+ * Estado inicial vacío para el formulario de implemento.
+ * Se usa tanto al crear un nuevo implemento como al resetear el formulario.
+ *
+ * @type {Object}
+ */
 const ESTADO_INICIAL_IMPLEMENTO = {
   implement_name: '',
   brand: '',
@@ -74,29 +108,47 @@ const ESTADO_INICIAL_IMPLEMENTO = {
   status: 'available',
 };
 
+/**
+ * Mapeo de claves de columna de la UI a campos del backend para ordenamiento.
+ *
+ * @type {Record<string, string>}
+ */
 const ORDER_BY_FIELD = {
   implement_name: 'implement_name',
   power_requirement_hp: 'power_requirement_hp',
   status: 'status',
 };
 
+/**
+ * Opciones de filtro rápido para tipo de implemento.
+ */
 const FILTROS_TIPO = [
   { label: 'Arado', value: 'Plow' },
   { label: 'Sembradora', value: 'Seeder' },
   { label: 'Rastra', value: 'Harrow' },
 ];
 
+/**
+ * Opciones de filtro rápido para estado del implemento.
+ */
 const FILTROS_ESTADO = [
   { label: 'Disponible', value: 'available' },
   { label: 'Mantenimiento', value: 'maintenance' },
   { label: 'Fuera de servicio', value: 'out_of_service' },
 ];
 
+/**
+ * Mapeo de valores de tipo del backend a etiquetas legibles.
+ */
 const TIPO_LABELS = {
   'Plow': 'Arado',
   'Seeder': 'Sembradora',
   'Harrow': 'Rastra',
 };
+
+// ---------------------------------------------------------------------------
+// Sub-componente: indicador de ordenamiento
+// ---------------------------------------------------------------------------
 
 const SortIndicator = React.memo(({ fieldKey, ordenamiento }) => {
   const backendField = ORDER_BY_FIELD[fieldKey] || 'implement_name';
@@ -110,6 +162,10 @@ const SortIndicator = React.memo(({ fieldKey, ordenamiento }) => {
     : <ArrowUpAZ className="ml-1.5 size-3.5" aria-hidden="true" />;
 });
 SortIndicator.displayName = 'SortIndicator';
+
+// ---------------------------------------------------------------------------
+// Sub-componente: badge de filtro rápido
+// ---------------------------------------------------------------------------
 
 const FilterBadge = ({ label, active, onClick }) => (
   <button
@@ -126,6 +182,10 @@ const FilterBadge = ({ label, active, onClick }) => (
   </button>
 );
 
+// ---------------------------------------------------------------------------
+// Sub-componente: campo de formulario con label de unidad
+// ---------------------------------------------------------------------------
+
 const InputConUnidad = ({ label, unit, required, ...rest }) => (
   <div className="flex flex-col gap-1">
     <label className="text-sm font-medium text-foreground">
@@ -140,31 +200,49 @@ const InputConUnidad = ({ label, unit, required, ...rest }) => (
   </div>
 );
 
+// ---------------------------------------------------------------------------
+// Componente principal
+// ---------------------------------------------------------------------------
+
+/**
+ * ImplementCRUD — Panel de administración de implementos.
+ *
+ * @component
+ * @returns {JSX.Element}
+ */
 const ImplementCRUD = () => {
+  // ── Configuración de API ──────────────────────────────────────────────────
   const remoteApiEnabled = isRemoteImplementApiEnabled();
 
+  // ── Estado: datos de la tabla ─────────────────────────────────────────────
   const [implementos, setImplementos] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [errorCarga, setErrorCarga] = useState('');
 
+  // ── Estado: paginación ────────────────────────────────────────────────────
   const [paginaActual, setPaginaActual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPorPagina = 10;
 
+  // ── Estado: búsqueda y filtros ────────────────────────────────────────────
   const [busqueda, setBusqueda] = useState('');
   const [ordenamiento, setOrdenamiento] = useState({ sort: 'implement_name', order: 'asc' });
 
   const [filtroRapido, setFiltroRapido] = useState({ tipo: '', estado: '' });
 
+  // ── Estado: modales ───────────────────────────────────────────────────────
   const [modalAbierto, setModalAbierto] = useState(false);
   const [modalConfirmacionAbierto, setModalConfirmacionAbierto] = useState(false);
   const [implementoAEliminar, setImplementoAEliminar] = useState(null);
 
+  // ── Estado: formulario ────────────────────────────────────────────────────
   const [implementoActual, setImplementoActual] = useState(ESTADO_INICIAL_IMPLEMENTO);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
+
+  // ── Consulta memoizada ────────────────────────────────────────────────────
 
   const consulta = useMemo(() => ({
     page: paginaActual,
@@ -172,7 +250,12 @@ const ImplementCRUD = () => {
     sort: ordenamiento.sort,
     order: ordenamiento.order,
     search: busqueda.trim(),
+    type: '',
+    minPower: '',
+    maxPower: '',
   }), [paginaActual, ordenamiento, busqueda]);
+
+  // ── Carga de datos ────────────────────────────────────────────────────────
 
   const cargarTabla = useCallback(async () => {
     setCargando(true);
@@ -204,6 +287,8 @@ const ImplementCRUD = () => {
     setPaginaActual(1);
   }, [busqueda, filtroRapido]);
 
+  // ── Filtrado client-side de filtros rápidos ───────────────────────────────
+
   const implementosFiltrados = useMemo(() => {
     return implementos.filter((i) => {
       const matchTipo = !filtroRapido.tipo || i.implement_type === filtroRapido.tipo;
@@ -211,6 +296,8 @@ const ImplementCRUD = () => {
       return matchTipo && matchEstado;
     });
   }, [implementos, filtroRapido]);
+
+  // ── Manejadores del modal de formulario ───────────────────────────────────
 
   const abrirModal = (implemento = null) => {
     if (implemento) {
@@ -238,6 +325,8 @@ const ImplementCRUD = () => {
     setModalAbierto(false);
     setGuardando(false);
   };
+
+  // ── Manejadores del formulario ────────────────────────────────────────────
 
   const manejarCambio = (event) => {
     const { name, value } = event.target;
@@ -309,6 +398,8 @@ const ImplementCRUD = () => {
     }
   };
 
+  // ── Manejadores del modal de confirmación de eliminación ──────────────────
+
   const abrirConfirmacionEliminacion = (implemento) => {
     setImplementoAEliminar(implemento);
     setModalConfirmacionAbierto(true);
@@ -339,6 +430,8 @@ const ImplementCRUD = () => {
     }
   };
 
+  // ── Manejador de ordenamiento ─────────────────────────────────────────────
+
   const alternarOrden = (fieldKey) => {
     const backendField = ORDER_BY_FIELD[fieldKey] || 'implement_name';
 
@@ -347,6 +440,8 @@ const ImplementCRUD = () => {
       order: prev.sort === backendField && prev.order === 'asc' ? 'desc' : 'asc',
     }));
   };
+
+  // ── Manejadores de filtros rápidos ────────────────────────────────────────
 
   const alternarFiltroRapido = (tipo, valor) => {
     setFiltroRapido((prev) => ({
@@ -360,12 +455,18 @@ const ImplementCRUD = () => {
     setFiltroRapido({ tipo: '', estado: '' });
   };
 
+  // ── Derivados ─────────────────────────────────────────────────────────────
+
   const hayFiltrosActivos = Boolean(
     busqueda.trim() || filtroRapido.tipo || filtroRapido.estado
   );
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <section className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+      {/* ── Encabezado de la página ── */}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-foreground tracking-tight">
           Gestión de Implementos
@@ -377,11 +478,17 @@ const ImplementCRUD = () => {
         </p>
       </div>
 
+      {/* ── Card: tabla CRUD con barra de herramientas integrada ── */}
       <Card className="border border-border bg-card shadow-none">
+
+        {/* ── Barra de herramientas: búsqueda + filtros rápidos + CTA ── */}
         <CardHeader className="border-b border-border pb-3 pt-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
 
+            {/* Lado izquierdo: búsqueda y filtros rápidos */}
             <div className="flex flex-col gap-3">
+
+              {/* Búsqueda */}
               <div className="relative w-full max-w-xs">
                 <Search
                   className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground"
@@ -396,7 +503,9 @@ const ImplementCRUD = () => {
                 />
               </div>
 
+              {/* Filtros rápidos */}
               <div className="flex flex-wrap gap-2">
+                {/* Grupo: Tipo */}
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-muted-foreground select-none">Tipo:</span>
                   {FILTROS_TIPO.map((f) => (
@@ -409,8 +518,10 @@ const ImplementCRUD = () => {
                   ))}
                 </div>
 
+                {/* Separador visual */}
                 <span className="hidden sm:inline-block w-px bg-border self-stretch" aria-hidden="true" />
 
+                {/* Grupo: Estado */}
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-muted-foreground select-none">Estado:</span>
                   {FILTROS_ESTADO.map((f) => (
@@ -425,8 +536,13 @@ const ImplementCRUD = () => {
               </div>
             </div>
 
+            {/* Lado derecho: botón de acción principal */}
             <div className="flex items-start lg:items-center lg:pt-0 pt-1">
-              <Button onClick={() => abrirModal()} size="sm" className="w-full sm:w-auto">
+              <Button
+                onClick={() => abrirModal()}
+                size="sm"
+                className="w-full sm:w-auto"
+              >
                 <Plus className="mr-1.5 size-3.5" aria-hidden="true" />
                 Añadir Implemento
               </Button>
@@ -436,17 +552,21 @@ const ImplementCRUD = () => {
 
         <CardContent className="pt-0 px-0">
           {cargando ? (
+            /* Estado de carga */
             <div className="py-12 text-center text-sm text-muted-foreground">
               Cargando implementos...
             </div>
           ) : errorCarga ? (
+            /* Estado de error */
             <div className="py-12 text-center text-sm text-destructive">{errorCarga}</div>
           ) : (
             <>
+              {/* Tabla con scroll horizontal en móvil */}
               <div className="overflow-x-auto">
                 <Table className="min-w-[700px]">
                   <TableHeader>
                     <TableRow className="border-b border-border hover:bg-transparent">
+                      {/* Columna Nombre — ordenable */}
                       <TableHead className="pl-4 sm:pl-6">
                         <button
                           type="button"
@@ -459,16 +579,17 @@ const ImplementCRUD = () => {
                       </TableHead>
 
                       <TableHead className="text-xs font-medium text-muted-foreground">
-                        Marca
+                        Marca / Tipo
                       </TableHead>
 
+                      {/* Columna Potencia — ordenable */}
                       <TableHead>
                         <button
                           type="button"
                           onClick={() => alternarOrden('power_requirement_hp')}
                           className="inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                         >
-                          Límite de Potencia
+                          req. Potencia (HP)
                           <SortIndicator fieldKey="power_requirement_hp" ordenamiento={ordenamiento} />
                         </button>
                       </TableHead>
@@ -477,6 +598,7 @@ const ImplementCRUD = () => {
                         Ancho de Trabajo
                       </TableHead>
 
+                      {/* Columna Estado — ordenable */}
                       <TableHead>
                         <button
                           type="button"
@@ -501,14 +623,20 @@ const ImplementCRUD = () => {
                           key={implemento.implement_id}
                           className="border-b border-border/60 hover:bg-muted/40 transition-colors"
                         >
+                          {/* Nombre */}
                           <TableCell className="pl-4 sm:pl-6 font-medium text-sm whitespace-nowrap">
                             {implemento.implement_name}
                           </TableCell>
 
+                          {/* Marca y tipo */}
                           <TableCell>
-                            <span className="text-sm">{implemento.brand}</span>
+                            <div className="flex flex-col">
+                              <span className="text-sm">{implemento.brand}</span>
+                              <span className="text-xs text-muted-foreground">{TIPO_LABELS[implemento.implement_type] || implemento.implement_type}</span>
+                            </div>
                           </TableCell>
 
+                          {/* Potencia */}
                           <TableCell>
                             <span className="inline-flex items-center gap-1 text-sm whitespace-nowrap">
                               <Gauge className="size-3.5 text-muted-foreground" aria-hidden="true" />
@@ -516,28 +644,24 @@ const ImplementCRUD = () => {
                             </span>
                           </TableCell>
 
+                          {/* Ancho de Trabajo */}
                           <TableCell className="text-sm">
                             {implemento.working_width_m ? `${implemento.working_width_m} m` : '—'}
                           </TableCell>
 
+                          {/* Estado */}
                           <TableCell>
-                            <Badge 
-                              variant={
-                                implemento.status === 'available' ? 'default' :
-                                implemento.status === 'maintenance' ? 'secondary' : 'destructive'
-                              }
-                            >
-                               {implemento.status === 'available' ? 'Disponible' :
-                                implemento.status === 'maintenance' ? 'Mantenimiento' : 'Fuera de uso'}
-                            </Badge>
+                            <StatusBadge status={implemento.status} />
                           </TableCell>
 
+                          {/* Acciones */}
                           <TableCell className="pr-4 sm:pr-6">
                             <div className="flex justify-end gap-1.5">
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => abrirModal(implemento)}
+                                aria-label={`Editar ${implemento.implement_name}`}
                                 className="size-8 text-muted-foreground hover:text-foreground"
                               >
                                 <Pencil className="size-3.5" />
@@ -546,6 +670,7 @@ const ImplementCRUD = () => {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => abrirConfirmacionEliminacion(implemento)}
+                                aria-label={`Eliminar ${implemento.implement_name}`}
                                 className="size-8 text-muted-foreground hover:text-destructive"
                               >
                                 <Trash2 className="size-3.5" />
@@ -555,6 +680,7 @@ const ImplementCRUD = () => {
                         </TableRow>
                       ))
                     ) : (
+                      /* Estado vacío */
                       <TableRow>
                         <TableCell colSpan={6} className="py-12 text-center">
                           <div className="flex flex-col items-center gap-3">
@@ -581,6 +707,7 @@ const ImplementCRUD = () => {
                 </Table>
               </div>
 
+              {/* Metadatos de la tabla */}
               <div className="px-4 sm:px-6 py-3 flex flex-col items-start justify-between gap-1 text-xs text-muted-foreground sm:flex-row sm:items-center border-t border-border/60">
                 <span>
                   {implementosFiltrados.length} de {totalItems} implementos
@@ -595,67 +722,106 @@ const ImplementCRUD = () => {
         </CardContent>
       </Card>
 
+      {/* ── Paginación ── */}
       <Pagination
         paginaActual={paginaActual}
         totalPaginas={totalPaginas}
         onCambiarPagina={setPaginaActual}
       />
 
+      {/* ── Modal: formulario de crear/editar implemento ── */}
       <Dialog open={modalAbierto} onOpenChange={setModalAbierto}>
         <DialogContent className="w-full max-w-lg sm:max-w-2xl md:max-w-4xl mx-4 sm:mx-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">
               {modoEdicion ? 'Editar Implemento' : 'Registrar Implemento'}
             </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Completa los campos obligatorios (<span className="text-destructive">*</span>) para guardar el implemento.
+            </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={(e) => { e.preventDefault(); guardarImplemento(); }} className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-              
-              <div className="flex flex-col gap-1 md:col-span-2">
-                <label className="text-sm font-medium">Nombre del implemento<span className="text-destructive">*</span></label>
-                <Input name="implement_name" value={implementoActual.implement_name} onChange={manejarCambio} required />
+          {/* Formulario en 1 columna (móvil) → 2 columnas (md+). */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 max-h-[60vh] overflow-y-auto pr-1">
+
+            {/* ── Columna izquierda: datos básicos ── */}
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">
+                  Nombre del implemento <span className="text-destructive">*</span>
+                </label>
+                <Input name="implement_name" value={implementoActual.implement_name} onChange={manejarCambio} />
               </div>
 
-              <div className="flex flex-col gap-1 text-sm font-medium">
-                <label>Marca<span className="text-destructive">*</span></label>
-                <Input name="brand" value={implementoActual.brand} onChange={manejarCambio} required />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">
+                  Marca <span className="text-destructive">*</span>
+                </label>
+                <Input name="brand" value={implementoActual.brand} onChange={manejarCambio} />
               </div>
 
-              <div className="flex flex-col gap-1 text-sm font-medium">
-                <label>Tipo de implemento<span className="text-destructive">*</span></label>
-                <Input name="implement_type" value={implementoActual.implement_type} onChange={manejarCambio} required />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">
+                  Tipo de implemento <span className="text-destructive">*</span>
+                </label>
+                <Input name="implement_type" value={implementoActual.implement_type} onChange={manejarCambio} placeholder="Ej: Sembradora, Arado..." />
               </div>
 
               <InputConUnidad
                 label="Requerimiento de Potencia"
                 unit="HP"
-                name="power_requirement_hp"
+                required
                 type="number"
                 min="1"
-                required
+                name="power_requirement_hp"
                 value={implementoActual.power_requirement_hp}
+                onChange={manejarCambio}
+              />
+              
+              <InputConUnidad
+                label="Ancho de Trabajo"
+                unit="m"
+                type="number"
+                min="0"
+                step="0.01"
+                name="working_width_m"
+                value={implementoActual.working_width_m}
+                onChange={manejarCambio}
+              />
+            </div>
+
+            {/* ── Columna derecha: Detalles operativos ── */}
+            <div className="flex flex-col gap-3">
+
+              <InputConUnidad
+                label="Profundidad de Trabajo"
+                unit="cm"
+                type="number"
+                min="0"
+                name="working_depth_cm"
+                value={implementoActual.working_depth_cm}
                 onChange={manejarCambio}
               />
 
               <InputConUnidad
-                label="Ancho de Trabajo"
-                unit="m"
-                name="working_width_m"
+                label="Peso"
+                unit="kg"
                 type="number"
                 min="0"
-                step="0.01"
-                value={implementoActual.working_width_m}
+                name="weight_kg"
+                value={implementoActual.weight_kg}
                 onChange={manejarCambio}
               />
 
-              <div className="flex flex-col gap-1 text-sm font-medium">
-                <label>Tipo de Suelo<span className="text-destructive">*</span></label>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">
+                  Tipo de Suelo <span className="text-destructive">*</span>
+                </label>
                 <Select
                   value={implementoActual.soil_type || 'All'}
                   onValueChange={(val) => setImplementoActual({ ...implementoActual, soil_type: val })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Seleccione un tipo de suelo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -670,39 +836,19 @@ const ImplementCRUD = () => {
                 </Select>
               </div>
 
-              <InputConUnidad
-                label="Profundidad de Trabajo"
-                unit="cm"
-                name="working_depth_cm"
-                type="number"
-                min="0"
-                value={implementoActual.working_depth_cm}
-                onChange={manejarCambio}
-              />
-
-              <InputConUnidad
-                label="Peso"
-                unit="kg"
-                name="weight_kg"
-                type="number"
-                min="0"
-                value={implementoActual.weight_kg}
-                onChange={manejarCambio}
-              />
-
-              <div className="flex flex-col gap-1 text-sm font-medium">
-                <label>Estado<span className="text-destructive">*</span></label>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Estado</label>
                 <Select
                   value={implementoActual.status || 'available'}
                   onValueChange={(val) => setImplementoActual({ ...implementoActual, status: val })}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccione el estado" />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona estado" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
                       <SelectItem value="available">Disponible</SelectItem>
-                      <SelectItem value="maintenance">Mantenimiento</SelectItem>
+                      <SelectItem value="maintenance">En mantenimiento</SelectItem>
                       <SelectItem value="out_of_service">Fuera de servicio</SelectItem>
                     </SelectGroup>
                   </SelectContent>
@@ -710,46 +856,89 @@ const ImplementCRUD = () => {
               </div>
 
             </div>
+          </div>
 
-            <DialogFooter className="mt-8 flex items-center gap-3">
-              <Button type="button" variant="outline" onClick={cerrarModal} disabled={guardando}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={guardando}>
-                {guardando ? 'Guardando...' : modoEdicion ? 'Guardar Cambios' : 'Añadir Implemento'}
-              </Button>
-            </DialogFooter>
-          </form>
+          {/* Pie del modal */}
+          <DialogFooter className="flex-col gap-2 sm:flex-row mt-4">
+            <Button variant="outline" onClick={cerrarModal} disabled={guardando} className="w-full sm:w-auto">
+              Cancelar
+            </Button>
+            <Button onClick={guardarImplemento} disabled={guardando} className="w-full sm:w-auto">
+              {guardando
+                ? 'Guardando...'
+                : modoEdicion
+                  ? 'Actualizar Implemento'
+                  : 'Guardar Implemento'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* ── AlertDialog: confirmación de eliminación ── */}
       <AlertDialog open={modalConfirmacionAbierto} onOpenChange={setModalConfirmacionAbierto}>
-        <AlertDialogContent className="w-[90%] sm:max-w-md rounded-xl">
+        <AlertDialogContent className="mx-4 sm:mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Está seguro de eliminar este implemento?</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. El implemento{' '}
-              <span className="font-semibold text-foreground">{implementoAEliminar?.implement_name}</span>{' '}
-              será eliminado del catálogo.
+              {implementoAEliminar
+                ? `¿Está seguro de eliminar el implemento "${implementoAEliminar.implement_name}"? Esta acción no se puede deshacer.`
+                : 'Esta acción no se puede deshacer.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-4 gap-2 sm:gap-0">
-            <AlertDialogCancel disabled={eliminando}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground focus:ring-destructive/20"
-              onClick={(e) => {
-                e.preventDefault();
-                confirmarEliminacionImplemento();
-              }}
-              disabled={eliminando}
-            >
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
+            <AlertDialogCancel onClick={cerrarConfirmacionEliminacion} disabled={eliminando}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmarEliminacionImplemento} disabled={eliminando} className="bg-destructive hover:bg-destructive/90">
               {eliminando ? 'Eliminando...' : 'Eliminar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
     </section>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Sub-componente: badge de estado semántico
+// ---------------------------------------------------------------------------
+
+/**
+ * StatusBadge — Badge de estado con color semántico según el valor del backend.
+ *
+ * @component
+ * @param {Object} props
+ * @param {string} props.status - Valor de status del backend.
+ */
+const StatusBadge = ({ status }) => {
+  const config = {
+    available: {
+      label: 'Disponible',
+      className: 'border-transparent bg-emerald-50 text-emerald-700',
+    },
+    maintenance: {
+      label: 'Mantenimiento',
+      className: 'border-transparent bg-amber-50 text-amber-700',
+    },
+    out_of_service: {
+      label: 'Fuera de servicio',
+      className: 'border-transparent bg-red-50 text-red-700',
+    },
+    inactive: {
+      label: 'Inactivo',
+      className: 'border-transparent bg-muted text-muted-foreground',
+    },
+  };
+
+  const { label, className } = config[status] ?? {
+    label: status,
+    className: 'border-transparent bg-muted text-muted-foreground',
+  };
+
+  return (
+    <Badge variant="outline" className={`text-xs font-normal ${className}`}>
+      {label}
+    </Badge>
   );
 };
 
