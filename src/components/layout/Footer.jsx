@@ -35,7 +35,7 @@ const Footer = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
         {/* Texto de copyright con enlace al equipo */}
         <p className="text-sm text-gray-400">
-          © 2025{' '}
+          © 2026{' '}
           <Link
             to="/SobreNosotros"
             className="font-medium text-[#909d00] hover:text-[#909d00]/80 transition-colors"
