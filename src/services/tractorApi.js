@@ -1,5 +1,5 @@
 import { apiClient } from '../lib/apiClient';
-import { buildQueryString, applyFilters, paginateAndFormatMock } from '../lib/mockUtils';
+import { applyFilters, paginateAndFormatMock } from '../lib/mockUtils';
 
 const REMOTE_TRACTOR_API_ENABLED = import.meta.env.VITE_ENABLE_REMOTE_TRACTOR_API === 'true';
 

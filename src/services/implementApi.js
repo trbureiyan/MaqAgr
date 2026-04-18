@@ -80,7 +80,7 @@ export const getImplements = async (query = {}) => {
   } = query;
 
   const shouldUseSearchEndpoint = Boolean(search || type || minPower || maxPower || maxWeight);
-  const endpoint = shouldUseSearchEndpoint ? '/implements/search' : '/implements';
+  const endpoint = shouldUseSearchEndpoint ? '/api/implements/search' : '/api/implements';
 
   const queryString = buildQueryString({
     page,
@@ -111,7 +111,7 @@ export const createImplement = async (implementPayload) => {
     return { success: true, data: item };
   }
 
-  return apiClient('/implements', {
+  return apiClient('/api/implements', {
     method: 'POST',
     body: implementPayload,
   });
@@ -137,7 +137,7 @@ export const updateImplement = async (implementId, implementPayload) => {
     return { success: true, data: updated };
   }
 
-  return apiClient(`/implements/${implementId}`, {
+  return apiClient(`/api/implements/${implementId}`, {
     method: 'PUT',
     body: implementPayload,
   });
@@ -156,7 +156,7 @@ export const deleteImplement = async (implementId) => {
     return { success: true, data: existing };
   }
 
-  return apiClient(`/implements/${implementId}`, {
+  return apiClient(`/api/implements/${implementId}`, {
     method: 'DELETE',
   });
 };
