@@ -97,6 +97,9 @@ const TractorForm = lazy(() => import('./pages/TractorForm'));
 /** Panel CRUD de administración de implementos (ruta protegida). */
 const ImplementForm = lazy(() => import('./pages/ImplementForm'));
 
+/** Dashboard principal de administración. */
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+
 /** Página de detalle de tractor o máquina agrícola. */
 const TractorMachineDetail = lazy(() => import('./pages/TractorMachineDetail'));
 
@@ -207,6 +210,7 @@ function App() {
                 <Route path="/maquinaria/:id"    element={<TractorMachineDetail />} />
 
                 {/* ── Rutas protegidas: panel de administración ── */}
+                <Route path="/admin"             element={<AdminDashboard />} />
                 <Route path="/admin/TractorForm" element={<TractorForm />} />
                 <Route path="/admin/ImplementForm" element={<ImplementForm />} />
 
