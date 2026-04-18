@@ -210,7 +210,8 @@ function App() {
                       <Route path="/maquinaria/:id"    element={<TractorMachineDetail />} />
 
                       {/* ── Rutas protegidas: panel de administración ── */}
-                      <Route element={<ProtectedRoute allowedRoles={[1, 'admin']} />}>
+                      <Route element={<ProtectedRoute allowedRoles={['admin', 1]} />}>
+                        <Route path="/admin" element={<AdminDashboard />} />
                         <Route path="/admin/TractorForm" element={<TractorForm />} />
                         <Route path="/admin/ImplementForm" element={<ImplementForm />} />
                       </Route>
