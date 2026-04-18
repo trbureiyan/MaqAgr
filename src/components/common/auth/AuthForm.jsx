@@ -18,7 +18,7 @@
  */
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '.';
 import backgroundImage from '../../../assets/img/fondo.jpg';
 import Button from '../../ui/buttons/Button';
@@ -54,9 +54,10 @@ const AuthForm = ({ formType }) => {
 
   /** Función de navegación programática para redirigir tras el envío. */
   const navigate = useNavigate();
+  const location = useLocation();
 
   /** Función de login del contexto de autenticación global. */
-  const { login } = useAuth();
+  const { login, register } = useAuth();
 
   // ── Estado del formulario ─────────────────────────────────────────────────
 
@@ -115,6 +116,12 @@ const AuthForm = ({ formType }) => {
       setErrorMessage('Por favor, completa los campos requeridos.');
       return;
     }
+
+    if (formType === 'register' && !formData.name?.trim()) {
+      setErrorMessage('Por favor, ingresa tu nombre.');
+      return;
+    }
+
     if (formType === 'register' && formData.password !== formData.confirmPassword) {
       setErrorMessage('Las contraseñas no coinciden.');
       return;
@@ -131,17 +138,20 @@ const AuthForm = ({ formType }) => {
           email: formData.email,
           password: formData.password
         });
-        navigate('/');
+        const redirectTo = location.state?.from?.pathname || '/';
+        navigate(redirectTo, { replace: true });
       } else {
-        /*
-         * Registro mock: en producción se llamará a POST /api/auth/register a través de apiClient.
-         */
-        console.warn("Endpoints de registro aún en roadmap. Simulación...");
-        alert('Registro simulado exitoso. Por favor inicie sesión.');
-        navigate('/Login');
+        await register({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.userType === 'educator' ? 'operator' : 'user',
+        });
+
+        navigate('/Login', { replace: true, state: { registered: true } });
       }
     } catch (err) {
-      setErrorMessage(err.message || 'Ocurrió un error al procesar la solicitud.');
+      setErrorMessage(err?.message || 'Ocurrió un error al procesar la solicitud.');
     } finally {
       setIsLoading(false);
     }
@@ -321,13 +331,13 @@ const AuthForm = ({ formType }) => {
                 {/* Enlace a registro — solo visible en modo login */}
                 {formType === 'login' && (
                   <div className="text-center">
-                    <a
-                      href="/Registro"
+                    <Link
+                      to="/Registro"
                       className="text-white hover:text-yellow-200 text-sm sm:text-base
                                  underline-offset-2 hover:underline transition-colors"
                     >
                       ¿Aún no estás registrado? Regístrate aquí
-                    </a>
+                    </Link>
                   </div>
                 )}
 
