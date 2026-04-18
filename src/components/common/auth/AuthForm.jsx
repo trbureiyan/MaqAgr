@@ -18,7 +18,7 @@
  */
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '.';
 import backgroundImage from '../../../assets/img/fondo.jpg';
 import Button from '../../ui/buttons/Button';
@@ -54,9 +54,10 @@ const AuthForm = ({ formType }) => {
 
   /** Función de navegación programática para redirigir tras el envío. */
   const navigate = useNavigate();
+  const location = useLocation();
 
   /** Función de login del contexto de autenticación global. */
-  const { login } = useAuth();
+  const { login, register } = useAuth();
 
   // ── Estado del formulario ─────────────────────────────────────────────────
 
@@ -80,6 +81,9 @@ const AuthForm = ({ formType }) => {
     userType: 'normal',
   });
 
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   // ── Manejadores ───────────────────────────────────────────────────────────
 
   /**
@@ -92,6 +96,7 @@ const AuthForm = ({ formType }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errorMessage) setErrorMessage(null); // Limpiar error al tipar
   };
 
   /**
@@ -101,27 +106,54 @@ const AuthForm = ({ formType }) => {
    *
    * @param {React.FormEvent<HTMLFormElement>} e - Evento de envío del formulario.
    */
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     // Prevenir recarga de página por comportamiento nativo del formulario
     e.preventDefault();
+    setErrorMessage(null);
 
-    if (formType === 'login') {
-      /*
-       * Autenticación mock: en producción se llamará a POST /api/auth/login.
-       * El nombre de usuario se deriva del email para simplificar el contexto actual.
-       */
-      login({
-        email: formData.email,
-        name: formData.email.split('@')[0],
-      });
-      navigate('/');
-    } else {
-      /*
-       * Registro mock: en producción se llamará a POST /api/auth/register.
-       * Por ahora solo muestra una alerta y redirige al login.
-       */
-      alert('Registro exitoso. Por favor inicie sesión.');
-      navigate('/login');
+    // Validación temprana (Client-side)
+    if (!formData.email || !formData.password) {
+      setErrorMessage('Por favor, completa los campos requeridos.');
+      return;
+    }
+
+    if (formType === 'register' && !formData.name?.trim()) {
+      setErrorMessage('Por favor, ingresa tu nombre.');
+      return;
+    }
+
+    if (formType === 'register' && formData.password !== formData.confirmPassword) {
+      setErrorMessage('Las contraseñas no coinciden.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      if (formType === 'login') {
+        /*
+         * Llama al AuthContext real (ahora usando apiClient).
+         */
+        await login({
+          email: formData.email,
+          password: formData.password
+        });
+        const redirectTo = location.state?.from?.pathname || '/';
+        navigate(redirectTo, { replace: true });
+      } else {
+        await register({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.userType === 'educator' ? 'operator' : 'user',
+        });
+
+        navigate('/Login', { replace: true, state: { registered: true } });
+      }
+    } catch (err) {
+      setErrorMessage(err?.message || 'Ocurrió un error al procesar la solicitud.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -166,6 +198,13 @@ const AuthForm = ({ formType }) => {
                 <h2 className="text-center text-xl sm:text-2xl font-bold text-white mb-6 sm:mb-8">
                   {formType === 'login' ? 'LOGIN' : 'REGISTRO'}
                 </h2>
+
+                {/* Mostrar alerta de error si existe */}
+                {errorMessage && (
+                  <div className="bg-red-500 text-white text-sm p-3 rounded-md mb-4 text-center">
+                    {errorMessage}
+                  </div>
+                )}
 
                 {/* ── Campo: Nombre (solo en registro) ── */}
                 {formType === 'register' && (
@@ -292,13 +331,13 @@ const AuthForm = ({ formType }) => {
                 {/* Enlace a registro — solo visible en modo login */}
                 {formType === 'login' && (
                   <div className="text-center">
-                    <a
-                      href="/Registro"
+                    <Link
+                      to="/Registro"
                       className="text-white hover:text-yellow-200 text-sm sm:text-base
                                  underline-offset-2 hover:underline transition-colors"
                     >
                       ¿Aún no estás registrado? Regístrate aquí
-                    </a>
+                    </Link>
                   </div>
                 )}
 
@@ -312,8 +351,9 @@ const AuthForm = ({ formType }) => {
                     size="large"
                     shape="pill"
                     textColor="#000000"
+                    disabled={isLoading}
                   >
-                    {formType === 'login' ? 'Iniciar Sesión' : 'Registrarse'}
+                    {isLoading ? 'Procesando...' : (formType === 'login' ? 'Iniciar Sesión' : 'Registrarse')}
                   </Button>
                 </div>
               </form>

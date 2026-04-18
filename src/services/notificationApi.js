@@ -1,9 +1,9 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const NOTIFICATION_BASE_URL = `${API_BASE_URL}/api/notifications`;
-const REMOTE_API_ENABLED = import.meta.env.VITE_ENABLE_REMOTE_TRACTOR_API === 'true'; // Reusing this flag as proxy for remote env
+const REMOTE_API_ENABLED = import.meta.env.VITE_ENABLE_REMOTE_NOTIFICATION_API === 'true'; // Reusing this flag as proxy for remote env
 
 const getAuthToken = () => {
-  return localStorage.getItem('token') || localStorage.getItem('authToken') || '';
+  return localStorage.getItem('token') || sessionStorage.getItem('token') || '';
 };
 
 const requestJson = async (url, options = {}) => {

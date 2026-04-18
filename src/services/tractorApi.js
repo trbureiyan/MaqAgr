@@ -1,155 +1,58 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000').replace(/\/$/, '');
-const TRACTOR_BASE_URL = `${API_BASE_URL}/api/tractors`;
+import { apiClient } from '../lib/apiClient';
+import { applyFilters, buildQueryString, paginateAndFormatMock } from '../lib/mockUtils';
+
 const REMOTE_TRACTOR_API_ENABLED = import.meta.env.VITE_ENABLE_REMOTE_TRACTOR_API === 'true';
 
 let mockTractors = [
   {
-    tractor_id: 1,
+    tractorId: 1,
     name: 'John Deere 5075E',
     brand: 'John Deere',
     model: '5075E',
-    engine_power_hp: 75,
-    weight_kg: 3200,
-    traction_force_kn: 45,
-    traction_type: '4x4',
-    tire_type: 'Radial 16.9R30',
-    tire_width_mm: null,
-    tire_diameter_mm: null,
-    tire_pressure_psi: null,
+    enginePowerHp: 75,
+    weightKg: 3200,
+    tractionForceKn: 45,
+    tractionType: '4x4',
+    tireType: 'Radial 16.9R30',
+    tireWidthMm: null,
+    tireDiameterMm: null,
+    tirePressurePsi: null,
     status: 'available',
   },
   {
-    tractor_id: 2,
+    tractorId: 2,
     name: 'Massey Ferguson 4709',
     brand: 'Massey Ferguson',
     model: '4709',
-    engine_power_hp: 90,
-    weight_kg: 3500,
-    traction_force_kn: 52,
-    traction_type: '4x4',
-    tire_type: 'Radial 18.4R34',
-    tire_width_mm: null,
-    tire_diameter_mm: null,
-    tire_pressure_psi: null,
+    enginePowerHp: 90,
+    weightKg: 3500,
+    tractionForceKn: 52,
+    tractionType: '4x4',
+    tireType: 'Radial 18.4R34',
+    tireWidthMm: null,
+    tireDiameterMm: null,
+    tirePressurePsi: null,
     status: 'available',
   },
   {
-    tractor_id: 3,
+    tractorId: 3,
     name: 'New Holland TT3.55',
     brand: 'New Holland',
     model: 'TT3.55',
-    engine_power_hp: 55,
-    weight_kg: 2800,
-    traction_force_kn: 38,
-    traction_type: '4x2',
-    tire_type: 'Diagonal 14.9-28',
-    tire_width_mm: null,
-    tire_diameter_mm: null,
-    tire_pressure_psi: null,
+    enginePowerHp: 55,
+    weightKg: 2800,
+    tractionForceKn: 38,
+    tractionType: '4x2',
+    tireType: 'Diagonal 14.9-28',
+    tireWidthMm: null,
+    tireDiameterMm: null,
+    tirePressurePsi: null,
     status: 'available',
   },
 ];
 
-const getAuthToken = () => {
-  return localStorage.getItem('token') || localStorage.getItem('authToken') || '';
-};
-
-const toNumberOrNull = (value) => {
-  if (value === undefined || value === null || value === '') {
-    return null;
-  }
-  const num = Number(value);
-  return Number.isNaN(num) ? null : num;
-};
-
-const buildQueryString = (params = {}) => {
-  const searchParams = new URLSearchParams();
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === '') {
-      return;
-    }
-    searchParams.set(key, String(value));
-  });
-
-  return searchParams.toString();
-};
-
-const requestJson = async (url, options = {}) => {
-  const response = await fetch(url, options);
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const backendErrors = payload?.errors;
-    const backendMessage = payload?.message;
-    const errorMessage = Array.isArray(backendErrors)
-      ? backendErrors.join(', ')
-      : backendMessage || `Error HTTP ${response.status}`;
-
-    throw new Error(errorMessage);
-  }
-
-  return payload;
-};
-
-const applySort = (items, sort = 'name', order = 'asc') => {
-  const list = [...items];
-  list.sort((a, b) => {
-    let valA = a?.[sort];
-    let valB = b?.[sort];
-
-    if (typeof valA === 'string') valA = valA.toLowerCase();
-    if (typeof valB === 'string') valB = valB.toLowerCase();
-
-    if (valA === undefined || valA === null) return 1;
-    if (valB === undefined || valB === null) return -1;
-
-    if (valA < valB) return order === 'desc' ? 1 : -1;
-    if (valA > valB) return order === 'desc' ? -1 : 1;
-    return 0;
-  });
-  return list;
-};
-
-const applyFilters = (items, { search = '', brand = '', minPower = '', maxPower = '', maxWeight = '' }) => {
-  const searchLower = search.toLowerCase();
-  const brandLower = brand.toLowerCase();
-  const minPowerNum = toNumberOrNull(minPower);
-  const maxPowerNum = toNumberOrNull(maxPower);
-  const maxWeightNum = toNumberOrNull(maxWeight);
-
-  return items.filter((tractor) => {
-    const matchesSearch = !searchLower
-      ? true
-      : tractor.name?.toLowerCase().includes(searchLower) ||
-        tractor.brand?.toLowerCase().includes(searchLower);
-
-    const matchesBrand = !brandLower
-      ? true
-      : tractor.brand?.toLowerCase().includes(brandLower);
-
-    const matchesMinPower = minPowerNum === null
-      ? true
-      : Number(tractor.engine_power_hp || 0) >= minPowerNum;
-
-    const matchesMaxPower = maxPowerNum === null
-      ? true
-      : Number(tractor.engine_power_hp || 0) <= maxPowerNum;
-
-    const matchesMaxWeight = maxWeightNum === null
-      ? true
-      : Number(tractor.weight_kg || 0) <= maxWeightNum;
-
-    return matchesSearch && matchesBrand && matchesMinPower && matchesMaxPower && matchesMaxWeight;
-  });
-};
-
 const getMockTractors = async (query = {}) => {
   const {
-    page = 1,
-    limit = 10,
-    sort = 'name',
-    order = 'asc',
     search = '',
     brand = '',
     minPower = '',
@@ -157,32 +60,20 @@ const getMockTractors = async (query = {}) => {
     maxWeight = '',
   } = query;
 
-  const filtered = applyFilters(mockTractors, { search, brand, minPower, maxPower, maxWeight });
-  const sorted = applySort(filtered, sort, order);
+  const filtered = applyFilters(mockTractors, {
+    search,
+    exactMatchFields: { brand },
+    minPower,
+    maxPower,
+    maxWeight
+  });
 
-  const safeLimit = Number(limit) > 0 ? Number(limit) : 10;
-  const safePage = Number(page) > 0 ? Number(page) : 1;
-  const offset = (safePage - 1) * safeLimit;
-
-  const data = sorted.slice(offset, offset + safeLimit);
-  const total = sorted.length;
-  const totalPages = Math.max(1, Math.ceil(total / safeLimit));
-
-  return {
-    success: true,
-    data,
-    pagination: {
-      page: safePage,
-      limit: safeLimit,
-      total,
-      totalPages,
-    },
-  };
+  return paginateAndFormatMock(filtered, query, 'name');
 };
 
-export const getTractors = async (query = {}) => {
+export const getTractors = async (params = {}) => {
   if (!REMOTE_TRACTOR_API_ENABLED) {
-    return getMockTractors(query);
+    return getMockTractors(params);
   }
 
   const {
@@ -195,10 +86,10 @@ export const getTractors = async (query = {}) => {
     minPower = '',
     maxPower = '',
     maxWeight = '',
-  } = query;
+  } = params;
 
   const shouldUseSearchEndpoint = Boolean(search || brand || minPower || maxPower || maxWeight);
-  const endpoint = shouldUseSearchEndpoint ? `${TRACTOR_BASE_URL}/search` : TRACTOR_BASE_URL;
+  const endpoint = shouldUseSearchEndpoint ? '/api/tractors/search' : '/api/tractors';
 
   const queryString = buildQueryString({
     page,
@@ -212,44 +103,55 @@ export const getTractors = async (query = {}) => {
     maxWeight,
   });
 
-  return requestJson(`${endpoint}?${queryString}`);
+  return apiClient(queryString ? `${endpoint}?${queryString}` : endpoint, {
+    method: 'GET',
+  });
 };
 
-export const createTractor = async (tractorPayload) => {
+export const getTractorById = async (id) => {
+  if (!REMOTE_TRACTOR_API_ENABLED) {
+    const tractor = mockTractors.find((item) => Number(item.tractorId) === Number(id));
+    if (!tractor) {
+      throw new Error('Tractor no encontrado');
+    }
+    return { success: true, data: tractor };
+  }
+
+  return apiClient(`/api/tractors/${id}`, {
+    method: 'GET',
+  });
+};
+
+export const createTractor = async (payload) => {
   if (!REMOTE_TRACTOR_API_ENABLED) {
     const nextId = mockTractors.length > 0
-      ? Math.max(...mockTractors.map((t) => t.tractor_id || 0)) + 1
+      ? Math.max(...mockTractors.map((t) => Number(t.tractorId) || 0)) + 1
       : 1;
 
     const item = {
-      tractor_id: nextId,
-      ...tractorPayload,
+      tractorId: nextId,
+      ...payload,
     };
     mockTractors = [...mockTractors, item];
     return { success: true, data: item };
   }
 
-  const token = getAuthToken();
-  return requestJson(TRACTOR_BASE_URL, {
+  return apiClient('/api/tractors', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(tractorPayload),
+    body: payload,
   });
 };
 
-export const updateTractor = async (tractorId, tractorPayload) => {
+export const updateTractor = async (id, payload) => {
   if (!REMOTE_TRACTOR_API_ENABLED) {
-    const idNum = Number(tractorId);
+    const idNum = Number(id);
     let updated = null;
 
     mockTractors = mockTractors.map((item) => {
-      if (item.tractor_id !== idNum) {
+      if (Number(item.tractorId) !== idNum) {
         return item;
       }
-      updated = { ...item, ...tractorPayload };
+      updated = { ...item, ...payload };
       return updated;
     });
 
@@ -260,36 +162,27 @@ export const updateTractor = async (tractorId, tractorPayload) => {
     return { success: true, data: updated };
   }
 
-  const token = getAuthToken();
-  return requestJson(`${TRACTOR_BASE_URL}/${tractorId}`, {
+  return apiClient(`/api/tractors/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(tractorPayload),
+    body: payload,
   });
 };
 
-export const deleteTractor = async (tractorId) => {
+export const deleteTractor = async (id) => {
   if (!REMOTE_TRACTOR_API_ENABLED) {
-    const idNum = Number(tractorId);
-    const existing = mockTractors.find((item) => item.tractor_id === idNum);
+    const idNum = Number(id);
+    const existing = mockTractors.find((item) => Number(item.tractorId) === idNum);
 
     if (!existing) {
       throw new Error('Tractor no encontrado');
     }
 
-    mockTractors = mockTractors.filter((item) => item.tractor_id !== idNum);
+    mockTractors = mockTractors.filter((item) => Number(item.tractorId) !== idNum);
     return { success: true, data: existing };
   }
 
-  const token = getAuthToken();
-  return requestJson(`${TRACTOR_BASE_URL}/${tractorId}`, {
+  return apiClient(`/api/tractors/${id}`, {
     method: 'DELETE',
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
   });
 };
 

@@ -23,6 +23,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Pagination from '@/components/common/Pagination';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -97,14 +98,14 @@ import {
  * @type {Object}
  */
 const ESTADO_INICIAL_IMPLEMENTO = {
-  implement_name: '',
+  implementName: '',
   brand: '',
-  power_requirement_hp: '',
-  working_width_m: '',
-  soil_type: 'All',
-  working_depth_cm: '',
-  weight_kg: '',
-  implement_type: '',
+  powerRequirementHp: '',
+  workingWidthM: '',
+  soilType: 'All',
+  workingDepthCm: '',
+  weightKg: '',
+  implementType: '',
   status: 'available',
 };
 
@@ -114,8 +115,8 @@ const ESTADO_INICIAL_IMPLEMENTO = {
  * @type {Record<string, string>}
  */
 const ORDER_BY_FIELD = {
-  implement_name: 'implement_name',
-  power_requirement_hp: 'power_requirement_hp',
+  implementName: 'implement_name',
+  powerRequirementHp: 'power_requirement_hp',
   status: 'status',
 };
 
@@ -186,17 +187,18 @@ const FilterBadge = ({ label, active, onClick }) => (
 // Sub-componente: campo de formulario con label de unidad
 // ---------------------------------------------------------------------------
 
-const InputConUnidad = ({ label, unit, required, ...rest }) => (
+const InputConUnidad = ({ label, unit, required, error, ...rest }) => (
   <div className="flex flex-col gap-1">
     <label className="text-sm font-medium text-foreground">
       {label}{required && <span className="ml-0.5 text-destructive">*</span>}
     </label>
     <div className="relative">
-      <Input {...rest} className="pr-12" />
+      <Input {...rest} className={`pr-12 ${error ? 'border-destructive' : ''}`} />
       <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground select-none">
         {unit}
       </span>
     </div>
+    {error && <span className="text-xs text-destructive">{error}</span>}
   </div>
 );
 
@@ -227,6 +229,7 @@ const ImplementCRUD = () => {
 
   // ── Estado: búsqueda y filtros ────────────────────────────────────────────
   const [busqueda, setBusqueda] = useState('');
+  const busquedaDebounced = useDebounce(busqueda, 300);
   const [ordenamiento, setOrdenamiento] = useState({ sort: 'implement_name', order: 'asc' });
 
   const [filtroRapido, setFiltroRapido] = useState({ tipo: '', estado: '' });
@@ -238,6 +241,7 @@ const ImplementCRUD = () => {
 
   // ── Estado: formulario ────────────────────────────────────────────────────
   const [implementoActual, setImplementoActual] = useState(ESTADO_INICIAL_IMPLEMENTO);
+  const [erroresFila, setErroresFila] = useState({});
   const [modoEdicion, setModoEdicion] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
@@ -249,11 +253,11 @@ const ImplementCRUD = () => {
     limit: itemsPorPagina,
     sort: ordenamiento.sort,
     order: ordenamiento.order,
-    search: busqueda.trim(),
+    search: busquedaDebounced.trim(),
     type: '',
     minPower: '',
     maxPower: '',
-  }), [paginaActual, ordenamiento, busqueda]);
+  }), [paginaActual, ordenamiento, busquedaDebounced]);
 
   // ── Carga de datos ────────────────────────────────────────────────────────
 
@@ -283,15 +287,11 @@ const ImplementCRUD = () => {
     cargarTabla();
   }, [cargarTabla]);
 
-  useEffect(() => {
-    setPaginaActual(1);
-  }, [busqueda, filtroRapido]);
-
   // ── Filtrado client-side de filtros rápidos ───────────────────────────────
 
   const implementosFiltrados = useMemo(() => {
     return implementos.filter((i) => {
-      const matchTipo = !filtroRapido.tipo || i.implement_type === filtroRapido.tipo;
+      const matchTipo = !filtroRapido.tipo || i.implementType === filtroRapido.tipo;
       const matchEstado = !filtroRapido.estado || i.status === filtroRapido.estado;
       return matchTipo && matchEstado;
     });
@@ -302,15 +302,15 @@ const ImplementCRUD = () => {
   const abrirModal = (implemento = null) => {
     if (implemento) {
       setImplementoActual({
-        implement_id: implemento.implement_id,
-        implement_name: implemento.implement_name ?? '',
+        implementId: implemento.implementId,
+        implementName: implemento.implementName ?? '',
         brand: implemento.brand ?? '',
-        power_requirement_hp: implemento.power_requirement_hp ?? '',
-        working_width_m: implemento.working_width_m ?? '',
-        soil_type: implemento.soil_type ?? 'All',
-        working_depth_cm: implemento.working_depth_cm ?? '',
-        weight_kg: implemento.weight_kg ?? '',
-        implement_type: implemento.implement_type ?? '',
+        powerRequirementHp: implemento.powerRequirementHp ?? '',
+        workingWidthM: implemento.workingWidthM ?? '',
+        soilType: implemento.soilType ?? 'All',
+        workingDepthCm: implemento.workingDepthCm ?? '',
+        weightKg: implemento.weightKg ?? '',
+        implementType: implemento.implementType ?? '',
         status: implemento.status ?? 'available',
       });
       setModoEdicion(true);
@@ -331,20 +331,24 @@ const ImplementCRUD = () => {
   const manejarCambio = (event) => {
     const { name, value } = event.target;
     setImplementoActual((prev) => ({ ...prev, [name]: value }));
+
+    if (erroresFila[name]) {
+      setErroresFila((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const obtenerPayload = () => {
     const payload = {
-      implement_name: implementoActual.implement_name?.trim(),
+      implementName: implementoActual.implementName?.trim(),
       brand: implementoActual.brand?.trim(),
-      power_requirement_hp: Number(implementoActual.power_requirement_hp),
-      implement_type: implementoActual.implement_type?.trim(),
-      soil_type: implementoActual.soil_type,
+      powerRequirementHp: Number(implementoActual.powerRequirementHp),
+      implementType: implementoActual.implementType?.trim(),
+      soilType: implementoActual.soilType,
       status: implementoActual.status,
     };
 
     const camposNumericos = [
-      'working_width_m', 'working_depth_cm', 'weight_kg',
+      'workingWidthM', 'workingDepthCm', 'weightKg',
     ];
 
     camposNumericos.forEach((field) => {
@@ -358,19 +362,21 @@ const ImplementCRUD = () => {
   };
 
   const validarFormulario = () => {
-    if (!implementoActual.implement_name?.trim())  return 'El nombre es obligatorio.';
-    if (!implementoActual.brand?.trim()) return 'La marca es obligatoria.';
-    if (!implementoActual.implement_type?.trim()) return 'El tipo de implemento es obligatorio.';
-    if (implementoActual.power_requirement_hp === '' || Number(implementoActual.power_requirement_hp) <= 0) {
-      return 'El requerimiento de potencia (HP) debe ser mayor a 0.';
+    const nuevosErrores = {};
+    if (!implementoActual.implementName?.trim()) nuevosErrores.implementName = 'Requerido';
+    if (!implementoActual.brand?.trim()) nuevosErrores.brand = 'Requerido';
+    if (!implementoActual.implementType?.trim()) nuevosErrores.implementType = 'Requerido';
+    if (implementoActual.powerRequirementHp === '' || Number(implementoActual.powerRequirementHp) <= 0) {
+      nuevosErrores.powerRequirementHp = 'Debe ser mayor a 0';
     }
-    return null;
+    
+    setErroresFila(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
   };
 
   const guardarImplemento = async () => {
-    const errorValidacion = validarFormulario();
-    if (errorValidacion) {
-      notifyError('Error de validación', errorValidacion);
+    if (!validarFormulario()) {
+      notifyError('Campos incompletos', 'Por favor revisa los errores en el formulario.');
       return;
     }
 
@@ -380,11 +386,11 @@ const ImplementCRUD = () => {
       const payload = obtenerPayload();
 
       if (modoEdicion) {
-        await updateImplement(implementoActual.implement_id, payload);
-        notifySuccess('Implemento Actualizado', `El implemento ${payload.implement_name} se actualizó correctamente.`);
+        await updateImplement(implementoActual.implementId, payload);
+        notifySuccess('Implemento Actualizado', `El implemento ${payload.implementName} se actualizó correctamente.`);
       } else {
         await createImplement(payload);
-        notifySuccess('Implemento Creado', `El implemento ${payload.implement_name} fue registrado con éxito.`);
+        notifySuccess('Implemento Creado', `El implemento ${payload.implementName} fue registrado con exito.`);
       }
 
       cerrarModal();
@@ -412,12 +418,12 @@ const ImplementCRUD = () => {
   };
 
   const confirmarEliminacionImplemento = async () => {
-    if (!implementoAEliminar?.implement_id) return;
+    if (!implementoAEliminar?.implementId) return;
 
     setEliminando(true);
 
     try {
-      await deleteImplement(implementoAEliminar.implement_id);
+      await deleteImplement(implementoAEliminar.implementId);
       notifySuccess('Implemento Eliminado', `El implemento fue eliminado.`);
       cerrarConfirmacionEliminacion();
       await cargarTabla();
@@ -448,11 +454,13 @@ const ImplementCRUD = () => {
       ...prev,
       [tipo]: prev[tipo] === valor ? '' : valor,
     }));
+    setPaginaActual(1);
   };
 
   const limpiarFiltros = () => {
     setBusqueda('');
     setFiltroRapido({ tipo: '', estado: '' });
+    setPaginaActual(1);
   };
 
   // ── Derivados ─────────────────────────────────────────────────────────────
@@ -498,7 +506,10 @@ const ImplementCRUD = () => {
                   className="pl-8 text-sm"
                   placeholder="Buscar implemento por nombre o marca..."
                   value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
+                  onChange={(e) => {
+                    setBusqueda(e.target.value);
+                    setPaginaActual(1);
+                  }}
                   aria-label="Buscar implementos por nombre o marca"
                 />
               </div>
@@ -570,11 +581,11 @@ const ImplementCRUD = () => {
                       <TableHead className="pl-4 sm:pl-6">
                         <button
                           type="button"
-                          onClick={() => alternarOrden('implement_name')}
+                          onClick={() => alternarOrden('implementName')}
                           className="inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                         >
                           Nombre
-                          <SortIndicator fieldKey="implement_name" ordenamiento={ordenamiento} />
+                          <SortIndicator fieldKey="implementName" ordenamiento={ordenamiento} />
                         </button>
                       </TableHead>
 
@@ -586,11 +597,11 @@ const ImplementCRUD = () => {
                       <TableHead>
                         <button
                           type="button"
-                          onClick={() => alternarOrden('power_requirement_hp')}
+                          onClick={() => alternarOrden('powerRequirementHp')}
                           className="inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                         >
                           req. Potencia (HP)
-                          <SortIndicator fieldKey="power_requirement_hp" ordenamiento={ordenamiento} />
+                          <SortIndicator fieldKey="powerRequirementHp" ordenamiento={ordenamiento} />
                         </button>
                       </TableHead>
 
@@ -620,19 +631,19 @@ const ImplementCRUD = () => {
                     {implementosFiltrados.length > 0 ? (
                       implementosFiltrados.map((implemento) => (
                         <TableRow
-                          key={implemento.implement_id}
+                          key={implemento.implementId}
                           className="border-b border-border/60 hover:bg-muted/40 transition-colors"
                         >
                           {/* Nombre */}
                           <TableCell className="pl-4 sm:pl-6 font-medium text-sm whitespace-nowrap">
-                            {implemento.implement_name}
+                            {implemento.implementName}
                           </TableCell>
 
                           {/* Marca y tipo */}
                           <TableCell>
                             <div className="flex flex-col">
                               <span className="text-sm">{implemento.brand}</span>
-                              <span className="text-xs text-muted-foreground">{TIPO_LABELS[implemento.implement_type] || implemento.implement_type}</span>
+                              <span className="text-xs text-muted-foreground">{TIPO_LABELS[implemento.implementType] || implemento.implementType}</span>
                             </div>
                           </TableCell>
 
@@ -640,13 +651,13 @@ const ImplementCRUD = () => {
                           <TableCell>
                             <span className="inline-flex items-center gap-1 text-sm whitespace-nowrap">
                               <Gauge className="size-3.5 text-muted-foreground" aria-hidden="true" />
-                              {implemento.power_requirement_hp} HP
+                              {implemento.powerRequirementHp} HP
                             </span>
                           </TableCell>
 
                           {/* Ancho de Trabajo */}
                           <TableCell className="text-sm">
-                            {implemento.working_width_m ? `${implemento.working_width_m} m` : '—'}
+                            {implemento.workingWidthM ? `${implemento.workingWidthM} m` : '—'}
                           </TableCell>
 
                           {/* Estado */}
@@ -661,7 +672,7 @@ const ImplementCRUD = () => {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => abrirModal(implemento)}
-                                aria-label={`Editar ${implemento.implement_name}`}
+                                aria-label={`Editar ${implemento.implementName}`}
                                 className="size-8 text-muted-foreground hover:text-foreground"
                               >
                                 <Pencil className="size-3.5" />
@@ -670,7 +681,7 @@ const ImplementCRUD = () => {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => abrirConfirmacionEliminacion(implemento)}
-                                aria-label={`Eliminar ${implemento.implement_name}`}
+                                aria-label={`Eliminar ${implemento.implementName}`}
                                 className="size-8 text-muted-foreground hover:text-destructive"
                               >
                                 <Trash2 className="size-3.5" />
@@ -750,21 +761,24 @@ const ImplementCRUD = () => {
                 <label className="text-sm font-medium">
                   Nombre del implemento <span className="text-destructive">*</span>
                 </label>
-                <Input name="implement_name" value={implementoActual.implement_name} onChange={manejarCambio} />
+                <Input name="implementName" value={implementoActual.implementName} onChange={manejarCambio} className={erroresFila.implementName ? 'border-destructive' : ''} />
+                {erroresFila.implementName && <span className="text-xs text-destructive">{erroresFila.implementName}</span>}
               </div>
 
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium">
                   Marca <span className="text-destructive">*</span>
                 </label>
-                <Input name="brand" value={implementoActual.brand} onChange={manejarCambio} />
+                <Input name="brand" value={implementoActual.brand} onChange={manejarCambio} className={erroresFila.brand ? 'border-destructive' : ''} />
+                {erroresFila.brand && <span className="text-xs text-destructive">{erroresFila.brand}</span>}
               </div>
 
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium">
                   Tipo de implemento <span className="text-destructive">*</span>
                 </label>
-                <Input name="implement_type" value={implementoActual.implement_type} onChange={manejarCambio} placeholder="Ej: Sembradora, Arado..." />
+                <Input name="implementType" value={implementoActual.implementType} onChange={manejarCambio} placeholder="Ej: Sembradora, Arado..." className={erroresFila.implementType ? 'border-destructive' : ''} />
+                {erroresFila.implementType && <span className="text-xs text-destructive">{erroresFila.implementType}</span>}
               </div>
 
               <InputConUnidad
@@ -773,9 +787,10 @@ const ImplementCRUD = () => {
                 required
                 type="number"
                 min="1"
-                name="power_requirement_hp"
-                value={implementoActual.power_requirement_hp}
+                name="powerRequirementHp"
+                value={implementoActual.powerRequirementHp}
                 onChange={manejarCambio}
+                error={erroresFila.powerRequirementHp}
               />
               
               <InputConUnidad
@@ -784,8 +799,8 @@ const ImplementCRUD = () => {
                 type="number"
                 min="0"
                 step="0.01"
-                name="working_width_m"
-                value={implementoActual.working_width_m}
+                name="workingWidthM"
+                value={implementoActual.workingWidthM}
                 onChange={manejarCambio}
               />
             </div>
@@ -798,8 +813,8 @@ const ImplementCRUD = () => {
                 unit="cm"
                 type="number"
                 min="0"
-                name="working_depth_cm"
-                value={implementoActual.working_depth_cm}
+                name="workingDepthCm"
+                value={implementoActual.workingDepthCm}
                 onChange={manejarCambio}
               />
 
@@ -808,8 +823,8 @@ const ImplementCRUD = () => {
                 unit="kg"
                 type="number"
                 min="0"
-                name="weight_kg"
-                value={implementoActual.weight_kg}
+                name="weightKg"
+                value={implementoActual.weightKg}
                 onChange={manejarCambio}
               />
 
@@ -818,8 +833,8 @@ const ImplementCRUD = () => {
                   Tipo de Suelo <span className="text-destructive">*</span>
                 </label>
                 <Select
-                  value={implementoActual.soil_type || 'All'}
-                  onValueChange={(val) => setImplementoActual({ ...implementoActual, soil_type: val })}
+                  value={implementoActual.soilType || 'All'}
+                  onValueChange={(val) => setImplementoActual({ ...implementoActual, soilType: val })}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Seleccione un tipo de suelo" />
@@ -881,7 +896,7 @@ const ImplementCRUD = () => {
             <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
             <AlertDialogDescription>
               {implementoAEliminar
-                ? `¿Está seguro de eliminar el implemento "${implementoAEliminar.implement_name}"? Esta acción no se puede deshacer.`
+                ? `¿Está seguro de eliminar el implemento "${implementoAEliminar.implementName}"? Esta acción no se puede deshacer.`
                 : 'Esta acción no se puede deshacer.'}
             </AlertDialogDescription>
           </AlertDialogHeader>

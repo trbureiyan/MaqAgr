@@ -1,63 +1,148 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
+import { apiClient } from '../../../lib/apiClient';
 
+const REMOTE_AUTH_API_ENABLED = import.meta.env.VITE_ENABLE_REMOTE_AUTH_API === 'true';
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const AuthContext = createContext(); // Advertencia -> UseAuth
-/** ^
- *  |
- *  |
- * 
- * @error About error: Ocurre porque Fast Refresh tiene limitaciones para 
- * garantizar que el estado se conserve durante el desarrollo. 
- * Al separar componentes y hooks en diferentes archivos, se
- * ayuda a Fast Refresh a determinar correctamente qué refrescar 
- * y qué estado conservar cuando realizas cambios.
- * 
- * > Segun foros, es comun este problema
- */
+export const AuthContext = createContext();
 
-// Proveedor del contexto que envuelve la aplicación
+const readStoredUser = () => {
+  const storedUser = localStorage.getItem('user');
+  if (!storedUser || storedUser === 'undefined') {
+    return null;
+  }
+
+  try {
+    return JSON.parse(storedUser);
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Proveedor global de autenticacion con soporte dual Remote/Mock.
+ */
 export const AuthProvider = ({ children }) => {
-  // Estado para almacenar si el usuario está autenticado
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
 
-  // Cargar estado de autenticación desde localStorage al iniciar
-  useEffect(() => {
-    // Definiciones
-    const storedAuth = localStorage.getItem('isAuthenticated');
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedAuth === 'true') {
-      setIsAuthenticated(true);
-      setUser(storedUser ? JSON.parse(storedUser) : null);
-    }       /* ? ^ : -> shorthand for an if-else statement */
-  }, []);
+  const clearSession = useCallback(() => {
+    setIsAuthenticated(false);
+    setUser(null);
 
-  // Función para manejar el inicio de sesión
-  const login = (userData) => {
-    // En un caso real, aquí se verificarían credenciales con el backend
-    setIsAuthenticated(true); // Simular autenticación exitosa
-    setUser(userData);
-    
-    // Guardar en localStorage para persistencia
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
-
-  // Función para manejar el cierre de sesión
-  const logout = () => {
-    setIsAuthenticated(false); // Simular cierre de sesión
-    setUser(null); // Elimina el usuario del estado
-    
-    // Limpiar localStorage
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+  }, []);
+
+  const persistSession = useCallback((nextUser, token) => {
+    if (!token || !nextUser) {
+      throw new Error('La respuesta de autenticacion no incluyo token o usuario.');
+    }
+
+    setIsAuthenticated(true);
+    setUser(nextUser);
+
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('user', JSON.stringify(nextUser));
+    localStorage.setItem('token', token);
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const storedAuth = localStorage.getItem('isAuthenticated') === 'true';
+    const storedUser = readStoredUser();
+
+    if (storedAuth && token) {
+      setIsAuthenticated(true);
+      setUser(storedUser);
+    }
+
+    const handleUnauthorized = () => {
+      clearSession();
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
+  }, [clearSession]);
+
+  const login = async (credentials) => {
+    const normalizedCredentials = {
+      email: credentials?.email?.trim(),
+      password: credentials?.password ?? '',
+    };
+
+    if (REMOTE_AUTH_API_ENABLED) {
+      const response = await apiClient('/api/auth/login', {
+        method: 'POST',
+        body: normalizedCredentials,
+      });
+
+      const payload = response?.data ?? response;
+      const token = payload?.token ?? payload?.accessToken;
+      const authUser = payload?.user ?? payload?.account ?? null;
+
+      persistSession(authUser, token);
+      return payload;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 700));
+
+    const email = normalizedCredentials.email || 'usuario@maqagr.local';
+    const mockUser = {
+      id: `mock-${Date.now()}`,
+      name: email.split('@')[0],
+      email,
+      role: email.toLowerCase().includes('admin') ? 'admin' : 'user',
+    };
+
+    persistSession(mockUser, 'mock-token');
+
+    return {
+      success: true,
+      data: {
+        token: 'mock-token',
+        user: mockUser,
+      },
+    };
   };
 
-  // Proporciona el contexto a los componentes hijos
+  const register = async (registerData) => {
+    const payload = {
+      name: registerData?.name?.trim(),
+      email: registerData?.email?.trim(),
+      password: registerData?.password ?? '',
+      role: registerData?.role ?? 'user',
+    };
+
+    if (REMOTE_AUTH_API_ENABLED) {
+      return apiClient('/api/auth/register', {
+        method: 'POST',
+        body: payload,
+      });
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 700));
+
+    return {
+      success: true,
+      data: {
+        id: `mock-${Date.now()}`,
+        ...payload,
+      },
+    };
+  };
+
+  const logout = () => {
+    clearSession();
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

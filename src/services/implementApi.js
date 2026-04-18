@@ -1,146 +1,49 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000').replace(/\/$/, '');
-const IMPLEMENT_BASE_URL = `${API_BASE_URL}/api/implements`;
+import { apiClient } from '../lib/apiClient';
+import { buildQueryString, applyFilters, paginateAndFormatMock } from '../lib/mockUtils';
+
 const REMOTE_IMPLEMENT_API_ENABLED = import.meta.env.VITE_ENABLE_REMOTE_IMPLEMENT_API === 'true';
 
 let mockImplements = [
   {
-    implement_id: 1,
-    implement_name: 'Arado de Vertedera',
+    implementId: 1,
+    implementName: 'Arado de Vertedera',
     brand: 'Kuhn',
-    power_requirement_hp: 80,
-    working_width_m: 2.5,
-    soil_type: 'Clay',
-    working_depth_cm: 30,
-    weight_kg: 1200,
-    implement_type: 'Plow',
+    powerRequirementHp: 80,
+    workingWidthM: 2.5,
+    soilType: 'Clay',
+    workingDepthCm: 30,
+    weightKg: 1200,
+    implementType: 'Plow',
     status: 'available',
   },
   {
-    implement_id: 2,
-    implement_name: 'Sembradora Neumática',
+    implementId: 2,
+    implementName: 'Sembradora Neumatica',
     brand: 'Gaspardo',
-    power_requirement_hp: 100,
-    working_width_m: 4.5,
-    soil_type: 'Loam',
-    working_depth_cm: 15,
-    weight_kg: 1800,
-    implement_type: 'Seeder',
+    powerRequirementHp: 100,
+    workingWidthM: 4.5,
+    soilType: 'Loam',
+    workingDepthCm: 15,
+    weightKg: 1800,
+    implementType: 'Seeder',
     status: 'available',
   },
   {
-    implement_id: 3,
-    implement_name: 'Rastra Escarificadora',
+    implementId: 3,
+    implementName: 'Rastra Escarificadora',
     brand: 'Baldan',
-    power_requirement_hp: 65,
-    working_width_m: 3.0,
-    soil_type: 'All',
-    working_depth_cm: 20,
-    weight_kg: 950,
-    implement_type: 'Harrow',
+    powerRequirementHp: 65,
+    workingWidthM: 3.0,
+    soilType: 'All',
+    workingDepthCm: 20,
+    weightKg: 950,
+    implementType: 'Harrow',
     status: 'maintenance',
   },
 ];
 
-const getAuthToken = () => {
-  return localStorage.getItem('token') || localStorage.getItem('authToken') || '';
-};
-
-const toNumberOrNull = (value) => {
-  if (value === undefined || value === null || value === '') {
-    return null;
-  }
-  const num = Number(value);
-  return Number.isNaN(num) ? null : num;
-};
-
-const buildQueryString = (params = {}) => {
-  const searchParams = new URLSearchParams();
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === '') {
-      return;
-    }
-    searchParams.set(key, String(value));
-  });
-
-  return searchParams.toString();
-};
-
-const requestJson = async (url, options = {}) => {
-  const response = await fetch(url, options);
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const backendErrors = payload?.errors;
-    const backendMessage = payload?.message;
-    const errorMessage = Array.isArray(backendErrors)
-      ? backendErrors.join(', ')
-      : backendMessage || `Error HTTP ${response.status}`;
-
-    throw new Error(errorMessage);
-  }
-
-  return payload;
-};
-
-const applySort = (items, sort = 'implement_name', order = 'asc') => {
-  const list = [...items];
-  list.sort((a, b) => {
-    let valA = a?.[sort];
-    let valB = b?.[sort];
-
-    if (typeof valA === 'string') valA = valA.toLowerCase();
-    if (typeof valB === 'string') valB = valB.toLowerCase();
-
-    if (valA === undefined || valA === null) return 1;
-    if (valB === undefined || valB === null) return -1;
-
-    if (valA < valB) return order === 'desc' ? 1 : -1;
-    if (valA > valB) return order === 'desc' ? -1 : 1;
-    return 0;
-  });
-  return list;
-};
-
-const applyFilters = (items, { search = '', type = '', minPower = '', maxPower = '', maxWeight = '' }) => {
-  const searchLower = search.toLowerCase();
-  const typeLower = type.toLowerCase();
-  const minPowerNum = toNumberOrNull(minPower);
-  const maxPowerNum = toNumberOrNull(maxPower);
-  const maxWeightNum = toNumberOrNull(maxWeight);
-
-  return items.filter((implement) => {
-    const matchesSearch = !searchLower
-      ? true
-      : implement.implement_name?.toLowerCase().includes(searchLower) ||
-        implement.brand?.toLowerCase().includes(searchLower);
-
-    const matchesType = !typeLower
-      ? true
-      : implement.implement_type?.toLowerCase().includes(typeLower);
-
-    const matchesMinPower = minPowerNum === null
-      ? true
-      : Number(implement.power_requirement_hp || 0) >= minPowerNum;
-
-    const matchesMaxPower = maxPowerNum === null
-      ? true
-      : Number(implement.power_requirement_hp || 0) <= maxPowerNum;
-
-    const matchesMaxWeight = maxWeightNum === null
-      ? true
-      : Number(implement.weight_kg || 0) <= maxWeightNum;
-
-    return matchesSearch && matchesType && matchesMinPower && matchesMaxPower && matchesMaxWeight;
-  });
-};
-
 const getMockImplements = async (query = {}) => {
   const {
-    page = 1,
-    limit = 10,
-    sort = 'implement_name',
-    order = 'asc',
     search = '',
     type = '',
     minPower = '',
@@ -148,27 +51,15 @@ const getMockImplements = async (query = {}) => {
     maxWeight = '',
   } = query;
 
-  const filtered = applyFilters(mockImplements, { search, type, minPower, maxPower, maxWeight });
-  const sorted = applySort(filtered, sort, order);
+  const filtered = applyFilters(mockImplements, {
+    search,
+    exactMatchFields: { implementType: type },
+    minPower,
+    maxPower,
+    maxWeight
+  });
 
-  const safeLimit = Number(limit) > 0 ? Number(limit) : 10;
-  const safePage = Number(page) > 0 ? Number(page) : 1;
-  const offset = (safePage - 1) * safeLimit;
-
-  const data = sorted.slice(offset, offset + safeLimit);
-  const total = sorted.length;
-  const totalPages = Math.max(1, Math.ceil(total / safeLimit));
-
-  return {
-    success: true,
-    data,
-    pagination: {
-      page: safePage,
-      limit: safeLimit,
-      total,
-      totalPages,
-    },
-  };
+  return paginateAndFormatMock(filtered, query, 'implement_name');
 };
 
 export const getImplements = async (query = {}) => {
@@ -189,7 +80,7 @@ export const getImplements = async (query = {}) => {
   } = query;
 
   const shouldUseSearchEndpoint = Boolean(search || type || minPower || maxPower || maxWeight);
-  const endpoint = shouldUseSearchEndpoint ? `${IMPLEMENT_BASE_URL}/search` : IMPLEMENT_BASE_URL;
+  const endpoint = shouldUseSearchEndpoint ? '/api/implements/search' : '/api/implements';
 
   const queryString = buildQueryString({
     page,
@@ -203,41 +94,36 @@ export const getImplements = async (query = {}) => {
     maxWeight,
   });
 
-  return requestJson(`${endpoint}?${queryString}`);
+  return apiClient(`${endpoint}?${queryString}`);
 };
 
 export const createImplement = async (implementPayload) => {
   if (!REMOTE_IMPLEMENT_API_ENABLED) {
     const nextId = mockImplements.length > 0
-      ? Math.max(...mockImplements.map((t) => t.implement_id || 0)) + 1
+      ? Math.max(...mockImplements.map((t) => Number(t.implementId) || 0)) + 1
       : 1;
 
     const item = {
-      implement_id: nextId,
+      implementId: nextId,
       ...implementPayload,
     };
     mockImplements = [...mockImplements, item];
     return { success: true, data: item };
   }
 
-  const token = getAuthToken();
-  return requestJson(IMPLEMENT_BASE_URL, {
+  return apiClient('/api/implements', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(implementPayload),
+    body: implementPayload,
   });
 };
 
-export const updateImplement = async (implementId, implementPayload) => {
+export const updateImplement = async (implementId, implementPayload) => {       
   if (!REMOTE_IMPLEMENT_API_ENABLED) {
     const idNum = Number(implementId);
     let updated = null;
 
     mockImplements = mockImplements.map((item) => {
-      if (item.implement_id !== idNum) {
+      if (Number(item.implementId) !== idNum) {
         return item;
       }
       updated = { ...item, ...implementPayload };
@@ -251,36 +137,27 @@ export const updateImplement = async (implementId, implementPayload) => {
     return { success: true, data: updated };
   }
 
-  const token = getAuthToken();
-  return requestJson(`${IMPLEMENT_BASE_URL}/${implementId}`, {
+  return apiClient(`/api/implements/${implementId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(implementPayload),
+    body: implementPayload,
   });
 };
 
 export const deleteImplement = async (implementId) => {
   if (!REMOTE_IMPLEMENT_API_ENABLED) {
     const idNum = Number(implementId);
-    const existing = mockImplements.find((item) => item.implement_id === idNum);
+    const existing = mockImplements.find((item) => Number(item.implementId) === idNum);
 
     if (!existing) {
       throw new Error('Implemento no encontrado');
     }
 
-    mockImplements = mockImplements.filter((item) => item.implement_id !== idNum);
+    mockImplements = mockImplements.filter((item) => Number(item.implementId) !== idNum);
     return { success: true, data: existing };
   }
 
-  const token = getAuthToken();
-  return requestJson(`${IMPLEMENT_BASE_URL}/${implementId}`, {
+  return apiClient(`/api/implements/${implementId}`, {
     method: 'DELETE',
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
   });
 };
 

@@ -44,6 +44,9 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navbar, Footer } from './components/layout';
 import { AuthProvider } from './components/common/auth';
+import ProtectedRoute from './components/common/auth/ProtectedRoute';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import { CalculatorProvider } from './components/common/calculator/CalculatorContext';
 import { Toaster } from 'sileo';
 import 'sileo/styles.css';
 import Home from './pages/Home';
@@ -96,6 +99,9 @@ const TractorForm = lazy(() => import('./pages/TractorForm'));
 
 /** Panel CRUD de administración de implementos (ruta protegida). */
 const ImplementForm = lazy(() => import('./pages/ImplementForm'));
+
+/** Dashboard principal de administración. */
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 /** Página de detalle de tractor o máquina agrícola. */
 const TractorMachineDetail = lazy(() => import('./pages/TractorMachineDetail'));
@@ -164,73 +170,75 @@ const PageLoader = () => (
  */
 function App() {
   return (
-    /* Proveedor de autenticación — disponible en todo el árbol */
-    <AuthProvider>
-      <Router>
-        {/*
-         * Layout principal:
-         *  - `min-h-screen` garantiza que el footer siempre esté al fondo
-         *  - `flex flex-col` permite que `main` crezca con `flex-grow`
-         */}
-        <div className="min-h-screen flex flex-col">
-          <Toaster position="top-right" />
+    <ErrorBoundary>
+      {/* Proveedor de autenticación - disponible en todo el árbol */}
+      <AuthProvider>
+        <CalculatorProvider>
+          <Router>
+            <div className="min-h-screen flex flex-col">
+              <Toaster position="top-right" />
 
-          {/* Barra de navegación global */}
-          <Navbar />
+              {/* Barra de navegación global */}
+              <Navbar />
 
-          {/* Área de contenido principal — crece para empujar el footer */}
-          <main className="flex-grow">
-            {/*
-             * Suspense envuelve todas las rutas lazy.
-             * PageLoader se muestra mientras se descarga el chunk de la ruta.
-             */}
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                {/* ── Rutas públicas ── */}
-                <Route path="/"                  element={<Home />} />
-                <Route path="/Calculadora"       element={<AppCalculadora />} />
-                <Route path="/TengoTractor"      element={<DatosTractor />} />
-                <Route path="/DatosLlantas"      element={<DatosLlantas />} />
-                <Route path="/DatosClimaticos"   element={<DatosClimaticos />} />
-                <Route path="/Resultados"        element={<Resultados />} />
-                <Route path="/Login"             element={<Login />} />
-                <Route path="/Registro"          element={<Register />} />
-                <Route path="/SobreNosotros"     element={<SobreNosotros />} />
+              {/* Área de contenido principal — crece para empujar el footer */}
+              <main className="flex-grow">
+                {/*
+                 * Suspense envuelve todas las rutas lazy.
+                 * PageLoader se muestra mientras se descarga el chunk de la ruta.
+                 */}
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      {/* ── Rutas públicas ── */}
+                      <Route path="/"                  element={<Home />} />
+                      <Route path="/Calculadora"       element={<AppCalculadora />} />
+                      <Route path="/TengoTractor"      element={<DatosTractor />} />
+                      <Route path="/DatosLlantas"      element={<DatosLlantas />} />
+                      <Route path="/DatosClimaticos"   element={<DatosClimaticos />} />
+                      <Route path="/Resultados"        element={<Resultados />} />
+                      <Route path="/Login"             element={<Login />} />
+                      <Route path="/Registro"          element={<Register />} />
+                      <Route path="/SobreNosotros"     element={<SobreNosotros />} />
 
-                {/* ── Catálogo ── */}
-                <Route path="/Catalogo"          element={<Catalogo />} />
-                <Route path="/CatalogoTractor"   element={<CatalogoTrac />} />
-                <Route path="/CatalogoMaquinas"  element={<CatalogoMaq />} />
+                      {/* ── Catálogo ── */}
+                      <Route path="/Catalogo"          element={<Catalogo />} />
+                      <Route path="/CatalogoTractor"   element={<CatalogoTrac />} />
+                      <Route path="/CatalogoMaquinas"  element={<CatalogoMaq />} />
 
-                {/* ── Detalle de equipo (tractor o máquina) ── */}
-                <Route path="/tractor/:id"       element={<TractorMachineDetail />} />
-                <Route path="/maquinaria/:id"    element={<TractorMachineDetail />} />
+                      {/* ── Detalle de equipo (tractor o máquina) ── */}
+                      <Route path="/tractor/:id"       element={<TractorMachineDetail />} />
+                      <Route path="/maquinaria/:id"    element={<TractorMachineDetail />} />
 
-                {/* ── Rutas protegidas: panel de administración ── */}
-                <Route path="/admin/TractorForm" element={<TractorForm />} />
-                <Route path="/admin/ImplementForm" element={<ImplementForm />} />
+                      {/* ── Rutas protegidas: panel de administración ── */}
+                      <Route element={<ProtectedRoute allowedRoles={['admin', 1]} />}>
+                        <Route path="/admin" element={<AdminDashboard />} />
+                        <Route path="/admin/TractorForm" element={<TractorForm />} />
+                        <Route path="/admin/ImplementForm" element={<ImplementForm />} />
+                      </Route>
 
-                {/* ── Flujo: Tengo Maquinaria (3 pasos) ── */}
-                <Route path="/TengoMaquinaria"      element={<DatosImplemento />} />
-                <Route path="/TipoSueloImplemento"  element={<TipoSueloImplemento />} />
-                <Route path="/ResultadosImplemento" element={<ResultadosImplemento />} />
+                      {/* ── Flujo: Tengo Maquinaria (3 pasos) ── */}
+                      <Route path="/TengoMaquinaria"      element={<DatosImplemento />} />
+                      <Route path="/TipoSueloImplemento"  element={<TipoSueloImplemento />} />
+                      <Route path="/ResultadosImplemento" element={<ResultadosImplemento />} />
 
-                {/* ── Flujo: Busco Equipo ── */}
-                <Route path="/BuscoEquipo"          element={<BuscoEquipo />} />
+                      {/* ── Flujo: Busco Equipo ── */}
+                      <Route path="/BuscoEquipo"          element={<BuscoEquipo />} />
 
-                {/* ── Estados de Error y Fallback ── */}
-                <Route path="/unauthorized"         element={<Unauthorized />} />
-                <Route path="/forbidden"            element={<Forbidden />} />
-                <Route path="*"                     element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </main>
+                      {/* ── Estados de Error y Fallback ── */}
+                      <Route path="/unauthorized"         element={<Unauthorized />} />
+                      <Route path="/forbidden"            element={<Forbidden />} />
+                      <Route path="*"                     element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+              </main>
 
-          {/* Pie de página global */}
-          <Footer />
-        </div>
-      </Router>
-    </AuthProvider>
+              {/* Pie de página global */}
+              <Footer />
+            </div>
+          </Router>
+        </CalculatorProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
