@@ -1,5 +1,33 @@
 import { toCamelCase } from './dataMappers';
 
+const toCamelKey = (value = '') =>
+  value.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
+
+const toSnakeKey = (value = '') =>
+  value.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+
+const getFieldValue = (item, key) => {
+  if (!item || !key) {
+    return undefined;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(item, key)) {
+    return item[key];
+  }
+
+  const camelKey = toCamelKey(key);
+  if (Object.prototype.hasOwnProperty.call(item, camelKey)) {
+    return item[camelKey];
+  }
+
+  const snakeKey = toSnakeKey(key);
+  if (Object.prototype.hasOwnProperty.call(item, snakeKey)) {
+    return item[snakeKey];
+  }
+
+  return undefined;
+};
+
 export const buildQueryString = (params = {}) => {
   const searchParams = new URLSearchParams();
 
@@ -17,8 +45,8 @@ export const applySort = (items, sort, order = 'asc') => {
   if (!sort) return items;
   const list = [...items];
   list.sort((a, b) => {
-    let valA = a?.[sort];
-    let valB = b?.[sort];
+    let valA = getFieldValue(a, sort);
+    let valB = getFieldValue(b, sort);
 
     if (typeof valA === 'string') valA = valA.toLowerCase();
     if (typeof valB === 'string') valB = valB.toLowerCase();
@@ -57,19 +85,28 @@ export const applyFilters = (items, config) => {
     let matchesExact = true;
     for (const [key, value] of Object.entries(exactMatchFields)) {
       if (value) {
-        if (!item[key] || !item[key].toLowerCase().includes(value.toLowerCase())) {
+        const currentValue = getFieldValue(item, key);
+        if (
+          currentValue === undefined ||
+          currentValue === null ||
+          !String(currentValue).toLowerCase().includes(String(value).toLowerCase())
+        ) {
           matchesExact = false;
           break;
         }
       }
     }
 
-    // Tractores engine_power_hp, implementos power_requirement_hp
-    const power = item.engine_power_hp || item.power_requirement_hp || 0;
+    // Tractores (engine_power_hp | enginePowerHp), implementos (power_requirement_hp | powerRequirementHp)
+    const power =
+      getFieldValue(item, 'engine_power_hp') ??
+      getFieldValue(item, 'power_requirement_hp') ??
+      0;
+    const weight = getFieldValue(item, 'weight_kg') ?? 0;
     
     const matchesMinPower = minPowerNum === null ? true : Number(power) >= minPowerNum;
     const matchesMaxPower = maxPowerNum === null ? true : Number(power) <= maxPowerNum;
-    const matchesMaxWeight = maxWeightNum === null ? true : Number(item.weight_kg || 0) <= maxWeightNum;
+    const matchesMaxWeight = maxWeightNum === null ? true : Number(weight) <= maxWeightNum;
 
     return matchesSearch && matchesExact && matchesMinPower && matchesMaxPower && matchesMaxWeight;
   });

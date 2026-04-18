@@ -5,39 +5,39 @@ const REMOTE_IMPLEMENT_API_ENABLED = import.meta.env.VITE_ENABLE_REMOTE_IMPLEMEN
 
 let mockImplements = [
   {
-    implement_id: 1,
-    implement_name: 'Arado de Vertedera',
+    implementId: 1,
+    implementName: 'Arado de Vertedera',
     brand: 'Kuhn',
-    power_requirement_hp: 80,
-    working_width_m: 2.5,
-    soil_type: 'Clay',
-    working_depth_cm: 30,
-    weight_kg: 1200,
-    implement_type: 'Plow',
+    powerRequirementHp: 80,
+    workingWidthM: 2.5,
+    soilType: 'Clay',
+    workingDepthCm: 30,
+    weightKg: 1200,
+    implementType: 'Plow',
     status: 'available',
   },
   {
-    implement_id: 2,
-    implement_name: 'Sembradora Neumática',
+    implementId: 2,
+    implementName: 'Sembradora Neumatica',
     brand: 'Gaspardo',
-    power_requirement_hp: 100,
-    working_width_m: 4.5,
-    soil_type: 'Loam',
-    working_depth_cm: 15,
-    weight_kg: 1800,
-    implement_type: 'Seeder',
+    powerRequirementHp: 100,
+    workingWidthM: 4.5,
+    soilType: 'Loam',
+    workingDepthCm: 15,
+    weightKg: 1800,
+    implementType: 'Seeder',
     status: 'available',
   },
   {
-    implement_id: 3,
-    implement_name: 'Rastra Escarificadora',
+    implementId: 3,
+    implementName: 'Rastra Escarificadora',
     brand: 'Baldan',
-    power_requirement_hp: 65,
-    working_width_m: 3.0,
-    soil_type: 'All',
-    working_depth_cm: 20,
-    weight_kg: 950,
-    implement_type: 'Harrow',
+    powerRequirementHp: 65,
+    workingWidthM: 3.0,
+    soilType: 'All',
+    workingDepthCm: 20,
+    weightKg: 950,
+    implementType: 'Harrow',
     status: 'maintenance',
   },
 ];
@@ -53,7 +53,7 @@ const getMockImplements = async (query = {}) => {
 
   const filtered = applyFilters(mockImplements, {
     search,
-    exactMatchFields: { implement_type: type },
+    exactMatchFields: { implementType: type },
     minPower,
     maxPower,
     maxWeight
@@ -100,11 +100,11 @@ export const getImplements = async (query = {}) => {
 export const createImplement = async (implementPayload) => {
   if (!REMOTE_IMPLEMENT_API_ENABLED) {
     const nextId = mockImplements.length > 0
-      ? Math.max(...mockImplements.map((t) => t.implement_id || 0)) + 1
+      ? Math.max(...mockImplements.map((t) => Number(t.implementId) || 0)) + 1
       : 1;
 
     const item = {
-      implement_id: nextId,
+      implementId: nextId,
       ...implementPayload,
     };
     mockImplements = [...mockImplements, item];
@@ -123,7 +123,7 @@ export const updateImplement = async (implementId, implementPayload) => {
     let updated = null;
 
     mockImplements = mockImplements.map((item) => {
-      if (item.implement_id !== idNum) {
+      if (Number(item.implementId) !== idNum) {
         return item;
       }
       updated = { ...item, ...implementPayload };
@@ -146,13 +146,13 @@ export const updateImplement = async (implementId, implementPayload) => {
 export const deleteImplement = async (implementId) => {
   if (!REMOTE_IMPLEMENT_API_ENABLED) {
     const idNum = Number(implementId);
-    const existing = mockImplements.find((item) => item.implement_id === idNum);
+    const existing = mockImplements.find((item) => Number(item.implementId) === idNum);
 
     if (!existing) {
       throw new Error('Implemento no encontrado');
     }
 
-    mockImplements = mockImplements.filter((item) => item.implement_id !== idNum);
+    mockImplements = mockImplements.filter((item) => Number(item.implementId) !== idNum);
     return { success: true, data: existing };
   }
 
