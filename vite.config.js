@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Excluir carpetas de herramientas y backend del escaneo de archivos
+  // Excluir carpetas de herramientas del escaneo de archivos
   publicDir: 'public',
   plugins: [
     react({
@@ -22,7 +22,6 @@ export default defineConfig({
   },
 
   build: {
-    // Aumentar el límite de advertencia de chunk (el default 500kb es muy bajo para este proyecto)
     chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
@@ -37,6 +36,16 @@ export default defineConfig({
   },
 
   server: {
+    port: 5173,
+    proxy: {
+      // Toda petición que inicie con /api será interceptada por Vite
+      // y redirigida al backend local durante el desarrollo.
+      '/api': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+      }
+    },
     watch: {
       ignored: [
         '**/.backend/**',
