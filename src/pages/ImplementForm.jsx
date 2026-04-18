@@ -23,6 +23,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Pagination from '@/components/common/Pagination';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -227,6 +228,7 @@ const ImplementCRUD = () => {
 
   // ── Estado: búsqueda y filtros ────────────────────────────────────────────
   const [busqueda, setBusqueda] = useState('');
+  const busquedaDebounced = useDebounce(busqueda, 300);
   const [ordenamiento, setOrdenamiento] = useState({ sort: 'implement_name', order: 'asc' });
 
   const [filtroRapido, setFiltroRapido] = useState({ tipo: '', estado: '' });
@@ -238,6 +240,7 @@ const ImplementCRUD = () => {
 
   // ── Estado: formulario ────────────────────────────────────────────────────
   const [implementoActual, setImplementoActual] = useState(ESTADO_INICIAL_IMPLEMENTO);
+  const [erroresFila, setErroresFila] = useState({});
   const [modoEdicion, setModoEdicion] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
@@ -249,11 +252,11 @@ const ImplementCRUD = () => {
     limit: itemsPorPagina,
     sort: ordenamiento.sort,
     order: ordenamiento.order,
-    search: busqueda.trim(),
+    search: busquedaDebounced.trim(),
     type: '',
     minPower: '',
     maxPower: '',
-  }), [paginaActual, ordenamiento, busqueda]);
+  }), [paginaActual, ordenamiento, busquedaDebounced]);
 
   // ── Carga de datos ────────────────────────────────────────────────────────
 
@@ -282,10 +285,6 @@ const ImplementCRUD = () => {
   useEffect(() => {
     cargarTabla();
   }, [cargarTabla]);
-
-  useEffect(() => {
-    setPaginaActual(1);
-  }, [busqueda, filtroRapido]);
 
   // ── Filtrado client-side de filtros rápidos ───────────────────────────────
 
@@ -331,6 +330,10 @@ const ImplementCRUD = () => {
   const manejarCambio = (event) => {
     const { name, value } = event.target;
     setImplementoActual((prev) => ({ ...prev, [name]: value }));
+
+    if (erroresFila[name]) {
+      setErroresFila((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const obtenerPayload = () => {
@@ -358,19 +361,21 @@ const ImplementCRUD = () => {
   };
 
   const validarFormulario = () => {
-    if (!implementoActual.implement_name?.trim())  return 'El nombre es obligatorio.';
-    if (!implementoActual.brand?.trim()) return 'La marca es obligatoria.';
-    if (!implementoActual.implement_type?.trim()) return 'El tipo de implemento es obligatorio.';
+    const nuevosErrores = {};
+    if (!implementoActual.implement_name?.trim()) nuevosErrores.implement_name = 'Requerido';
+    if (!implementoActual.brand?.trim()) nuevosErrores.brand = 'Requerido';
+    if (!implementoActual.implement_type?.trim()) nuevosErrores.implement_type = 'Requerido';
     if (implementoActual.power_requirement_hp === '' || Number(implementoActual.power_requirement_hp) <= 0) {
-      return 'El requerimiento de potencia (HP) debe ser mayor a 0.';
+      nuevosErrores.power_requirement_hp = 'Debe ser mayor a 0';
     }
-    return null;
+    
+    setErroresFila(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
   };
 
   const guardarImplemento = async () => {
-    const errorValidacion = validarFormulario();
-    if (errorValidacion) {
-      notifyError('Error de validación', errorValidacion);
+    if (!validarFormulario()) {
+      notifyError('Campos incompletos', 'Por favor revisa los errores en el formulario.');
       return;
     }
 
@@ -448,11 +453,13 @@ const ImplementCRUD = () => {
       ...prev,
       [tipo]: prev[tipo] === valor ? '' : valor,
     }));
+    setPaginaActual(1);
   };
 
   const limpiarFiltros = () => {
     setBusqueda('');
     setFiltroRapido({ tipo: '', estado: '' });
+    setPaginaActual(1);
   };
 
   // ── Derivados ─────────────────────────────────────────────────────────────
@@ -498,7 +505,10 @@ const ImplementCRUD = () => {
                   className="pl-8 text-sm"
                   placeholder="Buscar implemento por nombre o marca..."
                   value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
+                  onChange={(e) => {
+                    setBusqueda(e.target.value);
+                    setPaginaActual(1);
+                  }}
                   aria-label="Buscar implementos por nombre o marca"
                 />
               </div>

@@ -23,6 +23,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Pagination from '@/components/common/Pagination';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -101,14 +102,14 @@ const ESTADO_INICIAL_TRACTOR = {
   name: '',
   brand: '',
   model: '',
-  engine_power_hp: '',
-  weight_kg: '',
-  traction_force_kn: '',
-  traction_type: '4x4',
-  tire_type: '',
-  tire_width_mm: '',
-  tire_diameter_mm: '',
-  tire_pressure_psi: '',
+  enginePowerHp: '',
+  weightKg: '',
+  tractionForceKn: '',
+  tractionType: '4x4',
+  tireType: '',
+  tireWidthMm: '',
+  tireDiameterMm: '',
+  tirePressurePsi: '',
   status: 'available',
 };
 
@@ -119,7 +120,7 @@ const ESTADO_INICIAL_TRACTOR = {
  */
 const ORDER_BY_FIELD = {
   name: 'name',
-  engine_power_hp: 'engine_power_hp',
+  enginePowerHp: 'engine_power_hp',
   status: 'status',
 };
 
@@ -219,17 +220,18 @@ const FilterBadge = ({ label, active, onClick }) => (
  * @param {string} props.unit    - Unidad de medida (ej. "HP", "kg").
  * @param {*}      props.rest    - Props adicionales para el Input.
  */
-const InputConUnidad = ({ label, unit, required, ...rest }) => (
+const InputConUnidad = ({ label, unit, required, error, ...rest }) => (
   <div className="flex flex-col gap-1">
     <label className="text-sm font-medium text-foreground">
       {label}{required && <span className="ml-0.5 text-destructive">*</span>}
     </label>
     <div className="relative">
-      <Input {...rest} className="pr-12" />
+      <Input {...rest} className={`pr-12 ${error ? 'border-destructive' : ''}`} />
       <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground select-none">
         {unit}
       </span>
     </div>
+    {error && <span className="text-xs text-destructive">{error}</span>}
   </div>
 );
 
@@ -260,6 +262,8 @@ const TractorCRUD = () => {
 
   // ── Estado: búsqueda y filtros ────────────────────────────────────────────
   const [busqueda, setBusqueda] = useState('');
+  const busquedaDebounced = useDebounce(busqueda, 300);
+  
   const [ordenamiento, setOrdenamiento] = useState({ sort: 'name', order: 'asc' });
 
   /**
@@ -276,6 +280,7 @@ const TractorCRUD = () => {
 
   // ── Estado: formulario ────────────────────────────────────────────────────
   const [tractorActual, setTractorActual] = useState(ESTADO_INICIAL_TRACTOR);
+  const [erroresFila, setErroresFila] = useState({});
   const [modoEdicion, setModoEdicion] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
@@ -292,11 +297,11 @@ const TractorCRUD = () => {
     limit: itemsPorPagina,
     sort: ordenamiento.sort,
     order: ordenamiento.order,
-    search: busqueda.trim(),
+    search: busquedaDebounced.trim(),
     brand: '',
     minPower: '',
     maxPower: '',
-  }), [paginaActual, ordenamiento, busqueda]);
+  }), [paginaActual, ordenamiento, busquedaDebounced]);
 
   // ── Carga de datos ────────────────────────────────────────────────────────
 
@@ -325,10 +330,6 @@ const TractorCRUD = () => {
   useEffect(() => {
     cargarTabla();
   }, [cargarTabla]);
-
-  useEffect(() => {
-    setPaginaActual(1);
-  }, [busqueda, filtroRapido]);
 
   // ── Filtrado client-side de filtros rápidos ───────────────────────────────
 
@@ -381,6 +382,10 @@ const TractorCRUD = () => {
   const manejarCambio = (event) => {
     const { name, value } = event.target;
     setTractorActual((prev) => ({ ...prev, [name]: value }));
+    // 14.4.7 Remover el error del input apenas el usuario tipea (Real-time feedback)
+    if (erroresFila[name]) {
+      setErroresFila((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const obtenerPayload = () => {
@@ -413,20 +418,22 @@ const TractorCRUD = () => {
   };
 
   const validarFormulario = () => {
-    if (!tractorActual.name?.trim())  return 'El nombre es obligatorio.';
-    if (!tractorActual.brand?.trim()) return 'La marca es obligatoria.';
-    if (!tractorActual.model?.trim()) return 'El modelo es obligatorio.';
-    if (tractorActual.engine_power_hp === '' || Number(tractorActual.engine_power_hp) <= 0) {
-      return 'La potencia del motor debe ser mayor a 0.';
+    const nuevosErrores = {};
+    if (!tractorActual.name?.trim()) nuevosErrores.name = 'Requerido';
+    if (!tractorActual.brand?.trim()) nuevosErrores.brand = 'Requerido';
+    if (!tractorActual.model?.trim()) nuevosErrores.model = 'Requerido';
+    if (tractorActual.enginePowerHp === '' || Number(tractorActual.enginePowerHp) <= 0) {
+      nuevosErrores.enginePowerHp = 'Debe ser mayor a 0';
     }
-    if (!tractorActual.traction_type) return 'El tipo de tracción es obligatorio.';
-    return null;
+    if (!tractorActual.tractionType) nuevosErrores.tractionType = 'Requerido';
+    
+    setErroresFila(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
   };
 
   const guardarTractor = async () => {
-    const errorValidacion = validarFormulario();
-    if (errorValidacion) {
-      notifyError('Error de validación', errorValidacion);
+    if (!validarFormulario()) {
+      notifyError('Campos incompletos', 'Por favor revisa los errores en el formulario.');
       return;
     }
 
@@ -510,11 +517,13 @@ const TractorCRUD = () => {
       ...prev,
       [tipo]: prev[tipo] === valor ? '' : valor,
     }));
+    setPaginaActual(1);
   };
 
   const limpiarFiltros = () => {
     setBusqueda('');
     setFiltroRapido({ traccion: '', estado: '' });
+    setPaginaActual(1);
   };
 
   // ── Derivados ─────────────────────────────────────────────────────────────
@@ -560,7 +569,10 @@ const TractorCRUD = () => {
                   className="pl-8 text-sm"
                   placeholder="Buscar tractor por modelo o marca..."
                   value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
+                  onChange={(e) => {
+                    setBusqueda(e.target.value);
+                    setPaginaActual(1);
+                  }}
                   aria-label="Buscar tractores por modelo o marca"
                 />
               </div>
@@ -686,7 +698,7 @@ const TractorCRUD = () => {
                     {tractoresFiltrados.length > 0 ? (
                       tractoresFiltrados.map((tractor) => (
                         <TableRow
-                          key={tractor.tractor_id}
+                          key={tractor.tractorId}
                           className="border-b border-border/60 hover:bg-muted/40 transition-colors"
                         >
                           {/* Nombre */}
@@ -824,41 +836,45 @@ const TractorCRUD = () => {
                 <label className="text-sm font-medium">
                   Nombre <span className="text-destructive">*</span>
                 </label>
-                <Input name="name" value={tractorActual.name} onChange={manejarCambio} />
-              </div>
+                  <Input name="name" value={tractorActual.name} onChange={manejarCambio} className={erroresFila.name ? 'border-destructive' : ''} />
+                  {erroresFila.name && <span className="text-xs text-destructive">{erroresFila.name}</span>}
+                </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">
-                  Marca <span className="text-destructive">*</span>
-                </label>
-                <Input name="brand" value={tractorActual.brand} onChange={manejarCambio} />
-              </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium">
+                    Marca <span className="text-destructive">*</span>
+                  </label>
+                  <Input name="brand" value={tractorActual.brand} onChange={manejarCambio} className={erroresFila.brand ? 'border-destructive' : ''} />
+                  {erroresFila.brand && <span className="text-xs text-destructive">{erroresFila.brand}</span>}
+                </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">
-                  Modelo <span className="text-destructive">*</span>
-                </label>
-                <Input name="model" value={tractorActual.model} onChange={manejarCambio} />
-              </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium">
+                    Modelo <span className="text-destructive">*</span>
+                  </label>
+                  <Input name="model" value={tractorActual.model} onChange={manejarCambio} className={erroresFila.model ? 'border-destructive' : ''} />
+                  {erroresFila.model && <span className="text-xs text-destructive">{erroresFila.model}</span>}
+                </div>
 
-              <InputConUnidad
-                label="Potencia del motor"
-                unit="HP"
-                required
-                type="number"
-                min="0"
-                name="engine_power_hp"
-                value={tractorActual.engine_power_hp}
-                onChange={manejarCambio}
-              />
+                <InputConUnidad
+                  label="Potencia del motor"
+                  unit="HP"
+                  required
+                  type="number"
+                  min="0"
+                  name="enginePowerHp"
+                  value={tractorActual.enginePowerHp}
+                  onChange={manejarCambio}
+                  error={erroresFila.enginePowerHp}
+                />
 
               <InputConUnidad
                 label="Peso"
                 unit="kg"
                 type="number"
                 min="0"
-                name="weight_kg"
-                value={tractorActual.weight_kg}
+                name="weightKg"
+                value={tractorActual.weightKg}
                 onChange={manejarCambio}
               />
 
@@ -867,8 +883,8 @@ const TractorCRUD = () => {
                 unit="kN"
                 type="number"
                 min="0"
-                name="traction_force_kn"
-                value={tractorActual.traction_force_kn}
+                name="tractionForceKn"
+                value={tractorActual.tractionForceKn}
                 onChange={manejarCambio}
               />
             </div>
@@ -881,22 +897,26 @@ const TractorCRUD = () => {
                   Tipo de tracción <span className="text-destructive">*</span>
                 </label>
                 <Select
-                  value={tractorActual.traction_type}
-                  onValueChange={(value) =>
-                    setTractorActual((prev) => ({ ...prev, traction_type: value }))
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecciona tracción" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="4x2">4x2 — Tracción simple</SelectItem>
-                      <SelectItem value="4x4">4x4 — Doble tracción</SelectItem>
-                      <SelectItem value="track">Orugas</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                  value={tractorActual.tractionType}
+                    onValueChange={(value) => {
+                      setTractorActual((prev) => ({ ...prev, tractionType: value }));
+                      if (erroresFila.tractionType) {
+                        setErroresFila((prev) => ({ ...prev, tractionType: undefined }));
+                      }
+                    }}
+                  >
+                    <SelectTrigger className={`w-full ${erroresFila.tractionType ? 'border-destructive' : ''}`}>
+                      <SelectValue placeholder="Selecciona tracción" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="4x2">4x2 — Tracción simple</SelectItem>
+                        <SelectItem value="4x4">4x4 — Doble tracción</SelectItem>
+                        <SelectItem value="track">Orugas</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  {erroresFila.tractionType && <span className="text-xs text-destructive">{erroresFila.tractionType}</span>}
               </div>
 
               {/* Estado */}
@@ -924,7 +944,7 @@ const TractorCRUD = () => {
               {/* Tipo de llanta */}
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium">Tipo de llanta</label>
-                <Input name="tire_type" value={tractorActual.tire_type} onChange={manejarCambio} placeholder="Ej: Radial 16.9R30" />
+                <Input name="tireType" value={tractorActual.tireType} onChange={manejarCambio} placeholder="Ej: Radial 16.9R30" />
               </div>
 
               <InputConUnidad
@@ -932,8 +952,8 @@ const TractorCRUD = () => {
                 unit="mm"
                 type="number"
                 min="0"
-                name="tire_width_mm"
-                value={tractorActual.tire_width_mm}
+                name="tireWidthMm"
+                value={tractorActual.tireWidthMm}
                 onChange={manejarCambio}
               />
 
@@ -942,8 +962,8 @@ const TractorCRUD = () => {
                 unit="mm"
                 type="number"
                 min="0"
-                name="tire_diameter_mm"
-                value={tractorActual.tire_diameter_mm}
+                name="tireDiameterMm"
+                value={tractorActual.tireDiameterMm}
                 onChange={manejarCambio}
               />
 
@@ -952,8 +972,8 @@ const TractorCRUD = () => {
                 unit="psi"
                 type="number"
                 min="0"
-                name="tire_pressure_psi"
-                value={tractorActual.tire_pressure_psi}
+                name="tirePressurePsi"
+                value={tractorActual.tirePressurePsi}
                 onChange={manejarCambio}
               />
             </div>
