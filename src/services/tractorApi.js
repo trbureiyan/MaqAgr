@@ -1,5 +1,6 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000').replace(/\/$/, '');
-const TRACTOR_BASE_URL = `${API_BASE_URL}/api/tractors`;
+import { apiClient } from '../lib/apiClient';
+import { applyFilters, paginateAndFormatMock } from '../lib/mockUtils';
+
 const REMOTE_TRACTOR_API_ENABLED = import.meta.env.VITE_ENABLE_REMOTE_TRACTOR_API === 'true';
 
 let mockTractors = [
@@ -50,106 +51,8 @@ let mockTractors = [
   },
 ];
 
-const getAuthToken = () => {
-  return localStorage.getItem('token') || localStorage.getItem('authToken') || '';
-};
-
-const toNumberOrNull = (value) => {
-  if (value === undefined || value === null || value === '') {
-    return null;
-  }
-  const num = Number(value);
-  return Number.isNaN(num) ? null : num;
-};
-
-const buildQueryString = (params = {}) => {
-  const searchParams = new URLSearchParams();
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === '') {
-      return;
-    }
-    searchParams.set(key, String(value));
-  });
-
-  return searchParams.toString();
-};
-
-const requestJson = async (url, options = {}) => {
-  const response = await fetch(url, options);
-  const payload = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const backendErrors = payload?.errors;
-    const backendMessage = payload?.message;
-    const errorMessage = Array.isArray(backendErrors)
-      ? backendErrors.join(', ')
-      : backendMessage || `Error HTTP ${response.status}`;
-
-    throw new Error(errorMessage);
-  }
-
-  return payload;
-};
-
-const applySort = (items, sort = 'name', order = 'asc') => {
-  const list = [...items];
-  list.sort((a, b) => {
-    let valA = a?.[sort];
-    let valB = b?.[sort];
-
-    if (typeof valA === 'string') valA = valA.toLowerCase();
-    if (typeof valB === 'string') valB = valB.toLowerCase();
-
-    if (valA === undefined || valA === null) return 1;
-    if (valB === undefined || valB === null) return -1;
-
-    if (valA < valB) return order === 'desc' ? 1 : -1;
-    if (valA > valB) return order === 'desc' ? -1 : 1;
-    return 0;
-  });
-  return list;
-};
-
-const applyFilters = (items, { search = '', brand = '', minPower = '', maxPower = '', maxWeight = '' }) => {
-  const searchLower = search.toLowerCase();
-  const brandLower = brand.toLowerCase();
-  const minPowerNum = toNumberOrNull(minPower);
-  const maxPowerNum = toNumberOrNull(maxPower);
-  const maxWeightNum = toNumberOrNull(maxWeight);
-
-  return items.filter((tractor) => {
-    const matchesSearch = !searchLower
-      ? true
-      : tractor.name?.toLowerCase().includes(searchLower) ||
-        tractor.brand?.toLowerCase().includes(searchLower);
-
-    const matchesBrand = !brandLower
-      ? true
-      : tractor.brand?.toLowerCase().includes(brandLower);
-
-    const matchesMinPower = minPowerNum === null
-      ? true
-      : Number(tractor.engine_power_hp || 0) >= minPowerNum;
-
-    const matchesMaxPower = maxPowerNum === null
-      ? true
-      : Number(tractor.engine_power_hp || 0) <= maxPowerNum;
-
-    const matchesMaxWeight = maxWeightNum === null
-      ? true
-      : Number(tractor.weight_kg || 0) <= maxWeightNum;
-
-    return matchesSearch && matchesBrand && matchesMinPower && matchesMaxPower && matchesMaxWeight;
-  });
-};
-
 const getMockTractors = async (query = {}) => {
   const {
-    page = 1,
-    limit = 10,
-    sort = 'name',
-    order = 'asc',
     search = '',
     brand = '',
     minPower = '',
@@ -157,65 +60,45 @@ const getMockTractors = async (query = {}) => {
     maxWeight = '',
   } = query;
 
-  const filtered = applyFilters(mockTractors, { search, brand, minPower, maxPower, maxWeight });
-  const sorted = applySort(filtered, sort, order);
-
-  const safeLimit = Number(limit) > 0 ? Number(limit) : 10;
-  const safePage = Number(page) > 0 ? Number(page) : 1;
-  const offset = (safePage - 1) * safeLimit;
-
-  const data = sorted.slice(offset, offset + safeLimit);
-  const total = sorted.length;
-  const totalPages = Math.max(1, Math.ceil(total / safeLimit));
-
-  return {
-    success: true,
-    data,
-    pagination: {
-      page: safePage,
-      limit: safeLimit,
-      total,
-      totalPages,
-    },
-  };
-};
-
-export const getTractors = async (query = {}) => {
-  if (!REMOTE_TRACTOR_API_ENABLED) {
-    return getMockTractors(query);
-  }
-
-  const {
-    page = 1,
-    limit = 10,
-    sort = 'name',
-    order = 'asc',
-    search = '',
-    brand = '',
-    minPower = '',
-    maxPower = '',
-    maxWeight = '',
-  } = query;
-
-  const shouldUseSearchEndpoint = Boolean(search || brand || minPower || maxPower || maxWeight);
-  const endpoint = shouldUseSearchEndpoint ? `${TRACTOR_BASE_URL}/search` : TRACTOR_BASE_URL;
-
-  const queryString = buildQueryString({
-    page,
-    limit,
-    sort,
-    order,
+  const filtered = applyFilters(mockTractors, {
     search,
-    brand,
+    exactMatchFields: { brand },
     minPower,
     maxPower,
-    maxWeight,
+    maxWeight
   });
 
-  return requestJson(`${endpoint}?${queryString}`);
+  return paginateAndFormatMock(filtered, query, 'name');
 };
 
-export const createTractor = async (tractorPayload) => {
+export const getTractors = async (params = {}) => {
+  if (!REMOTE_TRACTOR_API_ENABLED) {
+    return getMockTractors(params);
+  }
+
+  const queryParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== '' && value !== null && value !== undefined) {
+      queryParams.append(key, value);
+    }
+  });
+
+  return apiClient(`/api/tractors?${queryParams.toString()}`, {
+    method: 'GET',
+  });
+};
+
+export const getTractorById = async (id) => {
+  if (!REMOTE_TRACTOR_API_ENABLED) {
+    // ...
+  }
+
+  return apiClient(`/api/tractors/${id}`, {
+    method: 'GET',
+  });
+};
+
+export const createTractor = async (payload) => {
   if (!REMOTE_TRACTOR_API_ENABLED) {
     const nextId = mockTractors.length > 0
       ? Math.max(...mockTractors.map((t) => t.tractor_id || 0)) + 1
@@ -223,33 +106,29 @@ export const createTractor = async (tractorPayload) => {
 
     const item = {
       tractor_id: nextId,
-      ...tractorPayload,
+      ...payload,
     };
     mockTractors = [...mockTractors, item];
+    // Devolver formato mapeado similar al envoltorio apiClient
     return { success: true, data: item };
   }
 
-  const token = getAuthToken();
-  return requestJson(TRACTOR_BASE_URL, {
+  return apiClient('/api/tractors', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(tractorPayload),
+    body: payload,
   });
 };
 
-export const updateTractor = async (tractorId, tractorPayload) => {
+export const updateTractor = async (id, payload) => {
   if (!REMOTE_TRACTOR_API_ENABLED) {
-    const idNum = Number(tractorId);
+    const idNum = Number(id);
     let updated = null;
 
     mockTractors = mockTractors.map((item) => {
       if (item.tractor_id !== idNum) {
         return item;
       }
-      updated = { ...item, ...tractorPayload };
+      updated = { ...item, ...payload };
       return updated;
     });
 
@@ -260,20 +139,15 @@ export const updateTractor = async (tractorId, tractorPayload) => {
     return { success: true, data: updated };
   }
 
-  const token = getAuthToken();
-  return requestJson(`${TRACTOR_BASE_URL}/${tractorId}`, {
+  return apiClient(`/api/tractors/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(tractorPayload),
+    body: payload,
   });
 };
 
-export const deleteTractor = async (tractorId) => {
+export const deleteTractor = async (id) => {
   if (!REMOTE_TRACTOR_API_ENABLED) {
-    const idNum = Number(tractorId);
+    const idNum = Number(id);
     const existing = mockTractors.find((item) => item.tractor_id === idNum);
 
     if (!existing) {
@@ -284,12 +158,8 @@ export const deleteTractor = async (tractorId) => {
     return { success: true, data: existing };
   }
 
-  const token = getAuthToken();
-  return requestJson(`${TRACTOR_BASE_URL}/${tractorId}`, {
+  return apiClient(`/api/tractors/${id}`, {
     method: 'DELETE',
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
   });
 };
 
