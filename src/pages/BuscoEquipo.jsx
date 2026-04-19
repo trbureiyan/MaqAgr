@@ -102,10 +102,7 @@ export default function BuscoEquipo() {
 
   const ejecutarMatchmaking = async () => {
     setLoading(true);
-    sileo.loading(
-      "Buscando la mejor combinación en base a tu terreno y labor...",
-      { id: "matchmaking" },
-    );
+    console.log("Buscando la mejor combinación en base a tu terreno y labor...");
 
     try {
       // Configuramos los filtros para la búsqueda simultánea
@@ -132,14 +129,10 @@ export default function BuscoEquipo() {
         implementos: resImplementos.data || [],
       });
 
-      sileo.success("¡Matchmaking completado con éxito!", {
-        id: "matchmaking",
-      });
+      console.log("¡Matchmaking completado con éxito!");
     } catch (error) {
       console.error(error);
-      sileo.error("Ocurrió un problema buscando tus opciones.", {
-        id: "matchmaking",
-      });
+      console.log("Ocurrió un problema buscando tus opciones.");
       // Para no dejar al usuario en la página bloqueda
       setStep((s) => s - 1);
     } finally {
