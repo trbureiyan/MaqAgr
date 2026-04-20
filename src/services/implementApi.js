@@ -1,5 +1,6 @@
 import { apiClient } from '../lib/apiClient';
 import { buildQueryString, applyFilters, paginateAndFormatMock } from '../lib/mockUtils';
+import { buildCreateImplementMockItem, buildUpdateImplementMockItem } from '../lib/implementPayloadGuards';
 
 const REMOTE_IMPLEMENT_API_ENABLED = import.meta.env.VITE_ENABLE_REMOTE_IMPLEMENT_API === 'true';
 
@@ -111,10 +112,7 @@ export const createImplement = async (implementPayload) => {
       ? Math.max(...mockImplements.map((t) => Number(t.implementId) || 0)) + 1
       : 1;
 
-    const item = {
-      implementId: nextId,
-      ...implementPayload,
-    };
+    const item = buildCreateImplementMockItem(nextId, implementPayload);
     mockImplements = [...mockImplements, item];
     return { success: true, data: item };
   }
@@ -134,7 +132,7 @@ export const updateImplement = async (implementId, implementPayload) => {
       if (Number(item.implementId) !== idNum) {
         return item;
       }
-      updated = { ...item, ...implementPayload };
+      updated = buildUpdateImplementMockItem(item, implementPayload);
       return updated;
     });
 
