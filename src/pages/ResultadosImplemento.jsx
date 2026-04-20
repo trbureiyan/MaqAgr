@@ -23,6 +23,7 @@ import SkeletonCard from '../components/ui/loaders/SkeletonCard';
 import MachineImg from '../assets/img/2.png';
 import TractorImg from '../assets/img/1.png';
 import { calculateMinimumPower } from '../services/calculationApi';
+import { getWorkingDepthM, parseStoredImplementData } from '../lib/implementStorageUtils';
 import { 
   AlertDialog,
   AlertDialogContent,
@@ -48,18 +49,27 @@ export default function ResultadosImplemento() {
       navigate('/TengoMaquinaria');
       return;
     }
-    
-    const implementData = JSON.parse(rawData);
+
+    const implementData = parseStoredImplementData(rawData);
+    if (!implementData) {
+      localStorage.removeItem('implemento_datos');
+      navigate('/TengoMaquinaria');
+      return;
+    }
+
     setDatos(implementData);
 
     const fetchCalculation = async () => {
       setLoading(true);
+      setError(null);
       try {
         // Adapt payload to backend. En un futuro el form debe seleccionar implement_id y terrain_id del DB.
+        const workingDepth = getWorkingDepthM(implementData, 0.3);
         const payload = {
-          implementId: implementData.implementId || 1, 
-          terrainId: implementData.terrainId || 1,
-          workingDepthM: implementData.working_depth_cm ? implementData.working_depth_cm / 100 : 0.3
+          implementId: implementData.implementId ?? implementData.implement_id ?? 1,
+          terrainId: implementData.terrainId ?? implementData.terrain_id ?? 1,
+          // Backend validateImplementRequirement exige working_depth_m <= 1.0
+          workingDepthM: Math.min(workingDepth, 1.0),
         };
         const res = await calculateMinimumPower(payload);
         setCalculationResult(res.data);

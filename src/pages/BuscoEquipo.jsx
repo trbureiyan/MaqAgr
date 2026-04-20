@@ -102,7 +102,7 @@ export default function BuscoEquipo() {
 
   const ejecutarMatchmaking = async () => {
     setLoading(true);
-    sileo.loading("Buscando la mejor combinación en base a tu terreno y labor...");
+    sileo.info("Buscando la mejor combinación en base a tu terreno y labor...");
 
     try {
       // Configuramos los filtros para la búsqueda simultánea
