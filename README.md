@@ -1,5 +1,7 @@
 # MaqAgr - Frontend
 
+<img width="1376" height="768" alt="Gemini_Generated_Image_j6savkj6savkj6sa (1)" src="https://github.com/user-attachments/assets/41892393-0d8f-40ab-a130-5f7fd0ff76a3" />
+
 > Interfaz web (SPA) para gestión y apoyo a la decisión en mecanización agrícola. Desarrollado como parte del Semillero de Investigación Devurity.
 
 ![Status](https://img.shields.io/badge/status-active_development-blue)
