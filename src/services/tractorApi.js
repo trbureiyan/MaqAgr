@@ -103,6 +103,7 @@ export const getTractors = async (params = {}) => {
     maxPower,
     type,
   });
+};
 
   return apiClient(queryString ? `${endpoint}?${queryString}` : endpoint, {
     method: 'GET',
@@ -134,6 +135,7 @@ export const createTractor = async (payload) => {
       ...payload,
     };
     mockTractors = [...mockTractors, item];
+    // Devolver formato mapeado similar al envoltorio apiClient
     return { success: true, data: item };
   }
 
