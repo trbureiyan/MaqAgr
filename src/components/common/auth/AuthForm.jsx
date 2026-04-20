@@ -138,7 +138,10 @@ const AuthForm = ({ formType }) => {
           email: formData.email,
           password: formData.password
         });
-        const redirectTo = location.state?.from?.pathname || '/';
+        const from = location.state?.from;
+        const redirectTo = from
+          ? `${from.pathname || '/'}${from.search || ''}${from.hash || ''}`
+          : '/';
         navigate(redirectTo, { replace: true });
       } else {
         await register({

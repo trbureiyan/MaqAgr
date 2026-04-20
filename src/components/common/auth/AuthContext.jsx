@@ -54,9 +54,11 @@ export const AuthProvider = ({ children }) => {
     const storedAuth = localStorage.getItem('isAuthenticated') === 'true';
     const storedUser = readStoredUser();
 
-    if (storedAuth && token) {
+    if (storedAuth && token && storedUser) {
       setIsAuthenticated(true);
       setUser(storedUser);
+    } else if (storedAuth || token || storedUser) {
+      clearSession();
     }
 
     const handleUnauthorized = () => {
@@ -84,7 +86,17 @@ export const AuthProvider = ({ children }) => {
 
       const payload = response?.data ?? response;
       const token = payload?.token ?? payload?.accessToken;
-      const authUser = payload?.user ?? payload?.account ?? null;
+      const rawUser = payload?.user ?? payload?.account ?? null;
+
+      // El backend coloca role y role_id en el RAÍZ del payload (no dentro de user).
+      // Los fusionamos en authUser para que ProtectedRoute pueda verificar el rol.
+      const authUser = rawUser
+        ? {
+            ...rawUser,
+            role: payload?.role ?? rawUser?.role ?? null,
+            roleId: payload?.roleId ?? payload?.role_id ?? rawUser?.roleId ?? rawUser?.role_id ?? null,
+          }
+        : null;
 
       persistSession(authUser, token);
       return payload;
