@@ -9,7 +9,16 @@ function DatosClimativos() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    navigate("/Resultados");
+    navigate("/Resultados", {
+      state: {
+        payload: {
+          terrainId: 1,
+          implementId: 2, 
+          workingDepthM: 0.3,
+          workType: "tillage"
+        }
+      }
+    });
   };
 
   return (

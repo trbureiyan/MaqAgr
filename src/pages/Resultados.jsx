@@ -1,81 +1,111 @@
-import React from 'react';
-import Tractor from "../assets/img/Tractor Prueva.webp";
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import TractorMachineCard from "../components/ui/cards/TractorMachineCard";
-import TractorImg from "../assets/img/1.png";
+import SkeletonCard from '../components/ui/loaders/SkeletonCard';
 import MachineImg from "../assets/img/2.png";
+import { generateAdvancedRecommendation } from '../services/recommendationApi';
 
 export default function Resultados() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [recommendationResult, setRecommendationResult] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchRecommendation = async () => {
+      setLoading(true);
+      try {
+        const payload = location.state?.payload || {
+          tractorId: 1,
+          terrainId: 1,
+          tireCondition: "new",
+          ptoEfficiency: 0.85
+        };
+        const result = await generateAdvancedRecommendation(payload);
+        setRecommendationResult(result.data);
+      } catch (err) {
+        setError(err.message || 'Error al generar recomendación avanzada');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchRecommendation();
+  }, [location.state]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center bg-gray-100 py-10 min-h-screen">
+        <div className="animate-pulse space-y-4 w-full max-w-6xl p-8">
+          <div className="h-8 bg-gray-300 rounded w-1/4 mx-auto mb-8"></div>
+          <div className="h-64 bg-gray-300 rounded w-full"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mt-8">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center bg-gray-100 py-10 min-h-screen text-red-600">
+        <h2 className="text-2xl font-bold mb-4">Error</h2>
+        <p className="mb-6">{error}</p>
+        <button onClick={() => navigate(-1)} className="px-4 py-2 bg-blue-600 text-white rounded">Volver</button>
+      </div>
+    );
+  }
+
+  const { tractor, detailedAnalysis, recommendedImplements } = recommendationResult || {};
+  const hp = detailedAnalysis?.realAvailableHp || tractor?.enginePowerHp || 0;
+
   return (
-    <div className="flex flex-col items-center justify-center bg-gray-100 py-10">
+    <div className="flex flex-col items-center justify-center bg-gray-100 py-10 min-h-screen">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-6xl mb-10">
-        <h1 className="text-3xl font-bold text-center mb-8">Resultados</h1>
+        <h1 className="text-3xl font-bold text-center mb-8">Resultados: Implementos para tu Tractor</h1>
         <div className="flex flex-col md:flex-row">
-          <div className="w-full md:w-1/2">
-            <img 
-              src={Tractor}
-              alt="Imagen del resultado" 
-              className="w-full h-auto rounded-lg"
-            />
+          <div className="w-full md:w-1/2 flex items-center justify-center bg-gray-50 rounded-lg p-4">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-800">{tractor?.name || `${tractor?.brand} ${tractor?.model}`}</h2>
+              <p className="text-gray-600 mt-2">Potencia nominal: {tractor?.enginePowerHp} HP</p>
+            </div>
           </div>
           <div className="w-full md:w-1/2 md:pl-8 mt-8 md:mt-0">
-            <div className="bg-gray-200 p-6 rounded-lg shadow-inner">
-              <p className="text-gray-700 mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam.</p>
-              <p className="text-gray-700 mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam.</p>
-              <p className="text-gray-700 mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam.</p>
-              <div className="flex justify-center mt-8">
-                <div className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg">
-                  75 HP
+            <div className="bg-gray-200 p-6 rounded-lg shadow-inner h-full flex flex-col justify-center">
+              <p className="text-gray-700 mb-2">Según nuestro análisis avanzado de pérdida de potencia (por terreno, patinamiento, etc):</p>
+              <p className="text-gray-700 mb-4">La potencia útil real disponible a la barra de tiro es de aproximadamente:</p>
+              <div className="flex justify-center mt-4">
+                <div className="bg-[#991b1b] text-white px-6 py-3 rounded-lg text-2xl font-bold shadow-md">
+                  {hp} HP Reales
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-6xl">
-        <h2 className="text-2xl font-bold text-center mb-8">Maquinas Recomendadas</h2>
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-          <div className="flex items-center mb-4 md:mb-0">
-            <svg className="w-6 h-6 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z"></path>
-            </svg>
-            <span className="text-gray-600">Filtro</span>
-          </div>
-          <div className="relative w-full md:w-auto">
-            <input 
-              type="text" 
-              placeholder="Buscar" 
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-            />
-            <svg className="w-6 h-6 text-gray-600 absolute right-2 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-          </div>
-        </div>
+        <h2 className="text-2xl font-bold text-center mb-8">Implementos Compatibles Recomendados</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {/* Maquina 1 */}
-          <TractorMachineCard 
-              imageSrc={TractorImg}
-              link="/Home"
-              title="Arado de vertebras 975"
-              description="Estilo clásico combinado con innovaciones modernas. Está en
-                nuestra herencia."
-            />
-            {/* Maquina 2 */}
+          {recommendedImplements?.map((rec) => (
             <TractorMachineCard 
-              imageSrc={TractorImg}
-              link="/Home"
-              title="Rastra Mx425"
-              description="Peterbilt se asocia con PFC para ofrecer un programa FMV
-                inmejorable para los camiones"
+              key={rec.implement?.id || rec.rank}
+              imageSrc={MachineImg}
+              link={`/implement/${rec.implement?.id}`}
+              title={rec.implement?.name || rec.implement?.implementType}
+              description={`Requisito: ${rec.implement?.powerRequirementHp} HP - Tipo: ${rec.implement?.implementType} - Confianza: ${rec.score?.total}%`}
             />
-            {/* Maquina 3 */}
-            <TractorMachineCard 
-              imageSrc={TractorImg}
-              link="/Home"
-              title="Cultivador Mx10"
-              description="Peterbilt se asocia con PFC para ofrecer un programa FMV
-                inmejorable para los camiones"
-            />
+          ))}
+          {(!recommendedImplements || recommendedImplements.length === 0) && (
+            <div className="col-span-full py-10 text-center text-muted-foreground bg-gray-50 rounded border border-dashed border-gray-300">
+              <p className="text-lg">No se encontraron implementos que se ajusten a esta máquina.</p>
+              <p className="text-sm mt-2">Prueba configurando diferentes tractores o condiciones.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

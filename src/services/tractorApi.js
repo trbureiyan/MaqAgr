@@ -85,22 +85,23 @@ export const getTractors = async (params = {}) => {
     brand = '',
     minPower = '',
     maxPower = '',
-    maxWeight = '',
+    type = '',
   } = params;
 
-  const shouldUseSearchEndpoint = Boolean(search || brand || minPower || maxPower || maxWeight);
+  const shouldUseSearchEndpoint = Boolean(search || brand || minPower || maxPower || type);
   const endpoint = shouldUseSearchEndpoint ? '/api/tractors/search' : '/api/tractors';
 
+  // Map frontend params to backend expected query params (q instead of search, type instead of maxWeight)
   const queryString = buildQueryString({
     page,
     limit,
     sort,
     order,
-    search,
+    q: search,
     brand,
     minPower,
     maxPower,
-    maxWeight,
+    type,
   });
 
   return apiClient(queryString ? `${endpoint}?${queryString}` : endpoint, {
