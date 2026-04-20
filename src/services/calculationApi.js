@@ -59,7 +59,8 @@ const mockMinimumPower = async () => {
 };
 
 export const calculatePowerLoss = async (payload) => {
-  if (!REMOTE_CALCULATION_API_ENABLED) {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  if (!REMOTE_CALCULATION_API_ENABLED || !token) {
     return mockPowerLoss();
   }
 
@@ -71,7 +72,8 @@ export const calculatePowerLoss = async (payload) => {
 };
 
 export const calculateMinimumPower = async (payload) => {
-  if (!REMOTE_CALCULATION_API_ENABLED) {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  if (!REMOTE_CALCULATION_API_ENABLED || !token) {
     return mockMinimumPower();
   }
 

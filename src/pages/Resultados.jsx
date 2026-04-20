@@ -25,12 +25,14 @@ export default function Resultados() {
         // El flujo "Tengo Tractor" pasa tractorId, terrainId y parámetros de pérdida de
         // potencia a través de location.state.payload.
         // El apiClient convierte camelCase → snake_case antes de enviar al backend.
-        const payload = location.state?.payload || {
+        const basePayload = location.state?.payload || {};
+        const payload = {
           tractorId: 1,
           terrainId: 1,
           workingSpeedKmh: 7.5,
           carriedObjectsWeightKg: 0,
           slippagePercent: 10,
+          ...basePayload
         };
         const response = await calculatePowerLoss(payload);
         setResult(response?.data ?? response);
