@@ -13,143 +13,114 @@
  * @module pages/CatalogoMaquinas
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import TractorMachineCard from '../components/ui/cards/TractorMachineCard';
+import SkeletonCard from '../components/ui/loaders/SkeletonCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import Maquina from '../assets/img/2.png';
-
-// ---------------------------------------------------------------------------
-// Datos estáticos
-// ---------------------------------------------------------------------------
-
-/**
- * Marcas de maquinaria disponibles para filtrar.
- * Se renderizan como botones tipo chip/pill seleccionables.
- *
- * @type {string[]}
- */
-const BRANDS = ['Marca 1', 'Marca 2', 'Marca 3', 'Marca 4'];
-
-/**
- * Lista de máquinas de muestra para el catálogo.
- * En producción estos datos provendrán de la API con paginación server-side.
- *
- * @type {Array<{ imageSrc: string, link: string, title: string, description: string }>}
- */
-const MACHINES = [
-  { imageSrc: Maquina, link: '/maquinaria/2', title: 'Máquina Modelo 1', description: 'Descripción breve de la máquina modelo 1.' },
-  { imageSrc: Maquina, link: '/maquinaria/2', title: 'Máquina Modelo 2', description: 'Descripción breve de la máquina modelo 2.' },
-  { imageSrc: Maquina, link: '/maquinaria/2', title: 'Máquina Modelo 3', description: 'Descripción breve de la máquina modelo 3.' },
-  { imageSrc: Maquina, link: '/maquinaria/2', title: 'Máquina Modelo 4', description: 'Descripción breve de la máquina modelo 4.' },
-  { imageSrc: Maquina, link: '/maquinaria/2', title: 'Máquina Modelo 5', description: 'Descripción breve de la máquina modelo 5.' },
-  { imageSrc: Maquina, link: '/maquinaria/2', title: 'Máquina Modelo 6', description: 'Descripción breve de la máquina modelo 6.' },
-];
-
-// ---------------------------------------------------------------------------
-// Sub-componente: panel de filtros
-// ---------------------------------------------------------------------------
-
-/**
- * FilterSidebar — Panel lateral de filtros para el catálogo de maquinaria.
- *
- * Contiene campos de búsqueda por modelo, selección de marca (chips)
- * y rango de fuerza requerida. En móvil se muestra como un bloque
- * apilado antes de la grilla de resultados.
- *
- * @returns {JSX.Element} Aside con controles de filtrado.
- */
-const FilterSidebar = () => (
-  <aside className="flex flex-col gap-5 w-full lg:w-[260px] lg:flex-shrink-0">
-    {/* Título del panel */}
-    <h2 className="text-base font-semibold text-[#1e2939]">Filtros</h2>
-
-    <div className="flex flex-col gap-5">
-      {/* ── Filtro por modelo ── */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="machine-modelo" className="text-sm font-medium text-foreground">
-          Modelo
-        </label>
-        <Input id="machine-modelo" placeholder="Buscar modelo" />
-      </div>
-
-      {/* ── Filtro por marca (chips seleccionables) ── */}
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium text-foreground">Marcas</span>
-        {/* Chips en fila con wrap — se adaptan al ancho disponible */}
-        <div className="flex flex-wrap gap-2">
-          {BRANDS.map((marca) => (
-            <button
-              key={marca}
-              type="button"
-              className="rounded-full border border-border px-3 py-1
-                         text-xs font-medium text-foreground
-                         hover:border-[#893d46] hover:text-[#893d46]
-                         transition-colors"
-            >
-              {marca}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Filtro por rango de fuerza requerida ── */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-foreground">
-          Fuerza requerida (HP)
-        </label>
-        {/* Dos inputs en fila para min/max */}
-        <div className="grid grid-cols-2 gap-2">
-          <Input type="number" placeholder="Min" min="0" />
-          <Input type="number" placeholder="Max" min="0" />
-        </div>
-      </div>
-
-      {/* Botón para limpiar todos los filtros */}
-      <Button variant="outline" className="w-full">
-        Limpiar filtros
-      </Button>
-    </div>
-  </aside>
-);
+import MaquinaImg from '../assets/img/2.png';
+import { getImplements } from '../services/implementApi';
+import useDebounce from '../hooks/useDebounce';
 
 // ---------------------------------------------------------------------------
 // Componente principal
 // ---------------------------------------------------------------------------
 
 /**
- * CatalogoMaquinas — Página de listado de maquinaria agrícola con filtros.
- *
- * Implementa un layout de dos columnas en desktop (sidebar + grilla)
- * que colapsa a una sola columna en móvil. La grilla de tarjetas
- * escala de 1 columna (móvil) a 2 columnas (sm) a 3 columnas (xl).
- *
- * @component
- * @returns {JSX.Element} Página de catálogo de maquinaria.
- *
- * @example
- * // Registrada en App.jsx
- * <Route path="/CatalogoMaquinas" element={<CatalogoMaquinas />} />
+ * CatalogoMaquinas — Página de listado de maquinaria agrícola con filtros integrados a la API.
  */
 export default function CatalogoMaquinas() {
+  const [implementsList, setImplementsList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // States for filters
+  const [search, setSearch] = useState('');
+  const [minPower, setMinPower] = useState('');
+  const [maxPower, setMaxPower] = useState('');
+
+  const debouncedSearch = useDebounce(search, 500);
+
+  const fetchImplements = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await getImplements({
+        search: debouncedSearch,
+        minPower,
+        maxPower,
+        limit: 12
+      });
+      setImplementsList(response.data || []);
+    } catch (err) {
+      setError(err.message || 'Error al cargar el catálogo de maquinaria');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchImplements();
+  }, [debouncedSearch, minPower, maxPower]);
+
+  const handleClearFilters = () => {
+    setSearch('');
+    setMinPower('');
+    setMaxPower('');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-
-        {/*
-         * Layout principal:
-         *  - móvil  : flex-col (sidebar arriba, main abajo)
-         *  - desktop: flex-row con sidebar fijo y main flexible
-         */}
         <div className="flex flex-col gap-8 lg:flex-row lg:gap-8">
 
           {/* ── Panel de filtros ── */}
-          <FilterSidebar />
+          <aside className="flex flex-col gap-5 w-full lg:w-[260px] lg:flex-shrink-0">
+            <h2 className="text-base font-semibold text-[#1e2939]">Filtros</h2>
 
-          {/* ── Área principal: encabezado + grilla de tarjetas ── */}
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="machine-modelo" className="text-sm font-medium text-foreground">
+                  Modelo o Nombre
+                </label>
+                <Input 
+                  id="machine-modelo" 
+                  placeholder="Buscar modelo" 
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-foreground">
+                  Fuerza requerida (HP)
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input 
+                    type="number" 
+                    placeholder="Min" 
+                    min="0" 
+                    value={minPower}
+                    onChange={(e) => setMinPower(e.target.value)}
+                  />
+                  <Input 
+                    type="number" 
+                    placeholder="Max" 
+                    min="0" 
+                    value={maxPower}
+                    onChange={(e) => setMaxPower(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <Button variant="outline" className="w-full" onClick={handleClearFilters}>
+                Limpiar filtros
+              </Button>
+            </div>
+          </aside>
+
+          {/* ── Área principal ── */}
           <main className="flex flex-1 flex-col gap-6 min-w-0">
-
-            {/* Encabezado de la sección de resultados */}
             <div>
               <p className="mb-1 text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#909d00]">
                 Catálogo
@@ -162,22 +133,31 @@ export default function CatalogoMaquinas() {
               </p>
             </div>
 
-            {/*
-             * Grilla de tarjetas responsive:
-             *  - 1 col en móvil
-             *  - 2 col en sm
-             *  - 3 col en xl (cuando el sidebar ocupa espacio)
-             */}
+            {error && (
+              <div className="p-4 bg-red-100 text-red-700 rounded-md">
+                {error}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 gap-4 sm:gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {MACHINES.map((machine) => (
-                <TractorMachineCard
-                  key={machine.title}
-                  imageSrc={machine.imageSrc}
-                  link={machine.link}
-                  title={machine.title}
-                  description={machine.description}
-                />
-              ))}
+              {isLoading ? (
+                // Skeletons de carga
+                Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
+              ) : implementsList.length > 0 ? (
+                implementsList.map((machine) => (
+                  <TractorMachineCard
+                    key={machine.implementId || machine.id}
+                    imageSrc={machine.imageUrl || MaquinaImg}
+                    link={`/maquinaria/${machine.implementId || machine.id}`}
+                    title={machine.implementName}
+                    description={`${machine.brand} - Requerido: ${machine.powerRequirementHp} HP`}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full py-10 text-center text-muted-foreground">
+                  No se encontraron máquinas con estos filtros.
+                </div>
+              )}
             </div>
           </main>
         </div>

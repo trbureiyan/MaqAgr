@@ -74,10 +74,10 @@ const Navbar = () => {
   // ── Manejadores de eventos ────────────────────────────────────────────────
 
   /**
-   * Navega al panel de administración de tractores.
+   * Navega al panel de administración principal.
    * Solo accesible para usuarios autenticados.
    */
-  const handleProfileClick = () => navigate('/admin/TractorForm');
+  const handleProfileClick = () => navigate('/admin');
 
   /**
    * Cierra la sesión del usuario y redirige al inicio.

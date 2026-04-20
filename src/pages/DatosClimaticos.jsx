@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Nube from "../assets/img/nubes.png";
 import Button from "../components/ui/buttons/Button";
@@ -6,10 +6,53 @@ import TooltipInfo from "../components/ui/buttons/ToolTipInfo";
 
 function DatosClimativos() {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    altitudeM: '',
+    ambientTemperatureC: '',
+    slopePercent: '',
+    slippagePercent: '',
+  });
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    navigate("/Resultados");
+
+    const toNumberOrNull = (value) => {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const altitudeM = toNumberOrNull(formData.altitudeM);
+    const ambientTemperatureC = toNumberOrNull(formData.ambientTemperatureC);
+    const slopePercent = toNumberOrNull(formData.slopePercent);
+    const slippagePercentInput = toNumberOrNull(formData.slippagePercent);
+    const slippagePercent = slippagePercentInput === null
+      ? 15
+      : Math.min(100, Math.max(0, slippagePercentInput));
+
+    const payload = {
+      tractorId: 1,
+      terrainId: 1,
+      tireCondition: slippagePercent > 20 ? 'worn' : 'new',
+      ptoEfficiency: Number((1 - (slippagePercent / 100)).toFixed(2)),
+      altitudeM,
+      ambientTemperatureC,
+      slopePercent,
+      slippagePercent,
+    };
+
+    navigate("/Resultados", {
+      state: {
+        payload,
+      }
+    });
   };
 
   return (
@@ -34,6 +77,9 @@ function DatosClimativos() {
                   </label>
                   <input 
                     type="text" 
+                    name="altitudeM"
+                    value={formData.altitudeM}
+                    onChange={handleInputChange}
                     placeholder="Valor en msnm" 
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
@@ -45,6 +91,9 @@ function DatosClimativos() {
                   </label>
                   <input 
                     type="text" 
+                    name="ambientTemperatureC"
+                    value={formData.ambientTemperatureC}
+                    onChange={handleInputChange}
                     placeholder="Valor en °C" 
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
@@ -58,6 +107,9 @@ function DatosClimativos() {
                   </label>
                   <input 
                     type="text" 
+                    name="slopePercent"
+                    value={formData.slopePercent}
+                    onChange={handleInputChange}
                     placeholder="Valor en %" 
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
@@ -69,6 +121,9 @@ function DatosClimativos() {
                   </label>
                   <input 
                     type="text" 
+                    name="slippagePercent"
+                    value={formData.slippagePercent}
+                    onChange={handleInputChange}
                     placeholder="Valor en %" 
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />

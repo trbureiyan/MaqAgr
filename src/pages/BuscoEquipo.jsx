@@ -102,10 +102,7 @@ export default function BuscoEquipo() {
 
   const ejecutarMatchmaking = async () => {
     setLoading(true);
-    sileo.loading(
-      "Buscando la mejor combinación en base a tu terreno y labor...",
-      { id: "matchmaking" },
-    );
+    sileo.info("Buscando la mejor combinación en base a tu terreno y labor...");
 
     try {
       // Configuramos los filtros para la búsqueda simultánea
@@ -132,14 +129,10 @@ export default function BuscoEquipo() {
         implementos: resImplementos.data || [],
       });
 
-      sileo.success("¡Matchmaking completado con éxito!", {
-        id: "matchmaking",
-      });
+      sileo.success("¡Matchmaking completado con éxito!");
     } catch (error) {
       console.error(error);
-      sileo.error("Ocurrió un problema buscando tus opciones.", {
-        id: "matchmaking",
-      });
+      sileo.error("Ocurrió un problema buscando tus opciones.");
       // Para no dejar al usuario en la página bloqueda
       setStep((s) => s - 1);
     } finally {
@@ -339,7 +332,7 @@ export default function BuscoEquipo() {
               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                 {resultados.tractores.map((t) => (
                   <div
-                    key={t.tractor_id}
+                    key={t.tractorId}
                     className="bg-white p-4 rounded-lg shadow border border-gray-100 hover:shadow-md transition"
                   >
                     <h4 className="font-bold text-[#991b1b]">
@@ -347,13 +340,13 @@ export default function BuscoEquipo() {
                     </h4>
                     <div className="text-sm text-gray-600 space-y-1 mt-2">
                       <p>
-                        <b>Potencia:</b> {t.engine_power_hp} HP
+                        <b>Potencia:</b> {t.enginePowerHp} HP
                       </p>
                       <p>
-                        <b>Tracción:</b> {t.traction_type}
+                        <b>Tracción:</b> {t.tractionType}
                       </p>
                       <p>
-                        <b>Peso:</b> {t.weight_kg} kg
+                        <b>Peso:</b> {t.weightKg} kg
                       </p>
                     </div>
                   </div>
@@ -380,21 +373,21 @@ export default function BuscoEquipo() {
               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                 {resultados.implementos.map((i) => (
                   <div
-                    key={i.implement_id}
+                    key={i.implementId}
                     className="bg-white p-4 rounded-lg shadow border border-gray-100 hover:shadow-md transition"
                   >
                     <h4 className="font-bold text-[#991b1b]">
-                      {i.brand} {i.implement_name}
+                      {i.brand} {i.implementName}
                     </h4>
                     <div className="text-sm text-gray-600 space-y-1 mt-2">
                       <p>
-                        <b>Req. Potencia:</b> {i.power_requirement_hp} HP
+                        <b>Req. Potencia:</b> {i.powerRequirementHp} HP
                       </p>
                       <p>
-                        <b>Ancho de trabajo:</b> {i.working_width_m} m
+                        <b>Ancho de trabajo:</b> {i.workingWidthM} m
                       </p>
                       <p>
-                        <b>Peso:</b> {i.weight_kg} kg
+                        <b>Peso:</b> {i.weightKg} kg
                       </p>
                     </div>
                   </div>

@@ -1,5 +1,5 @@
 import { AuthProvider, AuthContext } from './AuthContext';
-import { useAuth } from './UseAuth.js'; // NOTE: Keep this file name in lowercase (`UseAuth.js`) to avoid casing issues on Windows n Linux.
+import { useAuth } from './useAuth.js';
 
 export {
   AuthProvider,

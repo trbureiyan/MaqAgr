@@ -339,7 +339,7 @@ const TractorCRUD = () => {
    */
   const tractoresFiltrados = useMemo(() => {
     return tractores.filter((t) => {
-      const matchTraccion = !filtroRapido.traccion || t.traction_type === filtroRapido.traccion;
+      const matchTraccion = !filtroRapido.traccion || t.tractionType === filtroRapido.traccion;
       const matchEstado = !filtroRapido.estado || t.status === filtroRapido.estado;
       return matchTraccion && matchEstado;
     });
@@ -350,18 +350,18 @@ const TractorCRUD = () => {
   const abrirModal = (tractor = null) => {
     if (tractor) {
       setTractorActual({
-        tractor_id: tractor.tractor_id,
+        tractorId: tractor.tractorId,
         name: tractor.name ?? '',
         brand: tractor.brand ?? '',
         model: tractor.model ?? '',
-        engine_power_hp: tractor.engine_power_hp ?? '',
-        weight_kg: tractor.weight_kg ?? '',
-        traction_force_kn: tractor.traction_force_kn ?? '',
-        traction_type: tractor.traction_type ?? '4x4',
-        tire_type: tractor.tire_type ?? '',
-        tire_width_mm: tractor.tire_width_mm ?? '',
-        tire_diameter_mm: tractor.tire_diameter_mm ?? '',
-        tire_pressure_psi: tractor.tire_pressure_psi ?? '',
+        enginePowerHp: tractor.enginePowerHp ?? '',
+        weightKg: tractor.weightKg ?? '',
+        tractionForceKn: tractor.tractionForceKn ?? '',
+        tractionType: tractor.tractionType ?? '4x4',
+        tireType: tractor.tireType ?? '',
+        tireWidthMm: tractor.tireWidthMm ?? '',
+        tireDiameterMm: tractor.tireDiameterMm ?? '',
+        tirePressurePsi: tractor.tirePressurePsi ?? '',
         status: tractor.status ?? 'available',
       });
       setModoEdicion(true);
@@ -393,14 +393,17 @@ const TractorCRUD = () => {
       name: tractorActual.name?.trim(),
       brand: tractorActual.brand?.trim(),
       model: tractorActual.model?.trim(),
-      engine_power_hp: Number(tractorActual.engine_power_hp),
-      traction_type: tractorActual.traction_type,
+      enginePowerHp: Number(tractorActual.enginePowerHp),
+      tractionType: tractorActual.tractionType,
       status: tractorActual.status,
     };
 
     const camposNumericos = [
-      'weight_kg', 'traction_force_kn',
-      'tire_width_mm', 'tire_diameter_mm', 'tire_pressure_psi',
+      'weightKg',
+      'tractionForceKn',
+      'tireWidthMm',
+      'tireDiameterMm',
+      'tirePressurePsi',
     ];
 
     camposNumericos.forEach((field) => {
@@ -410,8 +413,8 @@ const TractorCRUD = () => {
       }
     });
 
-    if (tractorActual.tire_type?.trim()) {
-      payload.tire_type = tractorActual.tire_type.trim();
+    if (tractorActual.tireType?.trim()) {
+      payload.tireType = tractorActual.tireType.trim();
     }
 
     return payload;
@@ -443,7 +446,7 @@ const TractorCRUD = () => {
       const payload = obtenerPayload();
 
       if (modoEdicion) {
-        await updateTractor(tractorActual.tractor_id, payload);
+        await updateTractor(tractorActual.tractorId, payload);
         notifySuccess('Tractor Actualizado', `El tractor ${payload.name} se actualizó correctamente.`);
       } else {
         await createTractor(payload);
@@ -475,12 +478,12 @@ const TractorCRUD = () => {
   };
 
   const confirmarEliminacionTractor = async () => {
-    if (!tractorAEliminar?.tractor_id) return;
+    if (!tractorAEliminar?.tractorId) return;
 
     setEliminando(true);
 
     try {
-      await deleteTractor(tractorAEliminar.tractor_id);
+      await deleteTractor(tractorAEliminar.tractorId);
       notifySuccess('Tractor Eliminado', `El tractor fue eliminado.`);
       cerrarConfirmacionEliminacion();
       await cargarTabla();
@@ -660,11 +663,11 @@ const TractorCRUD = () => {
                       <TableHead>
                         <button
                           type="button"
-                          onClick={() => alternarOrden('engine_power_hp')}
+                          onClick={() => alternarOrden('enginePowerHp')}
                           className="inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                         >
                           Potencia (HP)
-                          <SortIndicator fieldKey="engine_power_hp" ordenamiento={ordenamiento} />
+                          <SortIndicator fieldKey="enginePowerHp" ordenamiento={ordenamiento} />
                         </button>
                       </TableHead>
 
@@ -718,13 +721,13 @@ const TractorCRUD = () => {
                           <TableCell>
                             <span className="inline-flex items-center gap-1 text-sm whitespace-nowrap">
                               <Gauge className="size-3.5 text-muted-foreground" aria-hidden="true" />
-                              {tractor.engine_power_hp} HP
+                              {tractor.enginePowerHp} HP
                             </span>
                           </TableCell>
 
                           {/* Tipo de tracción */}
                           <TableCell className="text-sm">
-                            {TRACCION_LABELS[tractor.traction_type] || tractor.traction_type || '—'}
+                            {TRACCION_LABELS[tractor.tractionType] || tractor.tractionType || '—'}
                           </TableCell>
 
                           {/* Estado */}
@@ -734,7 +737,7 @@ const TractorCRUD = () => {
 
                           {/* Peso */}
                           <TableCell className="text-sm text-muted-foreground">
-                            {tractor.weight_kg ? `${tractor.weight_kg} kg` : '—'}
+                            {tractor.weightKg ? `${tractor.weightKg} kg` : '—'}
                           </TableCell>
 
                           {/* Acciones */}

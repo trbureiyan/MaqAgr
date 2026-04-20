@@ -10,14 +10,36 @@ const ProtectedRoute = ({ allowedRoles = [] }) => {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
 
+  const normalizeRole = (value) => {
+    if (value === undefined || value === null || value === '') {
+      return null;
+    }
+    return String(value).toLowerCase();
+  };
+
+  const userRoles = [
+    user?.role,
+    user?.roleName,
+    user?.roleId,
+    user?.userType,
+    user?.type,
+    user?.isAdmin ? 'admin' : null,
+  ]
+    .map(normalizeRole)
+    .filter(Boolean);
+
+  const allowedRoleSet = new Set(allowedRoles.map(normalizeRole).filter(Boolean));
+  const isAllowedByRole =
+    allowedRoleSet.size === 0 || userRoles.some((role) => allowedRoleSet.has(role));
+
   if (!isAuthenticated) {
     // No autenticado -> redirigir a Login y guardar ruta original
     return <Navigate to="/Login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles.length > 0 && (!user || (!allowedRoles.includes(user.role) && !allowedRoles.includes(user.roleId)))) {
+  if (!isAllowedByRole) {
     // Autenticado pero sin los permisos correctos
-    return <Navigate to="/unauthorized" replace />; // o /Forbidden
+    return <Navigate to="/forbidden" replace />;
   }
 
   // Autorizado -> renderiza la(s) ruta(s) hijas
