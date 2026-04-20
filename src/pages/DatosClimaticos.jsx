@@ -12,10 +12,10 @@ function DatosClimativos() {
     navigate("/Resultados", {
       state: {
         payload: {
+          tractorId: 1,
           terrainId: 1,
-          implementId: 2, 
-          workingDepthM: 0.3,
-          workType: "tillage"
+          tireCondition: "new",
+          ptoEfficiency: 0.85
         }
       }
     });

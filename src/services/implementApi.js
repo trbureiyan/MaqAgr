@@ -76,13 +76,14 @@ export const getImplements = async (query = {}) => {
     type = '',
     minPower = '',
     maxPower = '',
+    maxWeight = '',
     minWidth = '',
     maxWidth = '',
     requiredPower = '',
     tractorId = '',
   } = query;
 
-  const shouldUseSearchEndpoint = Boolean(search || type || minWidth || maxWidth || requiredPower || tractorId);
+  const shouldUseSearchEndpoint = Boolean(search || type || minPower || maxPower || maxWeight || minWidth || maxWidth || requiredPower || tractorId);
   const endpoint = shouldUseSearchEndpoint ? '/api/implements/search' : '/api/implements';
 
   const queryString = buildQueryString({
@@ -92,13 +93,16 @@ export const getImplements = async (query = {}) => {
     order,
     q: search,
     type,
+    minPower,
+    maxPower,
+    maxWeight,
     minWidth,
     maxWidth,
     requiredPower,
     tractorId,
   });
 
-  return apiClient(`${endpoint}?${queryString}`);
+  return apiClient(queryString ? `${endpoint}?${queryString}` : endpoint);
 };
 
 export const createImplement = async (implementPayload) => {
