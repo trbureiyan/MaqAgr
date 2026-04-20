@@ -49,6 +49,7 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import { CalculatorProvider } from './components/common/calculator/CalculatorContext';
 import { Toaster } from 'sileo';
 import 'sileo/styles.css';
+import { Analytics } from '@vercel/analytics/react';
 import Home from './pages/Home';
 
 // ---------------------------------------------------------------------------
@@ -235,6 +236,8 @@ function App() {
               {/* Pie de página global */}
               <Footer />
             </div>
+            {/* Vercel Web Analytics */}
+            <Analytics />
           </Router>
         </CalculatorProvider>
       </AuthProvider>
