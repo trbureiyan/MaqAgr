@@ -9,8 +9,10 @@
 
 import Navbar from './Navbar';
 import Footer from './Footer';
+import AdminLayout from './AdminLayout';
 
 export {
   Navbar,
-  Footer
+  Footer,
+  AdminLayout
 };

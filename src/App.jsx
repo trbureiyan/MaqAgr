@@ -41,8 +41,8 @@
  */
 
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Navbar, Footer } from './components/layout';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Navbar, Footer, AdminLayout } from './components/layout';
 import { AuthProvider } from './components/common/auth';
 import ProtectedRoute from './components/common/auth/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -212,9 +212,17 @@ function App() {
 
                       {/* ── Rutas protegidas: panel de administración ── */}
                       <Route element={<ProtectedRoute allowedRoles={['admin', 1]} />}>
-                        <Route path="/admin" element={<AdminDashboard />} />
-                        <Route path="/admin/TractorForm" element={<TractorForm />} />
-                        <Route path="/admin/ImplementForm" element={<ImplementForm />} />
+                        <Route element={<AdminLayout />}>
+                          <Route path="/admin" element={<Navigate to="/admin/stats/general" replace />} />
+                          <Route path="/admin/TractorForm" element={<TractorForm />} />
+                          <Route path="/admin/ImplementForm" element={<ImplementForm />} />
+                          
+                          {/* Nuevas vistas del panel de administración */}
+                          <Route path="/admin/stats/general" element={<div className="p-6 text-xl font-bold">Estadísticas Generales (En construcción)</div>} />
+                          <Route path="/admin/stats/recommendations" element={<div className="p-6 text-xl font-bold">Estadísticas de Recomendaciones (En construcción)</div>} />
+                          <Route path="/admin/stats/users" element={<div className="p-6 text-xl font-bold">Métricas de Usuarios (En construcción)</div>} />
+                          <Route path="/admin/users" element={<div className="p-6 text-xl font-bold">Gestión de Usuarios (En construcción)</div>} />
+                        </Route>
                       </Route>
 
                       {/* ── Flujo: Tengo Maquinaria (3 pasos) ── */}
