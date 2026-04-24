@@ -101,8 +101,14 @@ const TractorForm = lazy(() => import('./pages/TractorForm'));
 /** Panel CRUD de administración de implementos (ruta protegida). */
 const ImplementForm = lazy(() => import('./pages/ImplementForm'));
 
-/** Dashboard principal de administración. */
+/** Dashboard principal de administración (Antiguo) */
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+
+/** Estadísticas Generales del Panel de Administración */
+const AdminStatsGeneral = lazy(() => import('./pages/AdminStatsGeneral'));
+
+/** Gestión de Usuarios (CRUD) */
+const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 
 /** Página de detalle de tractor o máquina agrícola. */
 const TractorMachineDetail = lazy(() => import('./pages/TractorMachineDetail'));
@@ -218,10 +224,10 @@ function App() {
                           <Route path="/admin/ImplementForm" element={<ImplementForm />} />
                           
                           {/* Nuevas vistas del panel de administración */}
-                          <Route path="/admin/stats/general" element={<div className="p-6 text-xl font-bold">Estadísticas Generales (En construcción)</div>} />
+                          <Route path="/admin/stats/general" element={<AdminStatsGeneral />} />
                           <Route path="/admin/stats/recommendations" element={<div className="p-6 text-xl font-bold">Estadísticas de Recomendaciones (En construcción)</div>} />
                           <Route path="/admin/stats/users" element={<div className="p-6 text-xl font-bold">Métricas de Usuarios (En construcción)</div>} />
-                          <Route path="/admin/users" element={<div className="p-6 text-xl font-bold">Gestión de Usuarios (En construcción)</div>} />
+                          <Route path="/admin/users" element={<AdminUsers />} />
                         </Route>
                       </Route>
 
