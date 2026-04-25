@@ -61,7 +61,10 @@ export function translateError(errorMsg, status) {
  */
 export async function apiClient(endpoint, { body, ...customConfig } = {}) {
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = {};
+  if (!(body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -77,8 +80,12 @@ export async function apiClient(endpoint, { body, ...customConfig } = {}) {
   };
 
   if (body) {
-    // Convierte el cuerpo de camelCase a snake_case antes de enviarlo
-    config.body = JSON.stringify(toSnakeCase(body));
+    if (body instanceof FormData) {
+      config.body = body;
+    } else {
+      // Convierte el cuerpo de camelCase a snake_case antes de enviarlo
+      config.body = JSON.stringify(toSnakeCase(body));
+    }
   }
 
   let response;
