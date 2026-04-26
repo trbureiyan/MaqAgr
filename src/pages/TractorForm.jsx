@@ -87,6 +87,8 @@ import {
   notifyError, 
   notifySuccess 
 } from '@/services/notificationService';
+import { uploadImage, deleteImage } from '@/services/uploadApi';
+import { UploadCloud, X as XIcon, Loader2 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Constantes y estado inicial
@@ -111,6 +113,7 @@ const ESTADO_INICIAL_TRACTOR = {
   tireDiameterMm: '',
   tirePressurePsi: '',
   status: 'available',
+  imageUrl: '',
 };
 
 /**
@@ -284,6 +287,10 @@ const TractorCRUD = () => {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [eliminando, setEliminando] = useState(false);
+  
+  // ── Estado: Imagen ──
+  const [subiendoImagen, setSubiendoImagen] = useState(false);
+  const [eliminandoImagen, setEliminandoImagen] = useState(false);
 
   // ── Consulta memoizada ────────────────────────────────────────────────────
 
@@ -363,6 +370,7 @@ const TractorCRUD = () => {
         tireDiameterMm: tractor.tireDiameterMm ?? '',
         tirePressurePsi: tractor.tirePressurePsi ?? '',
         status: tractor.status ?? 'available',
+        imageUrl: tractor.imageUrl ?? '',
       });
       setModoEdicion(true);
     } else {
@@ -396,6 +404,7 @@ const TractorCRUD = () => {
       enginePowerHp: Number(tractorActual.enginePowerHp),
       tractionType: tractorActual.tractionType,
       status: tractorActual.status,
+      ...(tractorActual.imageUrl ? { imageUrl: tractorActual.imageUrl } : {}),
     };
 
     const camposNumericos = [
@@ -505,6 +514,42 @@ const TractorCRUD = () => {
       sort: backendField,
       order: prev.sort === backendField && prev.order === 'asc' ? 'desc' : 'asc',
     }));
+  };
+
+  // ── Manejadores de Imagen ─────────────────────────────────────────────────
+
+  const handleSubirImagen = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSubiendoImagen(true);
+    try {
+      const res = await uploadImage(file, 'tractors');
+      if (res.success && res.data?.url) {
+        setTractorActual((prev) => ({ ...prev, imageUrl: res.data.url }));
+        notifySuccess('Imagen subida', 'La imagen se cargó correctamente al almacenamiento.');
+      }
+    } catch (err) {
+      notifyError('Error al subir', err.message || 'No se pudo cargar la imagen.');
+    } finally {
+      setSubiendoImagen(false);
+      e.target.value = null; // Reset input
+    }
+  };
+
+  const handleEliminarImagen = async () => {
+    if (!tractorActual.imageUrl) return;
+
+    setEliminandoImagen(true);
+    try {
+      await deleteImage(tractorActual.imageUrl);
+      setTractorActual((prev) => ({ ...prev, imageUrl: '' }));
+      notifySuccess('Imagen eliminada', 'La imagen fue borrada del almacenamiento.');
+    } catch (err) {
+      notifyError('Error al eliminar', err.message || 'No se pudo borrar la imagen.');
+    } finally {
+      setEliminandoImagen(false);
+    }
   };
 
   // ── Manejadores de filtros rápidos ────────────────────────────────────────
@@ -831,10 +876,45 @@ const TractorCRUD = () => {
            * Formulario en 1 columna (móvil) → 2 columnas (md+).
            * Columna izquierda: datos básicos. Columna derecha: tracción, estado y llantas.
            */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 max-h-[60vh] overflow-y-auto pr-1">
+          <div className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto pr-1">
 
-            {/* ── Columna izquierda: datos básicos ── */}
-            <div className="flex flex-col gap-3">
+            {/* ── Subida de Imagen ── */}
+            <div className="border border-dashed border-border rounded-lg p-4 flex flex-col items-center justify-center bg-muted/20 relative">
+              {tractorActual.imageUrl ? (
+                <div className="relative group w-full max-w-[200px] rounded-md overflow-hidden border border-border">
+                  <img src={tractorActual.imageUrl} alt="Tractor preview" className="w-full h-auto object-cover aspect-video" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Button type="button" variant="destructive" size="sm" onClick={handleEliminarImagen} disabled={eliminandoImagen}>
+                      {eliminandoImagen ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4 mr-1" />}
+                      Eliminar
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <UploadCloud className="size-8 text-muted-foreground mb-2" />
+                  <p className="text-sm font-medium text-foreground mb-1">Subir imagen del tractor</p>
+                  <p className="text-xs text-muted-foreground mb-4 text-center">Formatos soportados: JPG, PNG, WEBP (Max 5MB)</p>
+                  <div className="relative">
+                    <Button type="button" variant="secondary" size="sm" disabled={subiendoImagen}>
+                      {subiendoImagen ? <Loader2 className="size-4 animate-spin mr-2" /> : <Plus className="size-4 mr-2" />}
+                      {subiendoImagen ? 'Subiendo...' : 'Seleccionar archivo'}
+                    </Button>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                      onChange={handleSubirImagen}
+                      disabled={subiendoImagen}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* ── Columna izquierda: datos básicos ── */}
+              <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium">
                   Nombre <span className="text-destructive">*</span>
@@ -979,6 +1059,7 @@ const TractorCRUD = () => {
                 value={tractorActual.tirePressurePsi}
                 onChange={manejarCambio}
               />
+            </div>
             </div>
           </div>
 
