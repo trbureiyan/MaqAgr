@@ -1,183 +1,254 @@
-# MaqAgr — Frontend
+# MaqAgr - Frontend
 
-> Interfaz web (SPA) para gestión y apoyo a la decisión en mecanización agrícola. Desarrollado como parte de un Semillero de Investigación.
+<img width="1376" height="768" alt="Gemini_Generated_Image_j6savkj6savkj6sa (1)" src="https://github.com/user-attachments/assets/41892393-0d8f-40ab-a130-5f7fd0ff76a3" />
 
-![Status](https://img.shields.io/badge/status-active_development-blue) ![SPA](https://img.shields.io/badge/Architecture-SPA-orange) ![API](https://img.shields.io/badge/API-External-yellow) ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black) ![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-38B2AC?logo=tailwindcss&logoColor=white) ![Node](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)
+> Interfaz web (SPA) para gestión y apoyo a la decisión en mecanización agrícola. Desarrollado como parte del Semillero de Investigación Devurity.
 
-
----
-
-## Tabla de Contenidos
-
-- [Stack Tecnológico](#stack-tecnológico)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-- [Inicio Rápido](#inicio-rápido)
-- [Variables de Entorno](#variables-de-entorno)
-- [Modo Mock vs. API Remota](#modo-mock-vs-api-remota)
-- [Scripts Disponibles](#scripts-disponibles)
-- [Convenciones de Código](#convenciones-de-código)
-- [Performance Budget](#performance-budget)
+![Status](https://img.shields.io/badge/status-active_development-blue)
+![SPA](https://img.shields.io/badge/Architecture-SPA-orange)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-38B2AC?logo=tailwindcss&logoColor=white)
+![Node](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)
 
 ---
 
-## Stack Tecnológico
+## Tabla de contenidos
 
-| Capa | Tecnología | Versión |
-|------|------------|---------|
-| Framework UI | React | 19.0.0 |
-| Build tool | Vite | 6.2.0 |
-| Routing | react-router-dom | 7.3.0 |
-| Estilos | Tailwind CSS | 4.0.12 |
-| Componentes UI | shadcn/ui (adaptación propia) | — |
-| Compilador | @vitejs/plugin-react-swc | — |
-| HTTP client | `fetch` nativo | — |
-| Iconografía | lucide-react, react-icons | — |
-| Utilidades CSS | clsx, tailwind-merge, class-variance-authority | — |
-| Linter | ESLint | 9.21.0 |
-| Despliegue | Vercel (serverless/static) | — |
-| Package manager | npm | 11.6.2 |
+- [Resumen funcional](#resumen-funcional)
+- [Stack tecnológico](#stack-tecnológico)
+- [Arquitectura](#arquitectura)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Inicio rápido](#inicio-rápido)
+- [Variables de entorno](#variables-de-entorno)
+- [Modo Mock vs API remota](#modo-mock-vs-api-remota)
+- [Scripts disponibles](#scripts-disponibles)
+- [Pruebas](#pruebas)
+- [Despliegue en Vercel](#despliegue-en-vercel)
+- [Convenciones de código](#convenciones-de-código)
+- [Performance budget](#performance-budget)
+- [Referencias y autores](#referencias-y-autores)
 
 ---
 
-## Estructura del Proyecto
+## Resumen funcional
 
-```
+MaqAgr permite:
+
+- Gestionar catálogo de tractores e implementos.
+- Ejecutar flujos de recomendación y cálculo.
+- Administrar autenticación y rutas protegidas por rol (`admin`, `user`, `operator`).
+- Visualizar notificaciones y estados de proceso con UI reactiva.
+
+---
+
+## Stack tecnológico
+
+| Capa | Tecnología |
+|------|------------|
+| Framework UI | React 19 |
+| Build tool | Vite 6 |
+| Routing | react-router-dom 7 |
+| Estilos | Tailwind CSS 4 |
+| UI base | shadcn/ui (adaptación interna) |
+| Notificaciones UI | sileo |
+| Animación | motion |
+| HTTP | `fetch` nativo + wrapper interno |
+| Mapeo de datos | snake_case ↔ camelCase (`src/lib/dataMappers.js`) |
+| Linter | ESLint 9 |
+| Deploy | Vercel |
+| Package manager | npm (`package-lock.json`) |
+
+---
+
+## Arquitectura
+
+### 1) SPA + Router + Code Splitting
+
+- Entrada principal en `src/main.jsx` y enrutado en `src/App.jsx`.
+- Carga diferida (`React.lazy` + `Suspense`) para rutas no críticas.
+
+### 2) Patrón dual Mock/Remote por dominio
+
+Cada servicio decide en tiempo de ejecución si responde con mock local o API remota usando feature flags (`VITE_ENABLE_REMOTE_*`).
+
+### 3) Cliente HTTP unificado
+
+`src/lib/apiClient.js` centraliza:
+
+- Inyección automática de JWT (`Authorization: Bearer <token>`).
+- Conversión de payloads/respuestas entre camelCase (frontend) y snake_case (backend).
+- Traducción de errores HTTP a mensajes amigables en español.
+
+### 4) Estrategia anti-CORS
+
+- En desarrollo: Vite utiliza un proxy interno configurado para interceptar y redirigir las peticiones a la API.
+- En producción: Se configuran reglas de reescritura (rewrites) a nivel de servidor o plataforma.
+
+---
+
+## Estructura del proyecto
+
+```text
 MaqAgr/
-├── public/                  # Assets públicos (favicon, etc.)
+├── public/
 ├── src/
-│   ├── assets/              # Imágenes y recursos estáticos
+│   ├── assets/
 │   ├── components/
-│   │   ├── ui/              # Componentes base (shadcn/ui)
-│   │   ├── layout/          # Header, Footer, wrappers de layout
-│   │   └── auth/            # AuthProvider, AuthForm
-│   ├── pages/               # Rutas/páginas del Router (PascalCase.jsx)
-│   ├── services/
-│   │   └── tractorApi.js    # Capa de integración: mock ↔ API remota
-│   ├── App.jsx              # Definición del Router principal
-│   └── main.jsx             # Entry point (React StrictMode)
-├── vite.config.js           # Bundling, alias de imports, manualChunks
-├── vercel.json              # Headers de cache, SPA rewrites
-├── eslint.config.js         # Configuración de ESLint
-└── package.json
+│   │   ├── common/
+│   │   │   ├── auth/
+│   │   │   └── calculator/
+│   │   ├── layout/
+│   │   └── ui/
+│   ├── hooks/
+│   ├── lib/                  # apiClient, dataMappers, utilidades mock/storage
+│   ├── pages/
+│   ├── services/             # tractorApi, implementApi, recommendationApi, etc.
+│   ├── App.jsx
+│   └── main.jsx
+├── tests/lib/                # pruebas con node:test
+├── vite.config.js
+├── vercel.json
+├── eslint.config.js
+├── package.json
+└── package-lock.json
 ```
 
-**Alias de imports configurados en `vite.config.js`:**
+Alias de imports configurados en `vite.config.js`:
 
 ```js
-@/           →  src/
-@components/ →  src/components/
-@pages/      →  src/pages/
+@/           -> src/
+@components/ -> src/components/
+@pages/      -> src/pages/
 ```
 
 ---
 
-## Inicio Rápido
+## Inicio rápido
 
 ### Prerrequisitos
 
-- Node.js 20 o superior
-- npm 11+
+- Node.js 20+
+- npm 10+
 
-### Instalación
+### 1) Clonar e instalar
 
 ```bash
 git clone https://github.com/trbureiyan/MaqAgr.git
 cd MaqAgr
-npm install
+npm ci
 ```
 
-### Configurar variables de entorno
+Alternativa sin scripts de instalación:
+
+```bash
+npm run secure-install
+```
+
+### 2) Configurar `.env`
+
+Bash:
 
 ```bash
 cp .env.example .env
 ```
 
-### Ejecutar en desarrollo
+PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+### 3) Levantar entorno local
 
 ```bash
 npm run dev
 ```
 
----
-
-## Variables de Entorno
-
-| Variable | Tipo | Descripción |
-|----------|------|-------------|
-| `VITE_ENABLE_REMOTE_TRACTOR_API` | `"true"` / `"false"` | Alterna entre modo mock local y API remota. Default: `"false"` |
-| `VITE_API_BASE_URL` | URL | Base URL del backend (se usa solo cuando `VITE_ENABLE_REMOTE_TRACTOR_API=true`) |
-
-**Desarrollo frontend sin backend:**
-
-```env
-VITE_ENABLE_REMOTE_TRACTOR_API=false
-VITE_API_BASE_URL=
-```
-
-**Con API remota activa:**
-
-```env
-VITE_ENABLE_REMOTE_TRACTOR_API=true
-VITE_API_BASE_URL=https://tu-api.com
-```
+Vite inicia por defecto en `http://localhost:5173` (o el puerto configurado de forma local).
 
 ---
 
-## Modo Mock vs. API Remota
+## Variables de entorno
 
-`src/services/tractorApi.js` es el único punto de integración entre el frontend y el backend. Su comportamiento se controla mediante feature-flag de entorno:
+Para configurar tu entorno de desarrollo:
 
-- **Modo mock (default):** los datos se sirven localmente. Permite desarrollo y pruebas de UI sin depender del backend.
-- **Modo API remota:** las peticiones se envían al backend en `VITE_API_BASE_URL`. Se activa cuando el backend externo está disponible.
+1. Duplica el archivo de ejemplo (el cual contiene la estructura segura):
+   ```bash
+   cp .env.example .env
+   ```
+2. Revisa el archivo `.env.example` y asigna los valores pertinentes en tu `.env` (rutas al backend remoto, puertos locales, targets de proxy, etc).
+3. **No incluyas (commit) el archivo `.env` en tu control de versiones.**
 
-Este diseño permite iterar sobre el frontend de forma completamente independiente del ciclo de vida del backend.
+*El proyecto utiliza feature flags en las variables de entorno para alternar individualmente la fuente de datos (Backend real vs Mock) de cada dominio operativo.*
 
 ---
 
-## Scripts Disponibles
+## Modo Mock vs API remota
+
+Servicios y flags principales:
+
+| Módulo | Flag | Comportamiento mock |
+|--------|------|---------------------|
+| `AuthContext` | `VITE_ENABLE_REMOTE_AUTH_API` | Login/registro local con usuario simulado. |
+| `tractorApi.js` | `VITE_ENABLE_REMOTE_TRACTOR_API` | CRUD/listado en memoria. |
+| `implementApi.js` | `VITE_ENABLE_REMOTE_IMPLEMENT_API` | CRUD/listado en memoria con guards de payload. |
+| `notificationApi.js` | `VITE_ENABLE_REMOTE_NOTIFICATION_API` | Bandeja mock con estado leído/no leído. |
+| `calculationApi.js` | `VITE_ENABLE_REMOTE_CALCULATION_API` | Simulación con latencia (`setTimeout`) y fallback adicional si no hay token. |
+| `recommendationApi.js` | `VITE_ENABLE_REMOTE_RECOMMENDATION_API` | Recomendaciones simuladas con latencia. |
+
+Este enfoque permite trabajar UI, validaciones y estados asíncronos sin bloquearse por disponibilidad del backend.
+
+---
+
+## Scripts disponibles
 
 | Script | Descripción |
 |--------|-------------|
 | `npm run dev` | Servidor de desarrollo con HMR |
-| `npm run build` | Build de producción (output en `dist/`) |
-| `npm run preview` | Preview local del build de producción |
-| `npm run lint` | Alias de `lint:frontend` — gate de calidad para releases |
-| `npm run lint:frontend` | Lint del código fuente en `src/` |
-| `npm run lint:backend` | Lint de referencia backend (solo entorno local) |
-| `npm run lint:all` | Lint combinado |
+| `npm run build` | Build de producción (`dist/`) |
+| `npm run preview` | Preview local del build |
+| `npm run lint` | Alias de `lint:frontend` |
+| `npm run lint:frontend` | Lint de `src/` |
+| `npm run lint:backend` | Lint de referencia de `.backend/` |
+| `npm run lint:all` | Lint global del repositorio |
+| `npm run secure-install` | Instalación con scripts deshabilitados (`npm install --ignore-scripts`) |
 
 ---
 
-## Convenciones de Código
+## Convenciones de código
 
-- **Páginas:** `PascalCase.jsx` en `src/pages/`
-- **Componentes:** `PascalCase.jsx` en `src/components/`
-- **Servicios:** `camelCase.js` en `src/services/`
-- **Imports case-sensitive:** Vercel corre en Linux. El nombre del archivo y el import deben coincidir en mayúsculas/minúsculas de forma exacta — un mismatch que funciona en Windows/macOS fallará en producción.
-- **Imports por directorio:** evitar si el archivo real no se llama exactamente `index.js`.
-- **JSDoc:** el proyecto usa JSDoc extensivamente en módulos clave; mantener esa consistencia al agregar nuevos módulos.
+- UI en español; código (variables, funciones, nombres de archivo) en inglés.
+- Páginas y componentes en `PascalCase.jsx`.
+- Servicios y utilidades en `camelCase.js`.
+- Imports estrictamente case-sensitive (Linux en producción).
+- Integración HTTP con `fetch` nativo y wrappers internos (sin axios/react-query/swr).
+- Mapeo explícito snake_case ↔ camelCase antes de renderizar y antes de enviar payloads.
 
 ---
 
-## Performance Budget
+## Performance budget
 
 | Asset | Objetivo |
 |-------|----------|
 | JS inicial por ruta principal | < 250 kB gzip (combinado) |
 | Assets críticos por ruta | < 500 kB cuando sea posible |
 | Imágenes hero/fondo | Optimizar cualquier asset > 1 MB antes de producción |
-| Video en hero | No usar autoplay sin lazy loading, poster y justificación explícita |
 
 ---
 
-*Semillero de Investigación **Devurity** — Universidad Surcolombiana.*
----
-Referencias y Autores
+## Referencias y autores
 
-- Backend: BackMaqagr (repositorio de backend) — https://github.com/David9604/BackMaqagr
-- Origen del proyecto MaqAgr: Este repositorio (https://github.com/trbureiyan/MaqAgr) es un fork del proyecto original MaqAgr de https://github.com/David9604/Maqagr.
+- Backend: BackMaqagr (repositorio backend)
+  https://github.com/David9604/BackMaqagr
+- Origen del proyecto MaqAgr:
+  Este repositorio (https://github.com/trbureiyan/MaqAgr) es un fork del proyecto original MaqAgr de https://github.com/David9604/Maqagr.
 - Autores:
   - [David9604](https://github.com/David9604)
   - [FlacoAfk](https://github.com/FlacoAfk)
   - [JercOmg](https://github.com/JercOmg)
   - [trbureiyan](https://github.com/trbureiyan)
+
+---
+
+Semillero de Investigación Devurity - Universidad Surcolombiana.

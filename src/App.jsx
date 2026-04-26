@@ -41,14 +41,15 @@
  */
 
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Navbar, Footer } from './components/layout';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Navbar, Footer, AdminLayout } from './components/layout';
 import { AuthProvider } from './components/common/auth';
 import ProtectedRoute from './components/common/auth/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { CalculatorProvider } from './components/common/calculator/CalculatorContext';
 import { Toaster } from 'sileo';
 import 'sileo/styles.css';
+import { Analytics } from '@vercel/analytics/react';
 import Home from './pages/Home';
 
 // ---------------------------------------------------------------------------
@@ -100,8 +101,16 @@ const TractorForm = lazy(() => import('./pages/TractorForm'));
 /** Panel CRUD de administración de implementos (ruta protegida). */
 const ImplementForm = lazy(() => import('./pages/ImplementForm'));
 
-/** Dashboard principal de administración. */
+/** Dashboard principal de administración (Antiguo) */
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+
+/** Estadísticas Generales del Panel de Administración */
+const AdminStatsGeneral = lazy(() => import('./pages/AdminStatsGeneral'));
+const AdminStatsRecommendations = lazy(() => import('./pages/AdminStatsRecommendations'));
+const AdminStatsUsers = lazy(() => import('./pages/AdminStatsUsers'));
+
+/** Gestión de Usuarios (CRUD) */
+const AdminUsers = lazy(() => import('./pages/AdminUsers'));
 
 /** Página de detalle de tractor o máquina agrícola. */
 const TractorMachineDetail = lazy(() => import('./pages/TractorMachineDetail'));
@@ -211,9 +220,17 @@ function App() {
 
                       {/* ── Rutas protegidas: panel de administración ── */}
                       <Route element={<ProtectedRoute allowedRoles={['admin', 1]} />}>
-                        <Route path="/admin" element={<AdminDashboard />} />
-                        <Route path="/admin/TractorForm" element={<TractorForm />} />
-                        <Route path="/admin/ImplementForm" element={<ImplementForm />} />
+                        <Route element={<AdminLayout />}>
+                          <Route path="/admin" element={<Navigate to="/admin/stats/general" replace />} />
+                          <Route path="/admin/TractorForm" element={<TractorForm />} />
+                          <Route path="/admin/ImplementForm" element={<ImplementForm />} />
+                          
+                          {/* Nuevas vistas del panel de administración */}
+                          <Route path="/admin/stats/general" element={<AdminStatsGeneral />} />
+                          <Route path="/admin/stats/recommendations" element={<AdminStatsRecommendations />} />
+                          <Route path="/admin/stats/users" element={<AdminStatsUsers />} />
+                          <Route path="/admin/users" element={<AdminUsers />} />
+                        </Route>
                       </Route>
 
                       {/* ── Flujo: Tengo Maquinaria (3 pasos) ── */}
@@ -235,6 +252,8 @@ function App() {
               {/* Pie de página global */}
               <Footer />
             </div>
+            {/* Vercel Web Analytics */}
+            <Analytics />
           </Router>
         </CalculatorProvider>
       </AuthProvider>
