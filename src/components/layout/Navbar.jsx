@@ -69,15 +69,17 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   /** Estado de sesión y función de cierre de sesión del contexto global. */
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
 
   // ── Manejadores de eventos ────────────────────────────────────────────────
 
   /**
-   * Navega al panel de administración principal.
-   * Solo accesible para usuarios autenticados.
+   * Navega al panel de administración o al perfil.
    */
-  const handleProfileClick = () => navigate('/admin');
+  const handleProfileClick = () => {
+    const isAdmin = user?.role === 'admin' || user?.roleId === 1 || user?.role_id === 1;
+    navigate(isAdmin ? '/admin' : '/perfil');
+  };
 
   /**
    * Cierra la sesión del usuario y redirige al inicio.

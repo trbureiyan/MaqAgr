@@ -83,6 +83,15 @@ const Login = lazy(() => import('./pages/Login'));
 /** Página de registro de usuario. */
 const Register = lazy(() => import('./pages/Register'));
 
+/** Perfil de usuario normal. */
+const Profile = lazy(() => import('./pages/Profile'));
+
+/** Recuperar contraseña. */
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+
+/** Restablecer contraseña. */
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+
 /** Página Sobre Nosotros. */
 const SobreNosotros = lazy(() => import('./pages/SobreNosotros'));
 
@@ -207,6 +216,11 @@ function App() {
                       <Route path="/Resultados"        element={<Resultados />} />
                       <Route path="/Login"             element={<Login />} />
                       <Route path="/Registro"          element={<Register />} />
+                      <Route path="/forgot-password"   element={<ForgotPassword />} />
+                      <Route path="/reset-password"    element={<ResetPassword />} />
+                      <Route element={<ProtectedRoute />}>
+                        <Route path="/perfil" element={<Profile />} />
+                      </Route>
                       <Route path="/SobreNosotros"     element={<SobreNosotros />} />
 
                       {/* ── Catálogo ── */}
