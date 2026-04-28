@@ -6,6 +6,14 @@ const AppCalculadora = () => {
   const [scale, setScale] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
 
+  // Limpiar estados de los flujos de la calculadora al montar el menú principal
+  useEffect(() => {
+    localStorage.removeItem('tractor_datos');
+    localStorage.removeItem('tractor_imagen');
+    // También limpiamos los del otro flujo por consistencia
+    localStorage.removeItem('implemento_datos');
+  }, []);
+
   // Detector de dispositivo móvil
   useEffect(() => {
     const checkMobile = () => {
