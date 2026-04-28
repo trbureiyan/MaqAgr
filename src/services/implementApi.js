@@ -106,6 +106,20 @@ export const getImplements = async (query = {}) => {
   return apiClient(queryString ? `${endpoint}?${queryString}` : endpoint);
 };
 
+export const getImplementById = async (id) => {
+  if (!REMOTE_IMPLEMENT_API_ENABLED) {
+    const implement = mockImplements.find((item) => Number(item.implementId) === Number(id));
+    if (!implement) {
+      throw new Error('Implemento no encontrado');
+    }
+    return { success: true, data: implement };
+  }
+
+  return apiClient(`/api/implements/${id}`, {
+    method: 'GET',
+  });
+};
+
 export const createImplement = async (implementPayload) => {
   if (!REMOTE_IMPLEMENT_API_ENABLED) {
     const nextId = mockImplements.length > 0
