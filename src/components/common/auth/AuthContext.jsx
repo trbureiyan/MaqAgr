@@ -149,12 +149,86 @@ export const AuthProvider = ({ children }) => {
     };
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (REMOTE_AUTH_API_ENABLED) {
+      try {
+        await apiClient('/api/auth/logout', { method: 'POST' });
+      } catch (error) {
+        console.error('Error logout:', error);
+      }
+    }
     clearSession();
   };
 
+  const forgotPassword = async (email) => {
+    if (REMOTE_AUTH_API_ENABLED) {
+      return apiClient('/api/auth/forgot-password', {
+        method: 'POST',
+        body: { email },
+      });
+    }
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    return { success: true, message: 'Simulación de recuperación de contraseña' };
+  };
+
+  const resetPassword = async (token, newPassword) => {
+    if (REMOTE_AUTH_API_ENABLED) {
+      return apiClient('/api/auth/reset-password', {
+        method: 'POST',
+        body: { token, newPassword },
+      });
+    }
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    return { success: true, message: 'Contraseña restablecida (mock)' };
+  };
+
+  const getProfile = async () => {
+    if (REMOTE_AUTH_API_ENABLED) {
+      return apiClient('/api/auth/profile', { method: 'GET' });
+    }
+    return { success: true, data: { user } };
+  };
+
+  const updateProfile = async (data) => {
+    if (REMOTE_AUTH_API_ENABLED) {
+      const response = await apiClient('/api/auth/profile', {
+        method: 'PUT',
+        body: data,
+      });
+      if (response?.data?.user) {
+        const updatedUser = { ...user, ...response.data.user };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+      return response;
+    }
+    return { success: true, data: { user: { ...user, ...data } } };
+  };
+
+  const changePassword = async (data) => {
+    if (REMOTE_AUTH_API_ENABLED) {
+      return apiClient('/api/auth/password', {
+        method: 'PUT',
+        body: data,
+      });
+    }
+    return { success: true, message: 'Contraseña actualizada (mock)' };
+  };
+
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, register, logout }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      login, 
+      register, 
+      logout,
+      forgotPassword,
+      resetPassword,
+      getProfile,
+      updateProfile,
+      changePassword
+    }}>
       {children}
     </AuthContext.Provider>
   );
