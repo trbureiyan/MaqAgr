@@ -267,6 +267,16 @@ const AuthForm = ({ formType }) => {
                     required
                     autoComplete={formType === 'login' ? 'current-password' : 'new-password'}
                   />
+                  {formType === 'login' && (
+                    <div className="text-right mt-1">
+                      <Link
+                        to="/forgot-password"
+                        className="text-gray-300 hover:text-yellow-200 text-xs sm:text-sm transition-colors hover:underline"
+                      >
+                        ¿Olvidaste tu contraseña?
+                      </Link>
+                    </div>
+                  )}
                 </div>
 
                 {/* ── Campos adicionales solo para registro ── */}

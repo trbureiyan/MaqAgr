@@ -21,71 +21,12 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import Button from '../components/ui/buttons/Button';
-
-// ---------------------------------------------------------------------------
-// Datos mock
-// ---------------------------------------------------------------------------
-
-/**
- * Datos de muestra para el tractor y la máquina.
- * En producción se reemplazará por una llamada a `GET /api/tractors/:id`
- * o `GET /api/machines/:id` según el tipo de equipo.
- *
- * @type {{ tractor: Object, maquina: Object }}
- */
-const MOCK_DATA = {
-  tractor: {
-    id: '1',
-    title: 'New Holland 8670',
-    category: 'Tractor',
-    imageSrc: '/src/assets/img/1.png',
-    fichaTecnicaUrl: '/path/to/ficha-tecnica-nh8670.pdf',
-    identificacion: {
-      nombreComercial: 'New Holland 8670',
-      marca: 'New Holland',
-      modelo: '8670',
-      anoFabricacion: '2020',
-    },
-    motor: {
-      potenciaBruta: '220 HP / 164 kW',
-      potenciaTDF: '198 HP / 147 kW',
-      aspiracion: 'Turboalimentado con intercooler',
-    },
-    dimensiones: {
-      longitudTotal: '5200 mm',
-      anchura: '2540 mm',
-      altura: '3100 mm',
-      peso: '8500 kg',
-    },
-  },
-  maquina: {
-    id: '2',
-    title: 'Arado de vértebras 975',
-    category: 'Máquina',
-    imageSrc: '/src/assets/img/2.png',
-    fichaTecnicaUrl: '/path/to/ficha-tecnica-arado975.pdf',
-    identificacion: {
-      nombreComercial: 'Arado de vértebras 975',
-      marca: 'TecnoAgro',
-      modelo: '975',
-      anoFabricacion: '2022',
-    },
-    dimensiones: {
-      longitudTotal: '3500 mm',
-      anchura: '2100 mm',
-      altura: '1200 mm',
-      peso: '1250 kg',
-    },
-    especificacionesTecnicas: {
-      anchoDeTrabajo: '3.5 m',
-      numeroDeCuerpos: '5',
-      profundidadTrabajo: '30-45 cm',
-      requerimientoPotencia: '90-120 HP',
-    },
-  },
-};
+import { getTractorById } from '../services/tractorApi';
+import { getImplementById } from '../services/implementApi';
+import TractorImgFallback from '../assets/img/Tractor Prueva.webp';
+import MaquinaImgFallback from '../assets/img/2.png';
 
 /**
  * Mapeo de claves de campo a etiquetas legibles en español.
@@ -97,18 +38,20 @@ const FIELD_LABELS = {
   nombreComercial: 'Nombre Comercial',
   marca: 'Marca',
   modelo: 'Modelo',
-  anoFabricacion: 'Año de Fabricación',
-  potenciaBruta: 'Potencia Bruta (HP/kW)',
-  potenciaTDF: 'Potencia en la TDF (HP/kW)',
-  aspiracion: 'Aspiración',
-  longitudTotal: 'Longitud Total (mm)',
-  anchura: 'Anchura (mm)',
-  altura: 'Altura (mm)',
-  peso: 'Peso (kg)',
+  tipo: 'Tipo',
+  estado: 'Estado',
+  potenciaBruta: 'Potencia de Motor',
+  fuerzaTraccion: 'Fuerza de Tracción',
+  tipoTraccion: 'Tipo de Tracción',
+  peso: 'Peso',
+  tipoLlanta: 'Tipo de Llanta',
+  anchoLlanta: 'Ancho de Llanta',
+  diametroLlanta: 'Diámetro de Llanta',
+  presionLlanta: 'Presión de Llanta',
   anchoDeTrabajo: 'Ancho de Trabajo',
-  numeroDeCuerpos: 'Número de Cuerpos',
   profundidadTrabajo: 'Profundidad de Trabajo',
   requerimientoPotencia: 'Requerimiento de Potencia',
+  tipoSuelo: 'Tipo de Suelo Recomendado',
 };
 
 /**
@@ -122,6 +65,55 @@ const TAB_NAMES = {
   dimensiones: 'Dimensiones y Peso',
   especificacionesTecnicas: 'Especificaciones Técnicas',
 };
+
+const mapTractorToMockFormat = (tractor) => ({
+  id: tractor.tractorId || tractor.id,
+  title: tractor.name || `${tractor.brand} ${tractor.model}`,
+  category: 'Tractor',
+  imageSrc: tractor.imageUrl || TractorImgFallback,
+  fichaTecnicaUrl: tractor.fichaTecnicaUrl || '#',
+  identificacion: {
+    nombreComercial: tractor.name || `${tractor.brand} ${tractor.model}`,
+    marca: tractor.brand,
+    modelo: tractor.model,
+    estado: tractor.status === 'available' ? 'Disponible' : (tractor.status === 'maintenance' ? 'En mantenimiento' : tractor.status),
+  },
+  motor: {
+    potenciaBruta: tractor.enginePowerHp ? `${tractor.enginePowerHp} HP` : 'N/A',
+    fuerzaTraccion: tractor.tractionForceKn ? `${tractor.tractionForceKn} kN` : 'N/A',
+    tipoTraccion: tractor.tractionType || 'N/A',
+  },
+  dimensiones: {
+    peso: tractor.weightKg ? `${tractor.weightKg} kg` : 'N/A',
+    tipoLlanta: tractor.tireType || 'N/A',
+    anchoLlanta: tractor.tireWidthMm ? `${tractor.tireWidthMm} mm` : 'N/A',
+    diametroLlanta: tractor.tireDiameterMm ? `${tractor.tireDiameterMm} mm` : 'N/A',
+    presionLlanta: tractor.tirePressurePsi ? `${tractor.tirePressurePsi} psi` : 'N/A',
+  },
+});
+
+const mapImplementToMockFormat = (machine) => ({
+  id: machine.implementId || machine.id,
+  title: machine.implementName,
+  category: 'Máquina',
+  imageSrc: machine.imageUrl || MaquinaImgFallback,
+  fichaTecnicaUrl: machine.fichaTecnicaUrl || '#',
+  identificacion: {
+    nombreComercial: machine.implementName,
+    marca: machine.brand,
+    tipo: machine.implementType,
+    estado: machine.status === 'available' ? 'Disponible' : (machine.status === 'maintenance' ? 'En mantenimiento' : machine.status),
+  },
+  dimensiones: {
+    peso: machine.weightKg ? `${machine.weightKg} kg` : 'N/A',
+  },
+  especificacionesTecnicas: {
+    anchoDeTrabajo: machine.workingWidthM ? `${machine.workingWidthM} m` : 'N/A',
+    profundidadTrabajo: machine.workingDepthCm ? `${machine.workingDepthCm} cm` : 'N/A',
+    requerimientoPotencia: machine.powerRequirementHp ? `${machine.powerRequirementHp} HP` : 'N/A',
+    tipoSuelo: machine.soilType || 'N/A',
+  },
+});
 
 // ---------------------------------------------------------------------------
 // Sub-componente: tabla de datos de una pestaña
@@ -167,7 +159,6 @@ const DataTable = ({ title, data }) => (
  * TractorDetail — Página de detalle de tractor o máquina agrícola.
  *
  * Lee el parámetro `:id` de la URL para determinar qué equipo mostrar.
- * Simula una carga asíncrona de 800 ms antes de mostrar los datos.
  * Las pestañas disponibles varían según la categoría del equipo.
  *
  * @component
@@ -181,37 +172,43 @@ const DataTable = ({ title, data }) => (
 const TractorDetail = () => {
   // ── Parámetros de ruta ────────────────────────────────────────────────────
 
-  /** ID del equipo extraído de la URL (ej. '1' para tractor, '2' para máquina). */
   const { id } = useParams();
+  const location = useLocation();
 
   // ── Estado local ──────────────────────────────────────────────────────────
 
-  /** Indica si los datos están siendo cargados. */
   const [loading, setLoading] = useState(true);
-
-  /** Datos del equipo cargado, o `null` si no se encontró. */
   const [item, setItem] = useState(null);
-
-  /** Pestaña activa actualmente. */
   const [activeTab, setActiveTab] = useState('identificacion');
+  const [error, setError] = useState(null);
 
-  // ── Carga de datos (simulada) ─────────────────────────────────────────────
+  // ── Carga de datos ────────────────────────────────────────────────────────
 
   useEffect(() => {
-    /**
-     * Simula una llamada a la API con un delay de 800 ms.
-     * En producción se reemplazará por `fetch` o `axios`.
-     */
-    const timer = setTimeout(() => {
-      // Seleccionar datos según el ID: '1' → tractor, cualquier otro → máquina
-      const itemData = id === '1' ? MOCK_DATA.tractor : MOCK_DATA.maquina;
-      setItem(itemData);
-      setLoading(false);
-    }, 800);
+    const fetchItem = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const isTractor = location.pathname.startsWith('/tractor');
+        
+        if (isTractor) {
+          const res = await getTractorById(id);
+          const data = res.data;
+          setItem(mapTractorToMockFormat(data));
+        } else {
+          const res = await getImplementById(id);
+          const data = res.data;
+          setItem(mapImplementToMockFormat(data));
+        }
+      } catch (err) {
+        setError(err.message || 'Error al cargar el ítem');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Limpiar el timer si el componente se desmonta antes de que termine
-    return () => clearTimeout(timer);
-  }, [id]);
+    fetchItem();
+  }, [id, location.pathname]);
 
   // ── Estados de carga y error ──────────────────────────────────────────────
 
@@ -232,10 +229,12 @@ const TractorDetail = () => {
     );
   }
 
-  if (!item) {
+  if (error || !item) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
-        <h1 className="text-xl sm:text-2xl font-bold text-red-800">Ítem no encontrado</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-red-800">
+          {error || 'Ítem no encontrado'}
+        </h1>
         <Button variant="primary" color="#9f0712" to="/" className="mt-4">
           Volver al inicio
         </Button>
@@ -286,8 +285,8 @@ const TractorDetail = () => {
               {/* Descripción dinámica según categoría */}
               <p className="text-gray-700 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
                 {item.category === 'Tractor'
-                  ? `Tractor ${item.identificacion.marca} ${item.identificacion.modelo}, fabricado en ${item.identificacion.anoFabricacion}.`
-                  : `${item.identificacion.nombreComercial}, fabricado por ${item.identificacion.marca} en ${item.identificacion.anoFabricacion}.`}
+                  ? `Tractor ${item.identificacion.marca} ${item.identificacion.modelo}.`
+                  : `${item.identificacion.nombreComercial}, marca ${item.identificacion.marca}.`}
               </p>
 
               {/* CTA: descargar ficha técnica */}
@@ -308,7 +307,7 @@ const TractorDetail = () => {
                 <img
                   src={item.imageSrc}
                   alt={item.title}
-                  className="w-full h-auto object-contain aspect-video"
+                  className="w-full h-auto object-contain aspect-video mix-blend-multiply"
                   loading="lazy"
                 />
               </div>

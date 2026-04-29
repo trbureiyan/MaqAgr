@@ -1,33 +1,20 @@
-/**
- * @fileoverview Paso 1 del flujo "Tengo Maquinaria".
- *
- * Recopila los datos técnicos del implemento agrícola (excluyendo
- * nombre, marca y estado, que se ignorarán hasta la integración con el back).
- * Los datos se guardan en localStorage para pasarlos al paso siguiente.
- *
- * Campos:
- *  - implement_type       : Tipo de implemento (select)
- *  - working_width_m      : Ancho de trabajo en metros
- *  - working_depth_cm     : Profundidad de trabajo en cm
- *  - weight_kg            : Peso del implemento en kg
- *
- * @module pages/DatosImplemento
- */
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/ui/buttons/Button';
 import TooltipInfo from '../components/ui/buttons/ToolTipInfo';
 import Maquina from '../assets/img/2.png';
+import { getImplements } from '../services/implementApi';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 
 // ---------------------------------------------------------------------------
 // Constantes
 // ---------------------------------------------------------------------------
 
-/**
- * Tipos de implemento disponibles en el sistema.
- * Valores coinciden con los del backend (implement_type enum).
- */
 const TIPOS_IMPLEMENTO = [
   { value: 'plow',       label: 'Arado (Plow)' },
   { value: 'harrow',     label: 'Rastra (Harrow)' },
@@ -40,9 +27,6 @@ const TIPOS_IMPLEMENTO = [
   { value: 'other',      label: 'Otro' },
 ];
 
-/**
- * Estado inicial del formulario de datos del implemento.
- */
 const ESTADO_INICIAL = {
   implement_type:    '',
   working_width_m:   '',
@@ -54,23 +38,73 @@ const ESTADO_INICIAL = {
 // Componente principal
 // ---------------------------------------------------------------------------
 
-/**
- * DatosImplemento — Paso 1 del flujo "Tengo Maquinaria".
- *
- * @component
- * @returns {JSX.Element}
- */
 export default function DatosImplemento() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState(ESTADO_INICIAL);
-  const [errors, setErrors]     = useState({});
+  
+  const [formData, setFormData] = useState(() => {
+    const saved = localStorage.getItem('implemento_datos');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          implement_type: parsed.implement_type || '',
+          working_width_m: parsed.working_width_m || '',
+          working_depth_cm: parsed.working_depth_cm || '',
+          weight_kg: parsed.weight_kg || '',
+        };
+      } catch (e) {
+        // Fallback en caso de error
+      }
+    }
+    return ESTADO_INICIAL;
+  });
 
-  // ── Manejadores ──────────────────────────────────────────────────────────
+  const [errors, setErrors] = useState({});
+  const [implementosCatalogo, setImplementosCatalogo] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const [imagenImplemento, setImagenImplemento] = useState(() => {
+    return localStorage.getItem('implemento_imagen') || Maquina;
+  });
+
+  useEffect(() => {
+    const fetchImplementos = async () => {
+      try {
+        const response = await getImplements({ limit: 100 });
+        if (response.success && response.data) {
+          setImplementosCatalogo(response.data);
+        }
+      } catch (error) {
+        console.error("Error al cargar implementos del catálogo:", error);
+      }
+    };
+    fetchImplementos();
+  }, []);
+
+  const handleImplementoSelect = (implemento) => {
+    if (implemento) {
+      // Normalizamos el tipo de implemento para que coincida con las opciones del select
+      let implType = implemento.implementType ? implemento.implementType.toLowerCase() : "";
+      
+      setFormData({
+        implement_type: implType,
+        working_width_m: implemento.workingWidthM || "",
+        working_depth_cm: implemento.workingDepthCm || "",
+        weight_kg: implemento.weightKg || "",
+      });
+      
+      const implImage = implemento.image || implemento.imageUrl || implemento.image_url || (implemento.images && implemento.images[0]) || Maquina;
+      setImagenImplemento(implImage);
+      localStorage.setItem('implemento_imagen', implImage);
+      
+      setErrors({});
+      setIsModalOpen(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Limpiar error del campo al escribir
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -89,6 +123,15 @@ export default function DatosImplemento() {
     return nuevosErrores;
   };
 
+  const guardarDatos = () => {
+    localStorage.setItem('implemento_datos', JSON.stringify({
+      implement_type:   formData.implement_type,
+      working_width_m:  Number(formData.working_width_m) || formData.working_width_m,
+      working_depth_cm: Number(formData.working_depth_cm) || formData.working_depth_cm,
+      weight_kg:        Number(formData.weight_kg) || formData.weight_kg,
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const erroresValidacion = validar();
@@ -98,26 +141,15 @@ export default function DatosImplemento() {
       return;
     }
 
-    // Guardar datos en localStorage para el siguiente paso
-    localStorage.setItem('implemento_datos', JSON.stringify({
-      implement_type:   formData.implement_type,
-      working_width_m:  Number(formData.working_width_m),
-      working_depth_cm: Number(formData.working_depth_cm),
-      weight_kg:        Number(formData.weight_kg),
-    }));
-
+    guardarDatos();
     navigate('/TipoSueloImplemento');
   };
-
-  // ── Estilos compartidos ──────────────────────────────────────────────────
 
   const inputBase =
     'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#991b1b] transition-colors';
 
   const inputClass = (field) =>
     `${inputBase} ${errors[field] ? 'border-red-500' : 'border-gray-300'}`;
-
-  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 sm:p-8">
@@ -132,22 +164,33 @@ export default function DatosImplemento() {
           <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold">3</span>
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-8 text-gray-800">
           Datos del implemento
         </h1>
 
-        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+        <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
 
-          {/* ── Imagen ilustrativa ── */}
-          <div className="w-full md:w-1/2 flex items-center justify-center">
-            <img
-              src={Maquina}
-              alt="Implemento agrícola"
-              className="w-full max-w-xs md:max-w-full h-auto rounded-lg object-contain"
+          {/* ── Lado izquierdo: Imagen y Botón del Catálogo ── */}
+          <div className="w-full md:w-1/2 flex flex-col items-center">
+            <img 
+              src={imagenImplemento} 
+              alt="Modelo de implemento" 
+              className="w-full max-w-[350px] h-auto rounded-lg shadow-sm border border-gray-100 object-contain bg-white"
             />
+            <div className="mt-6 w-full flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                color="#991b1b"
+                className="w-full max-w-[300px] border-[#991b1b] text-[#991b1b] hover:bg-red-50 font-semibold"
+                onClick={() => setIsModalOpen(true)}
+              >
+                Buscar en Catálogo
+              </Button>
+            </div>
           </div>
 
-          {/* ── Formulario ── */}
+          {/* ── Lado derecho: Formulario ── */}
           <div className="w-full md:w-1/2">
             <form className="space-y-5" onSubmit={handleSubmit} noValidate>
 
@@ -243,15 +286,7 @@ export default function DatosImplemento() {
               </div>
 
               {/* ── Botones de navegación ── */}
-              <div className="flex justify-end gap-3 pt-2">
-                <Button
-                  variant="outline"
-                  color="#991b1b"
-                  type="button"
-                  onClick={() => navigate(-1)}
-                >
-                  VOLVER
-                </Button>
+              <div className="flex justify-end gap-3 pt-4">
                 <Button
                   variant="primary"
                   color="#991b1b"
@@ -265,6 +300,51 @@ export default function DatosImplemento() {
           </div>
         </div>
       </div>
+
+      {/* Modal del Catálogo */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-4xl md:max-w-5xl lg:max-w-6xl w-[95vw] max-h-[85vh] overflow-hidden flex flex-col p-6">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-800">Catálogo de Implementos</DialogTitle>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto mt-4 pr-2">
+            {implementosCatalogo.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">Cargando implementos...</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {implementosCatalogo.map((impl) => (
+                  <div 
+                    key={impl.implementId} 
+                    className="border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-[#991b1b] hover:shadow-md transition-all flex flex-col bg-white"
+                    onClick={() => handleImplementoSelect(impl)}
+                  >
+                    <div className="h-32 mb-4 w-full flex items-center justify-center bg-gray-50 rounded-lg p-2">
+                      <img 
+                        src={impl.image || impl.imageUrl || impl.image_url || (impl.images && impl.images[0]) || Maquina} 
+                        alt={impl.implementName} 
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-gray-800 text-lg leading-tight mb-1">{impl.brand}</h3>
+                      <p className="text-gray-600 font-medium">{impl.implementName}</p>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+                      <span className="bg-red-50 text-[#991b1b] text-sm font-semibold px-2 py-1 rounded">
+                        {impl.powerRequirementHp} HP Req.
+                      </span>
+                      <span className="text-gray-500 text-sm">
+                        {impl.weightKg} kg
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
