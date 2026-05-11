@@ -13,7 +13,7 @@
  */
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../components/ui/buttons/Button';
 import TooltipInfo from '../components/ui/buttons/ToolTipInfo';
 import SueloImg from '../assets/img/suelo.png';
@@ -65,31 +65,43 @@ const TIPOS_SUELO = [
  * @returns {JSX.Element}
  */
 export default function TipoSueloImplemento() {
-  const navigate  = useNavigate();
-  const [tipoSuelo, setTipoSuelo] = useState('');
-  const [error, setError]          = useState('');
+const navigate = useNavigate();
+const location = useLocation();
+const [tipoSuelo, setTipoSuelo] = useState('');
+const [error, setError] = useState('');
+
+// Recibir datos del paso 1 vía navigate state (fallback a localStorage para compatibilidad)
+const implementData = location.state?.implementData || (() => {
+try { return JSON.parse(localStorage.getItem('implemento_datos') || '{}'); } catch { return {}; }
+})();
 
   // ── Manejadores ──────────────────────────────────────────────────────────
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleSubmit = (e) => {
+e.preventDefault();
 
-    if (!tipoSuelo) {
-      setError('Por favor selecciona el tipo de suelo.');
-      return;
-    }
+if (!tipoSuelo) {
+setError('Por favor selecciona el tipo de suelo.');
+return;
+}
 
-    // Recuperar datos del paso 1
-    const datosPrevios = JSON.parse(localStorage.getItem('implemento_datos') || '{}');
+// También actualizar localStorage para compatibilidad
+const datosPrevios = implementData;
+localStorage.setItem('implemento_datos', JSON.stringify({
+...datosPrevios,
+soil_type: tipoSuelo,
+}));
 
-    // Combinar y guardar datos completos
-    localStorage.setItem('implemento_datos', JSON.stringify({
-      ...datosPrevios,
-      soil_type: tipoSuelo,
-    }));
-
-    navigate('/ResultadosImplemento');
-  };
+// Navegar con state completo (como el flujo Tengo Tractor)
+navigate('/ResultadosImplemento', {
+state: {
+implementData: {
+...datosPrevios,
+soilType: tipoSuelo,
+},
+},
+});
+};
 
   // ── Render ────────────────────────────────────────────────────────────────
 
