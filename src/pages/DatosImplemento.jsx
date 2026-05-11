@@ -5,10 +5,10 @@ import TooltipInfo from '../components/ui/buttons/ToolTipInfo';
 import Maquina from '../assets/img/2.png';
 import { getImplements } from '../services/implementApi';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+Dialog,
+DialogContent,
+DialogHeader,
+DialogTitle,
 } from "../components/ui/dialog";
 
 // ---------------------------------------------------------------------------
@@ -41,27 +41,34 @@ const ESTADO_INICIAL = {
 export default function DatosImplemento() {
   const navigate = useNavigate();
   
-  const [formData, setFormData] = useState(() => {
-    const saved = localStorage.getItem('implemento_datos');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return {
-          implement_type: parsed.implement_type || '',
-          working_width_m: parsed.working_width_m || '',
-          working_depth_cm: parsed.working_depth_cm || '',
-          weight_kg: parsed.weight_kg || '',
-        };
-      } catch (e) {
-        // Fallback en caso de error
-      }
-    }
-    return ESTADO_INICIAL;
-  });
+const [formData, setFormData] = useState(() => {
+const saved = localStorage.getItem('implemento_datos');
+if (saved) {
+try {
+const parsed = JSON.parse(saved);
+return {
+implement_type: parsed.implement_type || '',
+working_width_m: parsed.working_width_m || '',
+working_depth_cm: parsed.working_depth_cm || '',
+weight_kg: parsed.weight_kg || '',
+};
+} catch (e) {
+// Fallback en caso de error
+}
+}
+return ESTADO_INICIAL;
+});
 
-  const [errors, setErrors] = useState({});
-  const [implementosCatalogo, setImplementosCatalogo] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+const [errors, setErrors] = useState({});
+const [implementosCatalogo, setImplementosCatalogo] = useState([]);
+const [isModalOpen, setIsModalOpen] = useState(false);
+const [selectedImplementId, setSelectedImplementId] = useState(() => {
+return localStorage.getItem('implemento_id') || null;
+});
+const [selectedPowerReq, setSelectedPowerReq] = useState(() => {
+const saved = localStorage.getItem('implemento_power_req');
+return saved ? Number(saved) : null;
+});
   
   const [imagenImplemento, setImagenImplemento] = useState(() => {
     return localStorage.getItem('implemento_imagen') || Maquina;
@@ -81,26 +88,34 @@ export default function DatosImplemento() {
     fetchImplementos();
   }, []);
 
-  const handleImplementoSelect = (implemento) => {
-    if (implemento) {
-      // Normalizamos el tipo de implemento para que coincida con las opciones del select
-      let implType = implemento.implementType ? implemento.implementType.toLowerCase() : "";
-      
-      setFormData({
-        implement_type: implType,
-        working_width_m: implemento.workingWidthM || "",
-        working_depth_cm: implemento.workingDepthCm || "",
-        weight_kg: implemento.weightKg || "",
-      });
-      
-      const implImage = implemento.image || implemento.imageUrl || implemento.image_url || (implemento.images && implemento.images[0]) || Maquina;
-      setImagenImplemento(implImage);
-      localStorage.setItem('implemento_imagen', implImage);
-      
-      setErrors({});
-      setIsModalOpen(false);
-    }
-  };
+const handleImplementoSelect = (implemento) => {
+if (implemento) {
+// Normalizamos el tipo de implemento para que coincida con las opciones del select
+let implType = implemento.implementType ? implemento.implementType.toLowerCase() : "";
+
+setFormData({
+implement_type: implType,
+working_width_m: implemento.workingWidthM || "",
+working_depth_cm: implemento.workingDepthCm || "",
+weight_kg: implemento.weightKg || "",
+});
+
+// Guardar implementId y powerRequirement del catálogo
+const implId = implemento.implementId || implemento.implement_id || null;
+const implPowerReq = implemento.powerRequirementHp || implemento.power_requirement_hp || null;
+setSelectedImplementId(implId);
+setSelectedPowerReq(implPowerReq);
+localStorage.setItem('implemento_id', implId);
+localStorage.setItem('implemento_power_req', implPowerReq);
+
+const implImage = implemento.image || implemento.imageUrl || implemento.image_url || (implemento.images && implemento.images[0]) || Maquina;
+setImagenImplemento(implImage);
+localStorage.setItem('implemento_imagen', implImage);
+
+setErrors({});
+setIsModalOpen(false);
+}
+};
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -123,29 +138,41 @@ export default function DatosImplemento() {
     return nuevosErrores;
   };
 
-  const guardarDatos = () => {
-    localStorage.setItem('implemento_datos', JSON.stringify({
-      implement_type:   formData.implement_type,
-      working_width_m:  Number(formData.working_width_m) || formData.working_width_m,
-      working_depth_cm: Number(formData.working_depth_cm) || formData.working_depth_cm,
-      weight_kg:        Number(formData.weight_kg) || formData.weight_kg,
-    }));
-  };
+const guardarDatos = () => {
+const dataToSave = {
+implement_type: formData.implement_type,
+working_width_m: Number(formData.working_width_m) || formData.working_width_m,
+working_depth_cm: Number(formData.working_depth_cm) || formData.working_depth_cm,
+weight_kg: Number(formData.weight_kg) || formData.weight_kg,
+};
+localStorage.setItem('implemento_datos', JSON.stringify(dataToSave));
+return dataToSave;
+};
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const erroresValidacion = validar();
+const handleSubmit = (e) => {
+e.preventDefault();
+const erroresValidacion = validar();
 
-    if (Object.keys(erroresValidacion).length > 0) {
-      setErrors(erroresValidacion);
-      return;
-    }
+if (Object.keys(erroresValidacion).length > 0) {
+setErrors(erroresValidacion);
+return;
+}
 
-    guardarDatos();
-    navigate('/TipoSueloImplemento');
-  };
+const implementData = guardarDatos();
 
-  const inputBase =
+// Navegar con state (como el flujo Tengo Tractor)
+navigate('/TipoSueloImplemento', {
+state: {
+implementData: {
+...implementData,
+implementId: selectedImplementId,
+powerRequirementHp: selectedPowerReq,
+},
+},
+});
+};
+
+const inputBase =
     'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#991b1b] transition-colors';
 
   const inputClass = (field) =>

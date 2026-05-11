@@ -1,87 +1,108 @@
 /**
- * @fileoverview Paso 3 del flujo "Tengo Maquinaria" — Resultados.
- *
- * Lee los datos del implemento almacenados en localStorage (pasos 1 y 2),
- * calcula la potencia requerida estimada y muestra:
- *  1. Resumen del implemento con imagen y descripción calculada.
- *  2. Tractores recomendados filtrados por potencia ≥ power_requirement_hp.
- *
- * Los datos de tractores están "quemados" (mock). En el futuro se conectará
- * a GET /api/tractors con los filtros correspondientes.
- *
- * Cálculo de potencia requerida (estimación simplificada):
- *   power_hp = (working_width_m * working_depth_cm * FACTOR_TIPO) + (weight_kg * 0.01)
- *
- * @module pages/ResultadosImplemento
- */
+* @fileoverview Paso 3 del flujo "Tengo Maquinaria" — Resultados.
+*
+* Recibe los datos del implemento y tipo de suelo vía navigate state
+* (pasados desde DatosImplemento → TipoSueloImplemento).
+* Calcula la potencia mínima requerida usando el endpoint directo
+* (/direct-minimum-power) sin IDs de DB ni login.
+*
+* Muestra:
+* 1. Resumen del implemento con imagen y descripción calculada.
+* 2. Tractores recomendados filtrados por potencia ≥ power_requirement_hp.
+*
+* @module pages/ResultadosImplemento
+*/
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import TractorMachineCard from '../components/ui/cards/TractorMachineCard';
 import SkeletonCard from '../components/ui/loaders/SkeletonCard';
 import MachineImg from '../assets/img/2.png';
 import TractorImg from '../assets/img/1.png';
-import { calculateMinimumPower } from '../services/calculationApi';
-import { getWorkingDepthM, parseStoredImplementData } from '../lib/implementStorageUtils';
-import { 
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction
+import { calculateDirectMinimumPower } from '../services/calculationApi';
+import {
+AlertDialog,
+AlertDialogContent,
+AlertDialogHeader,
+AlertDialogTitle,
+AlertDialogDescription,
+AlertDialogFooter,
+AlertDialogAction
 } from '../components/ui/alert-dialog';
 
 export default function ResultadosImplemento() {
-  const navigate = useNavigate();
+const navigate = useNavigate();
+const location = useLocation();
 
-  const [datos, setDatos] = useState(null);
-  const [busqueda, setBusqueda] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [calculationResult, setCalculationResult] = useState(null);
+const [datos, setDatos] = useState(null);
+const [busqueda, setBusqueda] = useState('');
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState(null);
+const [calculationResult, setCalculationResult] = useState(null);
 
-  useEffect(() => {
-    const rawData = localStorage.getItem('implemento_datos');
-    if (!rawData) {
-      navigate('/TengoMaquinaria');
-      return;
-    }
+useEffect(() => {
+// Leer datos del navigate state (fallback a localStorage para compatibilidad)
+const stateData = location.state?.implementData;
+let implementData = null;
 
-    const implementData = parseStoredImplementData(rawData);
-    if (!implementData) {
-      localStorage.removeItem('implemento_datos');
-      navigate('/TengoMaquinaria');
-      return;
-    }
+if (stateData) {
+implementData = stateData;
+} else {
+// Fallback: leer de localStorage
+const rawData = localStorage.getItem('implemento_datos');
+if (rawData) {
+try { implementData = JSON.parse(rawData); } catch { /* ignore */ }
+}
+}
 
-    setDatos(implementData);
+if (!implementData) {
+navigate('/TengoMaquinaria');
+return;
+}
 
-    const fetchCalculation = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Adapt payload to backend. En un futuro el form debe seleccionar implement_id y terrain_id del DB.
-        const workingDepth = getWorkingDepthM(implementData, 0.3);
-        const payload = {
-          implementId: implementData.implementId ?? implementData.implement_id ?? 1,
-          terrainId: implementData.terrainId ?? implementData.terrain_id ?? 1,
-          // Backend validateImplementRequirement exige working_depth_m <= 1.0
-          workingDepthM: Math.min(workingDepth, 1.0),
-        };
-        const res = await calculateMinimumPower(payload);
-        setCalculationResult(res.data);
-      } catch (err) {
-        setError(err.message || 'Error al calcular potencia mínima');
-      } finally {
-        setLoading(false);
-      }
-    };
+setDatos(implementData);
 
-    fetchCalculation();
-  }, [navigate]);
+const fetchCalculation = async () => {
+setLoading(true);
+setError(null);
+try {
+// Construir payload para /direct-minimum-power (sin DB IDs, sin login)
+const workingDepthM = Math.min(
+(implementData.workingDepthCm || implementData.working_depth_cm || 25) / 100,
+1.0
+);
+const powerReqHp = implementData.powerRequirementHp
+|| implementData.power_requirement_hp
+|| null;
+
+// Necesitamos powerRequirementHp para el endpoint directo.
+// Si no viene del catálogo, pedimos al usuario que seleccione del catálogo
+// o usamos un valor estimado (fallback defensivo).
+if (!powerReqHp || powerReqHp <= 0) {
+setError('Seleccioná un implemento del catálogo para obtener su requerimiento de potencia, o ingresá el valor manualmente.');
+setLoading(false);
+return;
+}
+
+const payload = {
+powerRequirementHp: powerReqHp,
+workingDepthM,
+soilType: implementData.soilType || implementData.soil_type || 'loam',
+slopePercentage: 0, // El flujo actual no captura pendiente; default 0
+};
+
+const res = await calculateDirectMinimumPower(payload);
+setCalculationResult(res.data);
+} catch (err) {
+setError(err.message || 'Error al calcular potencia mínima');
+} finally {
+setLoading(false);
+}
+};
+
+fetchCalculation();
+}, [navigate, location.state]);
 
   if (loading) {
     return (
@@ -99,9 +120,9 @@ export default function ResultadosImplemento() {
     );
   }
 
-  const { implement, powerRequirement, recommendations } = calculationResult || {};
-  const hp = powerRequirement?.calculatedPowerHp || powerRequirement?.minimumPowerHp || 0;
-  const recommendedTractors = recommendations?.top5 || [];
+const { implement, powerRequirement, recommendations } = calculationResult || {};
+const hp = powerRequirement?.minimumPowerHp || powerRequirement?.calculatedPowerHp || 0;
+const recommendedTractors = recommendations?.top5 || recommendations?.top_5 || [];
 
   const filteredTractors = recommendedTractors.filter(t => 
     !busqueda || 
@@ -109,20 +130,20 @@ export default function ResultadosImplemento() {
     t.brand?.toLowerCase().includes(busqueda.toLowerCase())
   );
 
-  return (
-    <>
-      <AlertDialog open={!!error}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Aviso de Validación</AlertDialogTitle>
-            <AlertDialogDescription>
-              {error}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => navigate(-1)}>Volver a editar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
+return (
+<>
+<AlertDialog open={!!error}>
+<AlertDialogContent>
+<AlertDialogHeader>
+<AlertDialogTitle>Aviso de Validación</AlertDialogTitle>
+<AlertDialogDescription>
+{error}
+</AlertDialogDescription>
+</AlertDialogHeader>
+<AlertDialogFooter>
+<AlertDialogAction onClick={() => navigate('/TengoMaquinaria')}>Volver al inicio</AlertDialogAction>
+</AlertDialogFooter>
+</AlertDialogContent>
       </AlertDialog>
 
       <div className="flex flex-col items-center justify-center bg-gray-100 py-10 min-h-screen">

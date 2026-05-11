@@ -112,9 +112,19 @@ export default function DatosTractor() {
       setErrors(err);
       return;
     }
-    
+    // Persistir en localStorage (para que no se pierdan al volver)
     guardarDatos();
-    navigate("/DatosLlantas");
+    // Pasar datos del tractor al siguiente paso vía navigate state
+    navigate("/DatosLlantas", {
+      state: {
+        tractorData: {
+          pb: Number(formData.pb),
+          pmax_tdp: Number(formData.pmax_tdp),
+          peso: Number(formData.peso),
+          turbo: formData.turbo, // 'si' o 'no'
+        },
+      },
+    });
   };
 
   const inputBase =

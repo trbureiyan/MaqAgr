@@ -1,15 +1,32 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Llanta from "../assets/img/Llanta.jpeg";
 import Button from "../components/ui/buttons/Button";
 import TooltipInfo from "../components/ui/buttons/ToolTipInfo";
 
 export default function DatosLlanta() {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Recibir datos del tractor del paso anterior
+  const tractorData = location.state?.tractorData || {};
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    navigate("/DatosClimaticos");
+    // Recoger datos del formulario de llantas
+    const diametroLlanta = event.target.diametro?.value || '';
+    const presionInflado = event.target.presion?.value || '';
+    const tipoSuelo = event.target.tipoSuelo?.value || '';
+
+    navigate("/DatosClimaticos", {
+      state: {
+        tractorData, // Pasar datos del tractor al siguiente paso
+        llantaData: {
+          diametroLlanta: diametroLlanta ? Number(diametroLlanta) : null,
+          presionInflado: presionInflado ? Number(presionInflado) : null,
+          tipoSuelo,
+        },
+      },
+    });
   };
 
   return (
@@ -31,10 +48,11 @@ export default function DatosLlanta() {
                   Diámetro de la llanta
                   <TooltipInfo content="Diámetro de la llanta en pulgadas" />
                 </label>
-                <input 
-                  id="diametro-llanta"
-                  type="text" 
-                  placeholder="Valor en pulgadas" 
+                <input
+                  id="diametro"
+                  name="diametro"
+                  type="text"
+                  placeholder="Valor en pulgadas"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
@@ -43,10 +61,11 @@ export default function DatosLlanta() {
                   Presión de inflado
                   <TooltipInfo content="Presión de inflado recomendada en PSI" />
                 </label>
-                <input 
-                  id="presion-inflado"
-                  type="text" 
-                  placeholder="Valor en PSI" 
+                <input
+                  id="presion"
+                  name="presion"
+                  type="text"
+                  placeholder="Valor en PSI"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
@@ -55,8 +74,9 @@ export default function DatosLlanta() {
                   Tipo de suelo
                   <TooltipInfo content="Tipo de terreno donde se utilizará el tractor" />
                 </label>
-                <select 
-                  id="tipo-suelo"
+                <select
+                  id="tipoSuelo"
+                  name="tipoSuelo"
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 >
                   <option value="">Seleccione una opción</option>
