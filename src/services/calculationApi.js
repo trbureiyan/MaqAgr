@@ -28,6 +28,35 @@ const mockPowerLoss = async () => {
   });
 };
 
+const mockDirectPowerLoss = async (payload) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const enginePowerHp = payload.enginePowerHp || 100;
+      const losses = {
+        slopeLossHp: +(enginePowerHp * 0.04).toFixed(2),
+        altitudeLossHp: payload.hasTurbo ? 0 : +(enginePowerHp * 0.03).toFixed(2),
+        rollingResistanceLossHp: +(enginePowerHp * 0.03).toFixed(2),
+        slippageLossHp: +(enginePowerHp * (payload.slippagePercent || 10) / 100 * 0.5).toFixed(2),
+      };
+      const totalLossHp = +(losses.slopeLossHp + losses.altitudeLossHp + losses.rollingResistanceLossHp + losses.slippageLossHp).toFixed(2);
+      const netPowerHp = +(enginePowerHp - totalLossHp).toFixed(2);
+      resolve({
+        success: true,
+        data: {
+          queryId: null,
+          tractor: { brand: 'Manual', model: 'Input', hasTurbo: payload.hasTurbo || false },
+          terrain: { name: 'Terreno ingresado', soilType: payload.soilType || 'franco' },
+          losses,
+          totalLossHp,
+          netPowerHp,
+          enginePowerHp,
+          efficiencyPercentage: +((netPowerHp / enginePowerHp) * 100).toFixed(2)
+        }
+      });
+    }, 1500);
+  });
+};
+
 const mockMinimumPower = async () => {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -66,6 +95,19 @@ export const calculatePowerLoss = async (payload) => {
 
   // payload expected in camelCase: tractorId, terrainId, workingSpeedKmh, carriedObjectsWeightKg, slippagePercent
   return apiClient('/api/calculations/power-loss', {
+    method: 'POST',
+    body: payload,
+  });
+};
+
+export const calculateDirectPowerLoss = async (payload) => {
+  if (!REMOTE_CALCULATION_API_ENABLED) {
+    return mockDirectPowerLoss(payload);
+  }
+
+  // payload in camelCase: enginePowerHp, weightKg, soilType, altitudeM, etc.
+  // apiClient converts camelCase → snake_case before sending to backend
+  return apiClient('/api/calculations/direct-power-loss', {
     method: 'POST',
     body: payload,
   });

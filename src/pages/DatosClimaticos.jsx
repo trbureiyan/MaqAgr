@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Nube from "../assets/img/nubes.png";
 import Button from "../components/ui/buttons/Button";
 import TooltipInfo from "../components/ui/buttons/ToolTipInfo";
 
 function DatosClimativos() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Recibir datos de los pasos anteriores
+  const tractorData = location.state?.tractorData || {};
+  const llantaData = location.state?.llantaData || {};
+
   const [formData, setFormData] = useState({
     altitudeM: '',
     ambientTemperatureC: '',
@@ -15,10 +21,7 @@ function DatosClimativos() {
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (event) => {
@@ -37,11 +40,21 @@ function DatosClimativos() {
       ? 15
       : Math.min(100, Math.max(0, slippagePercentInput));
 
+    // Construir payload completo con todos los datos del flujo
+    // hasTurbo se determina desde DatosTractor: turbo === 'si'
+    const hasTurbo = tractorData.turbo === 'si';
+
     const payload = {
-      tractorId: 1,
-      terrainId: 1,
-      tireCondition: slippagePercent > 20 ? 'worn' : 'new',
-      ptoEfficiency: Number((1 - (slippagePercent / 100)).toFixed(2)),
+      // Datos del tractor (del paso 1)
+      enginePowerHp: tractorData.pb || null,
+      pmaxTdpHp: tractorData.pmax_tdp || null,
+      weightKg: tractorData.peso || null,
+      hasTurbo,
+      // Datos de llantas (del paso 2)
+      tireDiameterIn: llantaData.diametroLlanta || null,
+      tirePressurePsi: llantaData.presionInflado || null,
+      soilType: llantaData.tipoSuelo || null,
+      // Datos climáticos (este paso)
       altitudeM,
       ambientTemperatureC,
       slopePercent,
@@ -51,9 +64,12 @@ function DatosClimativos() {
     navigate("/Resultados", {
       state: {
         payload,
-      }
+        tractorData, // También pasamos los datos crudos para mostrar en resultados
+      },
     });
   };
+
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
