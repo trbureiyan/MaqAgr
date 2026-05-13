@@ -29,8 +29,9 @@ You are an expert AI programming assistant working on **MaqAgr**, a web-based de
    - Avoid using the default `assert` object.
 4. **Dependencies & Supply Chain**:
    - **Never use `^` or `~`** in dependency version specifiers. Always pin exact versions in `package.json`.
-   - **Always commit the lockfile** (`package-lock.json`).
-   - Use deterministic installs: `npm ci` or `npm install --ignore-scripts`.
+   - **Always commit the lockfile** (`pnpm-lock.yaml`).
+   - Use deterministic installs: `pnpm install --frozen-lockfile`.
+   - **NPM IS STRICTLY FORBIDDEN**: This project exclusively uses pnpm (>=11.1.0). Never suggest or run npm commands.
 
 ## Domain & Code Style
 
