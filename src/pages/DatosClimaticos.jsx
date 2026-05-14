@@ -1,15 +1,22 @@
+/**
+ * @fileoverview Paso 3 del flujo "Tengo Tractor" — especificaciones climáticas y de terreno.
+ *
+ * @module pages/DatosClimaticos
+ */
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Nube from "../assets/img/nubes.png";
-import Button from "../components/ui/buttons/Button";
-import FieldWithPresets from "../components/ui/FieldWithPresets";
-import { getInputClass } from "../lib/formUtils";
+import Nube from '../assets/img/nubes.png';
+import FieldWithPresets from '../components/ui/FieldWithPresets';
+import StepIndicator from '../components/ui/StepIndicator';
+import { getInputClass } from '../lib/formUtils';
 import {
   ALTITUD_PRESETS, ALTITUD_UNKNOWN_DEFAULT,
   TEMPERATURA_PRESETS, TEMPERATURA_UNKNOWN_DEFAULT,
   PENDIENTE_PRESETS, PENDIENTE_UNKNOWN_DEFAULT,
   PATINAMIENTO_PRESETS, PATINAMIENTO_UNKNOWN_DEFAULT,
-} from "../lib/fieldPresets";
+} from '../lib/fieldPresets';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 function DatosClimaticos() {
   const navigate = useNavigate();
@@ -42,6 +49,7 @@ function DatosClimaticos() {
     const ambientTemperatureC = toNumberOrNull(formData.ambientTemperatureC);
     const slopePercent = toNumberOrNull(formData.slopePercent);
     const slippagePercentInput = toNumberOrNull(formData.slippagePercent);
+    
     // Si no se conoce el patinamiento, el backend usará 15% como default
     const slippagePercent = slippagePercentInput === null
       ? null
@@ -72,116 +80,123 @@ function DatosClimaticos() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-10 px-4">
+      <div className="w-full max-w-4xl">
 
-        {/* ── Indicador de pasos ── */}
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold" aria-label="Paso 1 de 3, completado">1</span>
-          <div className="w-8 sm:w-12 h-0.5 bg-[#991b1b]" />
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold" aria-label="Paso 2 de 3, completado">2</span>
-          <div className="w-8 sm:w-12 h-0.5 bg-[#991b1b]" />
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#991b1b] text-white text-sm font-bold" aria-label="Paso 3 de 3, actual">3</span>
+        <div className="mb-6 px-1">
+          <StepIndicator
+            current={3}
+            total={3}
+            labels={["Motor", "Llantas", "Clima"]}
+          />
         </div>
 
-        <h1 className="text-3xl font-bold text-center mb-2">Datos climáticos</h1>
-        <p className="text-center text-gray-600 mb-8">
-          Todos estos campos son <strong>opcionales</strong>. Si no conoces el valor, usa el botón
-          &ldquo;No conozco el dato&rdquo; o deja el campo vacío para usar los defaults del sistema.
-        </p>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
 
-        <div className="flex flex-col md:flex-row gap-8">
-          <div className="w-full md:w-1/2">
-            <img
-              src={Nube}
-              alt="Referencia de condiciones climáticas para el cálculo"
-              className="w-full h-auto rounded-lg"
-            />
-          </div>
-          <div className="w-full md:w-1/2">
-            <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                <FieldWithPresets
-                  id="altitudeM"
-                  name="altitudeM"
-                  label="Altitud"
-                  tooltip="Altura sobre el nivel del mar en metros (msnm)"
-                  value={formData.altitudeM}
-                  onChange={handleChange}
-                  placeholder="msnm"
-                  presets={ALTITUD_PRESETS}
-                  unknownDefault={ALTITUD_UNKNOWN_DEFAULT}
-                  unknownLabel="dejar vacío"
-                  inputClass={getInputClass('altitudeM', {})}
+            {/* ── Panel izquierdo: imagen ── */}
+            <div className="bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100 p-6 flex flex-col items-center justify-center gap-5">
+              <div className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-white border border-gray-100 flex items-center justify-center p-3">
+                <img
+                  src={Nube}
+                  alt="Referencia climática"
+                  className="max-h-full max-w-full object-contain"
                 />
-
-                <FieldWithPresets
-                  id="ambientTemperatureC"
-                  name="ambientTemperatureC"
-                  label="Temperatura ambiente"
-                  tooltip="Temperatura promedio en grados Celsius (°C)"
-                  value={formData.ambientTemperatureC}
-                  onChange={handleChange}
-                  placeholder="°C"
-                  presets={TEMPERATURA_PRESETS}
-                  unknownDefault={TEMPERATURA_UNKNOWN_DEFAULT}
-                  unknownLabel="dejar vacío"
-                  inputClass={getInputClass('ambientTemperatureC', {})}
-                />
-
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <p className="text-xs text-center text-gray-400 px-2">
+                Estos valores ayudan a corregir la pérdida de potencia por factores ambientales.
+              </p>
+            </div>
 
-                <FieldWithPresets
-                  id="slopePercent"
-                  name="slopePercent"
-                  label="Pendiente"
-                  tooltip="Inclinación del terreno en porcentaje (%). 0% = plano."
-                  value={formData.slopePercent}
-                  onChange={handleChange}
-                  placeholder="%"
-                  presets={PENDIENTE_PRESETS}
-                  unknownDefault={PENDIENTE_UNKNOWN_DEFAULT}
-                  unknownLabel="0% (plano)"
-                  inputClass={getInputClass('slopePercent', {})}
-                />
-
-                <FieldWithPresets
-                  id="slippagePercent"
-                  name="slippagePercent"
-                  label="Patinamiento"
-                  tooltip="Porcentaje estimado de patinamiento de las ruedas. Default del sistema: 15%."
-                  value={formData.slippagePercent}
-                  onChange={handleChange}
-                  placeholder="% (default: 15)"
-                  presets={PATINAMIENTO_PRESETS}
-                  unknownDefault={PATINAMIENTO_UNKNOWN_DEFAULT}
-                  unknownLabel="sistema usará 15%"
-                  inputClass={getInputClass('slippagePercent', {})}
-                />
-
+            {/* ── Panel derecho: formulario ── */}
+            <div className="p-6 md:p-8">
+              <div className="mb-6">
+                <h1 className="text-xl font-semibold text-gray-900">Clima y Terreno</h1>
+                <p className="text-sm text-gray-500 mt-1">
+                  Todos estos campos son opcionales. El sistema usará valores estándar si los dejas vacíos.
+                </p>
               </div>
 
-              {/* Botones de navegación */}
-              <div className="text-right space-x-4 flex justify-end pt-2">
-                <Button
-                  variant="outline"
-                  color="#991b1b"
-                  type="button"
-                  onClick={() => navigate(-1)}
-                >
-                  VOLVER
-                </Button>
-                <Button
-                  variant="primary"
-                  color="#991b1b"
-                  type="submit"
-                >
-                  VER RESULTADOS
-                </Button>
-              </div>
-            </form>
+              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <FieldWithPresets
+                    id="altitudeM"
+                    name="altitudeM"
+                    label="Altitud"
+                    tooltip="Altura sobre el nivel del mar en metros (msnm)"
+                    value={formData.altitudeM}
+                    onChange={handleChange}
+                    placeholder="msnm"
+                    presets={ALTITUD_PRESETS}
+                    unknownDefault={ALTITUD_UNKNOWN_DEFAULT}
+                    unknownLabel="dejar vacío"
+                    inputClass={getInputClass('altitudeM', {})}
+                  />
+
+                  <FieldWithPresets
+                    id="ambientTemperatureC"
+                    name="ambientTemperatureC"
+                    label="Temperatura ambiente"
+                    tooltip="Temperatura promedio en grados Celsius (°C)"
+                    value={formData.ambientTemperatureC}
+                    onChange={handleChange}
+                    placeholder="°C"
+                    presets={TEMPERATURA_PRESETS}
+                    unknownDefault={TEMPERATURA_UNKNOWN_DEFAULT}
+                    unknownLabel="dejar vacío"
+                    inputClass={getInputClass('ambientTemperatureC', {})}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <FieldWithPresets
+                    id="slopePercent"
+                    name="slopePercent"
+                    label="Pendiente"
+                    tooltip="Inclinación del terreno en porcentaje (%). 0% = plano."
+                    value={formData.slopePercent}
+                    onChange={handleChange}
+                    placeholder="%"
+                    presets={PENDIENTE_PRESETS}
+                    unknownDefault={PENDIENTE_UNKNOWN_DEFAULT}
+                    unknownLabel="0% (plano)"
+                    inputClass={getInputClass('slopePercent', {})}
+                  />
+
+                  <FieldWithPresets
+                    id="slippagePercent"
+                    name="slippagePercent"
+                    label="Patinamiento"
+                    tooltip="Porcentaje estimado de patinamiento. Default del sistema: 15%."
+                    value={formData.slippagePercent}
+                    onChange={handleChange}
+                    placeholder="% (default: 15)"
+                    presets={PATINAMIENTO_PRESETS}
+                    unknownDefault={PATINAMIENTO_UNKNOWN_DEFAULT}
+                    unknownLabel="sistema usará 15%"
+                    inputClass={getInputClass('slippagePercent', {})}
+                  />
+                </div>
+
+                <div className="pt-4 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Volver
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-[#893d46] text-white text-sm font-semibold rounded-lg hover:bg-[#7a3540] active:bg-[#6b2e38] transition-colors shadow-sm"
+                  >
+                    Ver Resultados
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>

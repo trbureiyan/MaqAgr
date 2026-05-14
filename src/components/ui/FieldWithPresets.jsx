@@ -1,65 +1,61 @@
 /**
- * @fileoverview Componente de campo de formulario con presets y botón "No conozco el dato".
+ * @fileoverview Campo de formulario con presets y ayuda contextual bajo demanda.
  *
- * Encapsula el patrón recurrente de:
- *  1. `<label>` + tooltip opcional
- *  2. Botón "No conozco el dato" que inserta un valor por defecto
- *  3. Chips de presets seleccionables que rellenan el campo
- *  4. `<input>` con estilo de error
- *  5. Mensaje de error
+ * Principio de diseño: progressive disclosure.
+ * El campo se ve limpio por defecto; las opciones de referencia se activan
+ * sólo cuando el usuario las necesita — al hacer foco o al pedir ayuda.
  *
- * Diseño visual: chips pequeños alineados en fila, sin glassmorphism.
- * Inspirado en el estilo de Linear / GitHub — funcional, sin decoración.
+ * Estados del panel de ayuda:
+ *  - cerrado (default): input limpio, botón "?" discreto en la esquina derecha del label
+ *  - abierto por foco: el panel aparece automáticamente al enfocar el input
+ *  - abierto por clic: el usuario pulsa el botón "?" para ver referencias
+ *
+ * El panel contiene:
+ *  - Chips de presets: valores de referencia típicos seleccionables
+ *  - Botón "No conozco este dato": usa el valor por defecto o deja vacío (campos opcionales)
  *
  * @module components/ui/FieldWithPresets
  */
 
-import React from 'react';
-import TooltipInfo from './buttons/ToolTipInfo';
-import { HelpCircle } from 'lucide-react';
+import React, { useState, useRef, useCallback } from 'react';
+import { ChevronDown, HelpCircle } from 'lucide-react';
+
+// ---------------------------------------------------------------------------
+// Constante interna — duración de la transición CSS
+// ---------------------------------------------------------------------------
+
+/** Delay en ms para cerrar el panel al perder foco (evita cierre inmediato al clickear chips) */
+const BLUR_CLOSE_DELAY_MS = 150;
+
+// ---------------------------------------------------------------------------
+// Componente
+// ---------------------------------------------------------------------------
 
 /**
- * FieldWithPresets — Campo numérico con presets de valores comunes.
+ * FieldWithPresets — Campo de formulario con ayuda contextual bajo demanda.
  *
  * @param {Object}   props
- * @param {string}   props.id            - ID del input (para htmlFor del label).
- * @param {string}   props.name          - Nombre del campo (name del input).
- * @param {string}   props.label         - Texto de la etiqueta.
- * @param {string}   [props.tooltip]     - Texto del tooltip informativo.
- * @param {string}   props.value         - Valor actual del campo.
- * @param {Function} props.onChange      - Handler onChange del input.
- * @param {string}   [props.error]       - Mensaje de error (vacío = sin error).
- * @param {string}   [props.placeholder] - Placeholder del input.
- * @param {string}   [props.type]        - Tipo de input (default: 'number').
- * @param {string}   [props.step]        - Step del input numérico.
- * @param {string}   [props.min]         - Mínimo del input numérico.
- * @param {Array<{label: string, value: string, hint: string}>} props.presets
- *   - Lista de valores predefinidos a mostrar como chips.
+ * @param {string}   props.id              - ID del input (para htmlFor del label).
+ * @param {string}   props.name            - Nombre del campo (name del input).
+ * @param {string}   props.label           - Texto de la etiqueta.
+ * @param {string}   [props.tooltip]       - Descripción breve del campo (aparece en el panel).
+ * @param {string}   props.value           - Valor actual del campo (controlled).
+ * @param {Function} props.onChange        - Handler onChange del input.
+ * @param {string}   [props.error]         - Mensaje de error (vacío = sin error).
+ * @param {string}   [props.placeholder]   - Placeholder del input.
+ * @param {string}   [props.type]          - Tipo de input (default: 'number').
+ * @param {string}   [props.step]          - Step del input numérico.
+ * @param {string}   [props.min]           - Mínimo del input numérico.
+ * @param {Array<{label: string, value: string, hint: string}>} [props.presets]
+ *   - Lista de valores predefinidos a mostrar como chips en el panel.
  * @param {string}   [props.unknownDefault]
- *   - Valor a insertar cuando el usuario pulsa "No conozco el dato".
- *   - Si está vacío o undefined, el botón no se renderiza.
+ *   - Valor a insertar con "No conozco el dato". '' = dejar vacío (campo opcional).
+ *   - Si es undefined, el botón "No conozco" no se renderiza.
  * @param {string}   [props.unknownLabel]
- *   - Etiqueta del valor que se inserta (se muestra en el botón).
- *   - Ejemplo: "~80 HP (estimado)".
- * @param {string}   [props.inputClass]  - Clases CSS del input (ya calculadas).
+ *   - Descripción del valor que se inserta. Ejemplo: "~80 HP (estimado)".
+ * @param {string}   [props.inputClass]    - Clases CSS del input (ya calculadas).
  *
  * @returns {JSX.Element}
- *
- * @example
- * <FieldWithPresets
- *   id="pb"
- *   name="pb"
- *   label="Potencia Bruta"
- *   tooltip="Potencia bruta del tractor en HP"
- *   value={formData.pb}
- *   onChange={handleChange}
- *   error={errors.pb}
- *   placeholder="Valor en HP"
- *   presets={PB_PRESETS}
- *   unknownDefault={PB_UNKNOWN_DEFAULT}
- *   unknownLabel="~80 HP"
- *   inputClass={getInputClass('pb', errors)}
- * />
  */
 const FieldWithPresets = ({
   id,
@@ -78,63 +74,81 @@ const FieldWithPresets = ({
   unknownLabel,
   inputClass,
 }) => {
+  const [panelOpen, setPanelOpen] = useState(false);
+  const blurTimerRef = useRef(null);
+  const hasHelp = presets.length > 0 || unknownDefault !== undefined;
+
   /**
    * Emula un evento onChange sintético para que el handler del formulario
    * funcione sin necesidad de adaptación.
-   *
-   * @param {string} newValue - Valor a insertar.
    */
-  const injectValue = (newValue) => {
+  const injectValue = useCallback((newValue) => {
     onChange({ target: { name, value: newValue } });
+  }, [onChange, name]);
+
+  /** Al enfocar el input, abre el panel si hay presets disponibles. */
+  const handleFocus = () => {
+    if (hasHelp) {
+      clearTimeout(blurTimerRef.current);
+      setPanelOpen(true);
+    }
+  };
+
+  /**
+   * Al perder foco en el input, espera BLUR_CLOSE_DELAY_MS ms antes de cerrar.
+   * El delay permite que los clics en chips y botones del panel se ejecuten antes
+   * de que el panel desaparezca.
+   */
+  const handleBlur = () => {
+    blurTimerRef.current = setTimeout(() => {
+      setPanelOpen(false);
+    }, BLUR_CLOSE_DELAY_MS);
+  };
+
+  /** Cancelar el timer de cierre cuando el foco entra al panel. */
+  const handlePanelMouseDown = (e) => {
+    // Prevenir que el panel reciba focus y que el input lo pierda
+    e.preventDefault();
+  };
+
+  const togglePanel = (e) => {
+    e.preventDefault();
+    clearTimeout(blurTimerRef.current);
+    setPanelOpen((prev) => !prev);
   };
 
   return (
-    <div>
-      {/* Fila superior: label + botón "No conozco el dato" */}
-      <div className="flex items-center justify-between mb-1 gap-2 flex-wrap">
-        <label
-          htmlFor={id}
-          className="block text-gray-700 font-medium"
-        >
+    <div className="relative">
+      {/* ── Fila de label ── */}
+      <div className="flex items-center justify-between mb-1.5">
+        <label htmlFor={id} className="text-sm font-medium text-gray-700 leading-none">
           {label}
-          {tooltip && <TooltipInfo content={tooltip} />}
         </label>
 
-        {unknownDefault !== undefined && unknownDefault !== null && (
+        {/* Botón de ayuda — discreto, sólo visible si hay presets o unknown */}
+        {hasHelp && (
           <button
             type="button"
-            onClick={() => injectValue(unknownDefault || '')}
-            className="flex items-center gap-1 text-xs text-gray-400 hover:text-[#991b1b] transition-colors shrink-0"
-            title={`Usar valor típico: ${unknownLabel || unknownDefault || 'vacío'}`}
+            onClick={togglePanel}
+            aria-expanded={panelOpen}
+            aria-controls={`${id}-help-panel`}
+            className={`flex items-center gap-1 text-xs transition-colors rounded px-1.5 py-0.5 ${
+              panelOpen
+                ? 'text-[#893d46] bg-red-50'
+                : 'text-gray-400 hover:text-[#893d46] hover:bg-red-50'
+            }`}
+            title="Ver valores de referencia"
           >
-            <HelpCircle className="w-3.5 h-3.5" />
-            No conozco el dato
+            <HelpCircle className="w-3 h-3" />
+            <span>Referencias</span>
+            <ChevronDown
+              className={`w-3 h-3 transition-transform duration-200 ${panelOpen ? 'rotate-180' : ''}`}
+            />
           </button>
         )}
       </div>
 
-      {/* Chips de presets */}
-      {presets.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-2" role="group" aria-label={`Valores de referencia para ${label}`}>
-          {presets.map((preset) => (
-            <button
-              key={preset.value}
-              type="button"
-              onClick={() => injectValue(preset.value)}
-              title={preset.hint}
-              className={`px-2.5 py-1 text-xs rounded border font-medium transition-colors ${
-                value === preset.value
-                  ? 'bg-[#991b1b] text-white border-[#991b1b]'
-                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-[#991b1b] hover:text-[#991b1b]'
-              }`}
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Input principal */}
+      {/* ── Input principal ── */}
       <input
         id={id}
         name={name}
@@ -143,15 +157,90 @@ const FieldWithPresets = ({
         min={min}
         value={value}
         onChange={onChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         placeholder={placeholder}
         className={inputClass}
         aria-invalid={Boolean(error)}
-        aria-describedby={error ? `${id}-error` : undefined}
+        aria-describedby={[
+          error ? `${id}-error` : null,
+          panelOpen ? `${id}-help-panel` : null,
+        ].filter(Boolean).join(' ') || undefined}
       />
 
-      {/* Mensaje de error */}
+      {/* ── Panel de ayuda — progressive disclosure ── */}
+      {/*
+        Usamos grid-rows para animación de altura sin JS.
+        grid-rows-[0fr] → cerrado (overflow:hidden oculta el contenido)
+        grid-rows-[1fr] → abierto
+      */}
+      <div
+        id={`${id}-help-panel`}
+        role="group"
+        aria-label={`Referencias para ${label}`}
+        aria-hidden={!panelOpen}
+        onMouseDown={handlePanelMouseDown}
+        className={`grid transition-[grid-template-rows] duration-200 ease-out ${
+          panelOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="pt-2 pb-1 space-y-2">
+            {/* Tooltip del campo */}
+            {tooltip && (
+              <p className="text-xs text-gray-400 leading-relaxed">{tooltip}</p>
+            )}
+
+            {/* Chips de presets */}
+            {presets.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {presets.map((preset) => (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    onClick={() => injectValue(preset.value)}
+                    title={preset.hint}
+                    className={`px-2.5 py-1 text-xs rounded-md border font-medium transition-all ${
+                      value === preset.value
+                        ? 'bg-[#893d46] text-white border-[#893d46] shadow-sm'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-[#893d46] hover:text-[#893d46]'
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Botón "No conozco el dato" */}
+            {unknownDefault !== undefined && unknownDefault !== null && (
+              <button
+                type="button"
+                onClick={() => {
+                  injectValue(unknownDefault || '');
+                  // Cerrar el panel tras usar la acción
+                  setTimeout(() => setPanelOpen(false), 300);
+                }}
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#893d46] transition-colors mt-1"
+              >
+                <span className="text-gray-300">→</span>
+                <span>
+                  No conozco el dato
+                  {unknownLabel && (
+                    <span className="ml-1 text-gray-400">
+                      ({unknownLabel})
+                    </span>
+                  )}
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Error ── */}
       {error && (
-        <p id={`${id}-error`} className="mt-1 text-sm text-red-600" role="alert">
+        <p id={`${id}-error`} className="mt-1.5 text-xs text-red-600" role="alert">
           {error}
         </p>
       )}
