@@ -26,8 +26,9 @@ export default function DatosTractor() {
           peso: parsed.peso || "",
           turbo: parsed.turbo || "",
         };
-      } catch (e) {
+      } catch (Error_parse) {
         // Fallback si hay error al parsear
+        console.error("Error parsing tractor_datos", Error_parse);
       }
     }
     return {

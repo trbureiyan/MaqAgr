@@ -13,7 +13,7 @@
  * @module pages/CatalogoMaquinas
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import TractorMachineCard from '../components/ui/cards/TractorMachineCard';
 import SkeletonCard from '../components/ui/loaders/SkeletonCard';
 import { Input } from '@/components/ui/input';
@@ -41,7 +41,7 @@ export default function CatalogoMaquinas() {
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const fetchImplements = async () => {
+  const fetchImplements = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -57,11 +57,11 @@ export default function CatalogoMaquinas() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [debouncedSearch, minPower, maxPower]);
 
   useEffect(() => {
     fetchImplements();
-  }, [debouncedSearch, minPower, maxPower]);
+  }, [fetchImplements]);
 
   const handleClearFilters = () => {
     setSearch('');

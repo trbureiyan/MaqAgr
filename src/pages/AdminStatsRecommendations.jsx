@@ -8,6 +8,7 @@ import {
   TrendingUp,
   AlertCircle
 } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'motion/react';
 
 const SimpleBarChart = ({ data, title, colorClass }) => {

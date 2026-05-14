@@ -32,7 +32,7 @@ const ResetPassword = () => {
       await resetPassword(token, newPassword);
       sileo.success('Contraseña restablecida correctamente');
       navigate('/Login');
-    } catch (error) {
+    } catch {
       sileo.error('Error al restablecer contraseña');
     } finally {
       setIsLoading(false);

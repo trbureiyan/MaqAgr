@@ -12,6 +12,7 @@ import {
   UserX,
   Clock
 } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'motion/react';
 
 const StatusBadge = ({ status }) => {
@@ -34,7 +35,7 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-const RoleBadge = ({ roleId, roleName }) => {
+const RoleBadge = ({ roleId }) => {
   return (
     <span className="flex items-center gap-1 text-sm font-medium text-gray-700">
       {roleId === 1 ? <ShieldAlert className="w-4 h-4 text-purple-600" /> : <UserCheck className="w-4 h-4 text-blue-600" />}
@@ -195,7 +196,7 @@ export default function AdminUsers() {
                       <div className="text-gray-500 text-xs mt-0.5">{user.email}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <RoleBadge roleId={user.roleId} roleName={user.roleName} />
+                      <RoleBadge roleId={user.roleId} />
                     </td>
                     <td className="px-6 py-4">
                       <StatusBadge status={user.status} />

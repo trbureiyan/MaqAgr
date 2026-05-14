@@ -11,8 +11,10 @@ import {
   TrendingUp,
   AlertCircle,
 } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "motion/react";
 
+// eslint-disable-next-line no-unused-vars
 const StatCard = ({ title, value, icon: Icon, color, delay }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
