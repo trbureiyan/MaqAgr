@@ -2,13 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/ui/buttons/Button';
 import TooltipInfo from '../components/ui/buttons/ToolTipInfo';
+import FieldWithPresets from '../components/ui/FieldWithPresets';
+import { getInputClass } from '../lib/formUtils';
+import {
+  ANCHO_TRABAJO_PRESETS, ANCHO_TRABAJO_UNKNOWN_DEFAULT,
+  PROFUNDIDAD_PRESETS, PROFUNDIDAD_UNKNOWN_DEFAULT,
+  PESO_IMPLEMENTO_PRESETS, PESO_IMPLEMENTO_UNKNOWN_DEFAULT,
+} from '../lib/fieldPresets';
 import Maquina from '../assets/img/2.png';
 import { getImplements } from '../services/implementApi';
 import {
-Dialog,
-DialogContent,
-DialogHeader,
-DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "../components/ui/dialog";
 
 // ---------------------------------------------------------------------------
@@ -173,11 +180,8 @@ powerRequirementHp: selectedPowerReq,
 });
 };
 
-const inputBase =
-    'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#991b1b] transition-colors';
-
-  const inputClass = (field) =>
-    `${inputBase} ${errors[field] ? 'border-red-500' : 'border-gray-300'}`;
+  // inputBase/inputClass moved to shared lib/formUtils.js — kept for select fields that don't use FieldWithPresets
+  const inputClass = (field) => getInputClass(field, errors);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 sm:p-8">
@@ -185,11 +189,11 @@ const inputBase =
 
         {/* ── Indicador de pasos ── */}
         <div className="flex items-center justify-center gap-2 mb-6">
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#991b1b] text-white text-sm font-bold">1</span>
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#991b1b] text-white text-sm font-bold" aria-label="Paso 1 de 3, actual">1</span>
           <div className="w-12 h-0.5 bg-gray-300" />
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold">2</span>
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold" aria-label="Paso 2 de 3, pendiente">2</span>
           <div className="w-12 h-0.5 bg-gray-300" />
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold">3</span>
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold" aria-label="Paso 3 de 3, pendiente">3</span>
         </div>
 
         <h1 className="text-2xl sm:text-3xl font-bold text-center mb-8 text-gray-800">
@@ -247,71 +251,56 @@ const inputBase =
                 )}
               </div>
 
-              {/* Ancho de trabajo */}
-              <div>
-                <label htmlFor="working_width_m" className="block text-gray-700 font-medium mb-1">
-                  Ancho de trabajo
-                  <TooltipInfo content="Ancho de la franja que cubre el implemento en cada pasada, expresado en metros (m)." />
-                </label>
-                <input
-                  id="working_width_m"
-                  name="working_width_m"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  placeholder="Valor en metros (m)"
-                  value={formData.working_width_m}
-                  onChange={handleChange}
-                  className={inputClass('working_width_m')}
-                />
-                {errors.working_width_m && (
-                  <p className="mt-1 text-sm text-red-600">{errors.working_width_m}</p>
-                )}
-              </div>
+              <FieldWithPresets
+                id="working_width_m"
+                name="working_width_m"
+                label="Ancho de trabajo"
+                tooltip="Ancho de la franja que cubre el implemento en cada pasada, en metros (m)."
+                value={formData.working_width_m}
+                onChange={handleChange}
+                error={errors.working_width_m}
+                placeholder="Valor en metros (m)"
+                step="0.1"
+                min="0"
+                presets={ANCHO_TRABAJO_PRESETS}
+                unknownDefault={ANCHO_TRABAJO_UNKNOWN_DEFAULT}
+                unknownLabel="~2 m (estándar)"
+                inputClass={getInputClass('working_width_m', errors)}
+              />
 
-              {/* Profundidad de trabajo */}
-              <div>
-                <label htmlFor="working_depth_cm" className="block text-gray-700 font-medium mb-1">
-                  Profundidad de trabajo
-                  <TooltipInfo content="Profundidad máxima a la que opera el implemento en el suelo, en centímetros (cm)." />
-                </label>
-                <input
-                  id="working_depth_cm"
-                  name="working_depth_cm"
-                  type="number"
-                  step="1"
-                  min="0"
-                  placeholder="Valor en centímetros (cm)"
-                  value={formData.working_depth_cm}
-                  onChange={handleChange}
-                  className={inputClass('working_depth_cm')}
-                />
-                {errors.working_depth_cm && (
-                  <p className="mt-1 text-sm text-red-600">{errors.working_depth_cm}</p>
-                )}
-              </div>
+              <FieldWithPresets
+                id="working_depth_cm"
+                name="working_depth_cm"
+                label="Profundidad de trabajo"
+                tooltip="Profundidad máxima a la que opera el implemento en el suelo, en centímetros (cm)."
+                value={formData.working_depth_cm}
+                onChange={handleChange}
+                error={errors.working_depth_cm}
+                placeholder="Valor en centímetros (cm)"
+                step="1"
+                min="0"
+                presets={PROFUNDIDAD_PRESETS}
+                unknownDefault={PROFUNDIDAD_UNKNOWN_DEFAULT}
+                unknownLabel="~20 cm (labor media)"
+                inputClass={getInputClass('working_depth_cm', errors)}
+              />
 
-              {/* Peso del implemento */}
-              <div>
-                <label htmlFor="weight_kg" className="block text-gray-700 font-medium mb-1">
-                  Peso del implemento
-                  <TooltipInfo content="Peso total del implemento en kilogramos (kg). Influye en el cálculo de la fuerza de tracción necesaria." />
-                </label>
-                <input
-                  id="weight_kg"
-                  name="weight_kg"
-                  type="number"
-                  step="1"
-                  min="0"
-                  placeholder="Valor en kilogramos (kg)"
-                  value={formData.weight_kg}
-                  onChange={handleChange}
-                  className={inputClass('weight_kg')}
-                />
-                {errors.weight_kg && (
-                  <p className="mt-1 text-sm text-red-600">{errors.weight_kg}</p>
-                )}
-              </div>
+              <FieldWithPresets
+                id="weight_kg"
+                name="weight_kg"
+                label="Peso del implemento"
+                tooltip="Peso total del implemento en kilogramos (kg). Influye en el cálculo de la fuerza de tracción necesaria."
+                value={formData.weight_kg}
+                onChange={handleChange}
+                error={errors.weight_kg}
+                placeholder="Valor en kilogramos (kg)"
+                step="1"
+                min="0"
+                presets={PESO_IMPLEMENTO_PRESETS}
+                unknownDefault={PESO_IMPLEMENTO_UNKNOWN_DEFAULT}
+                unknownLabel="~700 kg (mediano)"
+                inputClass={getInputClass('weight_kg', errors)}
+              />
 
               {/* ── Botones de navegación ── */}
               <div className="flex justify-end gap-3 pt-4">
@@ -338,7 +327,9 @@ const inputBase =
           
           <div className="flex-1 overflow-y-auto mt-4 pr-2">
             {implementosCatalogo.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">Cargando implementos...</div>
+              <div className="flex items-center justify-center py-12">
+                <div className="w-8 h-8 border-4 border-[#991b1b] border-t-transparent rounded-full animate-spin" aria-label="Cargando implementos" />
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {implementosCatalogo.map((impl) => (
@@ -346,6 +337,10 @@ const inputBase =
                     key={impl.implementId} 
                     className="border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-[#991b1b] hover:shadow-md transition-all flex flex-col bg-white"
                     onClick={() => handleImplementoSelect(impl)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && handleImplementoSelect(impl)}
+                    aria-label={`Seleccionar ${impl.brand} ${impl.implementName}, ${impl.powerRequirementHp} HP requerido`}
                   >
                     <div className="h-32 mb-4 w-full flex items-center justify-center bg-gray-50 rounded-lg p-2">
                       <img 

@@ -2,7 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Tractor from "../assets/img/Tractor Prueva.webp";
 import Button from "../components/ui/buttons/Button";
-import TooltipInfo from "../components/ui/buttons/ToolTipInfo";
+import FieldWithPresets from "../components/ui/FieldWithPresets";
+import { getInputClass } from "../lib/formUtils";
+import {
+  PB_PRESETS, PB_UNKNOWN_DEFAULT,
+  PMAX_TDP_PRESETS, PMAX_TDP_UNKNOWN_DEFAULT,
+  PESO_PRESETS, PESO_UNKNOWN_DEFAULT,
+} from "../lib/fieldPresets";
 import { getTractors } from "../services/tractorApi";
 import {
   Dialog,
@@ -27,29 +33,24 @@ export default function DatosTractor() {
           turbo: parsed.turbo || "",
         };
       } catch (Error_parse) {
-        // Fallback si hay error al parsear
         console.error("Error parsing tractor_datos", Error_parse);
       }
     }
-    return {
-      pb: "",
-      pmax_tdp: "",
-      peso: "",
-      turbo: "",
-    };
+    return { pb: "", pmax_tdp: "", peso: "", turbo: "" };
   });
 
   const [errors, setErrors] = useState({});
   const [tractoresCatalogo, setTractoresCatalogo] = useState([]);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // Inicializar la imagen desde localStorage si existe
-  const [imagenTractor, setImagenTractor] = useState(() => {
-    return localStorage.getItem('tractor_imagen') || Tractor;
-  });
+
+  const [imagenTractor, setImagenTractor] = useState(() =>
+    localStorage.getItem('tractor_imagen') || Tractor
+  );
 
   useEffect(() => {
     const fetchTractores = async () => {
+      setIsLoadingCatalog(true);
       try {
         const response = await getTractors({ limit: 100 });
         if (response.success && response.data) {
@@ -57,6 +58,8 @@ export default function DatosTractor() {
         }
       } catch (error) {
         console.error("Error al cargar tractores del catálogo:", error);
+      } finally {
+        setIsLoadingCatalog(false);
       }
     };
     fetchTractores();
@@ -68,13 +71,19 @@ export default function DatosTractor() {
         pb: tractor.enginePowerHp || "",
         pmax_tdp: tractor.enginePowerHp ? (tractor.enginePowerHp * 0.86).toFixed(1) : "",
         peso: tractor.weightKg || "",
-        turbo: "si", // Asumimos por defecto
+        // Si el catálogo provee hasTurbo lo usamos; si no, dejamos vacío para que el usuario confirme
+        turbo: tractor.hasTurbo === true ? "si" : tractor.hasTurbo === false ? "no" : "",
       });
-      
-      const tractorImage = tractor.image || tractor.imageUrl || tractor.image_url || (tractor.images && tractor.images[0]) || Tractor;
+
+      const tractorImage =
+        tractor.image ||
+        tractor.imageUrl ||
+        tractor.image_url ||
+        (tractor.images && tractor.images[0]) ||
+        Tractor;
       setImagenTractor(tractorImage);
-      localStorage.setItem('tractor_imagen', tractorImage); // Guardar imagen
-      
+      localStorage.setItem('tractor_imagen', tractorImage);
+
       setErrors({});
       setIsModalOpen(false);
     }
@@ -102,7 +111,7 @@ export default function DatosTractor() {
       pb: Number(formData.pb) || formData.pb,
       pmax_tdp: Number(formData.pmax_tdp) || formData.pmax_tdp,
       peso: Number(formData.peso) || formData.peso,
-      turbo: formData.turbo
+      turbo: formData.turbo,
     }));
   };
 
@@ -113,39 +122,30 @@ export default function DatosTractor() {
       setErrors(err);
       return;
     }
-    // Persistir en localStorage (para que no se pierdan al volver)
     guardarDatos();
-    // Pasar datos del tractor al siguiente paso vía navigate state
     navigate("/DatosLlantas", {
       state: {
         tractorData: {
           pb: Number(formData.pb),
           pmax_tdp: Number(formData.pmax_tdp),
           peso: Number(formData.peso),
-          turbo: formData.turbo, // 'si' o 'no'
+          turbo: formData.turbo,
         },
       },
     });
   };
 
-  const inputBase =
-    "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#991b1b] transition-colors";
-  const inputClass = (field) =>
-    `${inputBase} ${errors[field] ? "border-red-500" : "border-gray-300"}`;
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
-        
-        {/* ── Indicador de pasos ── */}
+
+        {/* ── Indicador de pasos (3 pasos de formulario) ── */}
         <div className="flex items-center justify-center gap-2 mb-6">
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#991b1b] text-white text-sm font-bold">1</span>
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#991b1b] text-white text-sm font-bold" aria-label="Paso 1 de 3, actual">1</span>
           <div className="w-8 sm:w-12 h-0.5 bg-gray-300" />
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold">2</span>
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold" aria-label="Paso 2 de 3, pendiente">2</span>
           <div className="w-8 sm:w-12 h-0.5 bg-gray-300" />
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold">3</span>
-          <div className="w-8 sm:w-12 h-0.5 bg-gray-300" />
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold">4</span>
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold" aria-label="Paso 3 de 3, pendiente">3</span>
         </div>
 
         <div className="text-center mb-8">
@@ -154,13 +154,13 @@ export default function DatosTractor() {
             Ingresa las especificaciones técnicas de tu tractor para calcular su rendimiento.
           </p>
         </div>
-        
+
         <div className="flex flex-col md:flex-row items-start">
           {/* Lado izquierdo: Imagen y Botón del Catálogo */}
           <div className="w-full md:w-1/2 flex flex-col items-center">
-            <img 
-              src={imagenTractor} 
-              alt="Modelo de tractor" 
+            <img
+              src={imagenTractor}
+              alt="Modelo de tractor seleccionado"
               className="w-full max-w-[350px] h-auto rounded-lg shadow-sm border border-gray-100 object-contain bg-white"
             />
             <div className="mt-6 w-full flex justify-center">
@@ -178,79 +178,82 @@ export default function DatosTractor() {
 
           {/* Lado derecho: Formulario */}
           <div className="w-full md:w-1/2 md:pl-8 mt-8 md:mt-0">
-            <form className="space-y-5" onSubmit={handleSubmit}>
-              <div>
-                <label className="block text-gray-700 font-medium mb-1">
-                  Pb
-                  <TooltipInfo content="Potencia bruta del tractor expresada en caballos de fuerza (HP)" />
-                </label>
-                <input 
-                  type="number"
-                  name="pb"
-                  value={formData.pb}
-                  onChange={handleChange}
-                  placeholder="Ingrese valor en HP" 
-                  className={inputClass("pb")}
-                />
-                {errors.pb && <p className="mt-1 text-sm text-red-600">{errors.pb}</p>}
-              </div>
+            <form className="space-y-5" onSubmit={handleSubmit} noValidate>
 
-              <div>
-                <label className="block text-gray-700 font-medium mb-1">
-                  Pmax(tdp)
-                  <TooltipInfo content="Potencia máxima en la toma de fuerza (TDF) expresada en HP" />
-                </label>
-                <input 
-                  type="number"
-                  name="pmax_tdp"
-                  value={formData.pmax_tdp}
-                  onChange={handleChange}
-                  placeholder="Ingrese valor en HP" 
-                  className={inputClass("pmax_tdp")}
-                />
-                {errors.pmax_tdp && <p className="mt-1 text-sm text-red-600">{errors.pmax_tdp}</p>}
-              </div>
+              <FieldWithPresets
+                id="pb"
+                name="pb"
+                label="Potencia Bruta (Pb)"
+                tooltip="Potencia bruta del tractor expresada en caballos de fuerza (HP)"
+                value={formData.pb}
+                onChange={handleChange}
+                error={errors.pb}
+                placeholder="Ingrese valor en HP"
+                presets={PB_PRESETS}
+                unknownDefault={PB_UNKNOWN_DEFAULT}
+                unknownLabel="~80 HP (típico)"
+                inputClass={getInputClass('pb', errors)}
+              />
 
-              <div>
-                <label className="block text-gray-700 font-medium mb-1">
-                  Peso Operativo
-                  <TooltipInfo content="Peso del tractor con contrapesos en kilogramos (kg)" />
-                </label>
-                <input 
-                  type="number"
-                  name="peso"
-                  value={formData.peso}
-                  onChange={handleChange}
-                  placeholder="Ingrese valor en kg" 
-                  className={inputClass("peso")}
-                />
-                {errors.peso && <p className="mt-1 text-sm text-red-600">{errors.peso}</p>}
-              </div>
+              <FieldWithPresets
+                id="pmax_tdp"
+                name="pmax_tdp"
+                label="Potencia Máxima TDP"
+                tooltip="Potencia máxima en la toma de fuerza (TDF) expresada en HP"
+                value={formData.pmax_tdp}
+                onChange={handleChange}
+                error={errors.pmax_tdp}
+                placeholder="Ingrese valor en HP"
+                presets={PMAX_TDP_PRESETS}
+                unknownDefault={PMAX_TDP_UNKNOWN_DEFAULT}
+                unknownLabel="~69 HP (≈ 86% de 80 HP)"
+                inputClass={getInputClass('pmax_tdp', errors)}
+              />
 
+              <FieldWithPresets
+                id="peso"
+                name="peso"
+                label="Peso Operativo"
+                tooltip="Peso del tractor con contrapesos en kilogramos (kg)"
+                value={formData.peso}
+                onChange={handleChange}
+                error={errors.peso}
+                placeholder="Ingrese valor en kg"
+                presets={PESO_PRESETS}
+                unknownDefault={PESO_UNKNOWN_DEFAULT}
+                unknownLabel="~4 500 kg (estándar)"
+                inputClass={getInputClass('peso', errors)}
+              />
+
+              {/* Turbo — campo select, sin presets numéricos */}
               <div>
-                <label className="block text-gray-700 font-medium mb-1">
+                <label htmlFor="turbo" className="block text-gray-700 font-medium mb-1">
                   Turbo
-                  <TooltipInfo content="Indica si el motor de tu tractor cuenta con un turbocompresor" />
+                  {/* No hay botón "No conozco" porque el campo es binario y obligatorio */}
                 </label>
-                <select 
+                <select
+                  id="turbo"
                   name="turbo"
                   value={formData.turbo}
                   onChange={handleChange}
-                  className={inputClass("turbo")}
+                  className={getInputClass('turbo', errors)}
+                  aria-invalid={Boolean(errors.turbo)}
+                  aria-describedby={errors.turbo ? 'turbo-error' : undefined}
                 >
-                  <option value="">Seleccione una opción</option>
-                  <option value="si">Sí</option>
-                  <option value="no">No</option>
+                  <option value="">¿Tu motor tiene turbocompresor?</option>
+                  <option value="si">Sí — motor turboalimentado</option>
+                  <option value="no">No — motor atmosférico</option>
                 </select>
-                {errors.turbo && <p className="mt-1 text-sm text-red-600">{errors.turbo}</p>}
+                {errors.turbo && (
+                  <p id="turbo-error" className="mt-1 text-sm text-red-600" role="alert">
+                    {errors.turbo}
+                  </p>
+                )}
               </div>
 
               {/* Botones de navegación */}
-              <div className="pt-4 flex justify-end space-x-4">
-                <Button
-                  variant="primary"
-                  type="submit"
-                >
+              <div className="pt-4 flex justify-end">
+                <Button variant="primary" type="submit">
                   SIGUIENTE
                 </Button>
               </div>
@@ -265,22 +268,32 @@ export default function DatosTractor() {
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-800">Catálogo de Tractores</DialogTitle>
           </DialogHeader>
-          
+
           <div className="flex-1 overflow-y-auto mt-4 pr-2">
-            {tractoresCatalogo.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">Cargando tractores...</div>
+            {isLoadingCatalog ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="w-8 h-8 border-4 border-[#991b1b] border-t-transparent rounded-full animate-spin" aria-label="Cargando tractores" />
+              </div>
+            ) : tractoresCatalogo.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No hay tractores disponibles en el catálogo.
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {tractoresCatalogo.map((tractor) => (
-                  <div 
-                    key={tractor.tractorId} 
+                  <div
+                    key={tractor.tractorId}
                     className="border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-[#991b1b] hover:shadow-md transition-all flex flex-col bg-white"
                     onClick={() => handleTractorSelect(tractor)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && handleTractorSelect(tractor)}
+                    aria-label={`Seleccionar ${tractor.brand} ${tractor.model}, ${tractor.enginePowerHp} HP`}
                   >
                     <div className="h-32 mb-4 w-full flex items-center justify-center bg-gray-50 rounded-lg p-2">
-                      <img 
-                        src={tractor.image || tractor.imageUrl || tractor.image_url || (tractor.images && tractor.images[0]) || Tractor} 
-                        alt={tractor.name} 
+                      <img
+                        src={tractor.image || tractor.imageUrl || tractor.image_url || (tractor.images && tractor.images[0]) || Tractor}
+                        alt={`${tractor.brand} ${tractor.model}`}
                         className="max-h-full max-w-full object-contain"
                       />
                     </div>
@@ -292,9 +305,7 @@ export default function DatosTractor() {
                       <span className="bg-red-50 text-[#991b1b] text-sm font-semibold px-2 py-1 rounded">
                         {tractor.enginePowerHp} HP
                       </span>
-                      <span className="text-gray-500 text-sm">
-                        {tractor.weightKg} kg
-                      </span>
+                      <span className="text-gray-500 text-sm">{tractor.weightKg} kg</span>
                     </div>
                   </div>
                 ))}
