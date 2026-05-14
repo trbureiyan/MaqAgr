@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Llanta from '../assets/img/LlantasPrueva.webp';
+import { Llanta } from '../assets/img';
 import FieldWithPresets from '../components/ui/FieldWithPresets';
 import StepIndicator from '../components/ui/StepIndicator';
 import { getInputClass } from '../lib/formUtils';
