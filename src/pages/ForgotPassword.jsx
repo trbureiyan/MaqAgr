@@ -18,7 +18,7 @@ const ForgotPassword = () => {
       await forgotPassword(email);
       setIsSuccess(true);
       sileo.success("Instrucciones enviadas al correo");
-    } catch (error) {
+    } catch {
       sileo.error("Error al solicitar recuperación");
     } finally {
       setIsLoading(false);

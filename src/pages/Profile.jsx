@@ -23,7 +23,7 @@ const Profile = () => {
       await updateProfile(profileData);
       sileo.success('Perfil actualizado correctamente');
       setIsEditingProfile(false);
-    } catch (error) {
+    } catch {
       sileo.error('Error al actualizar perfil');
     }
   };
@@ -42,7 +42,7 @@ const Profile = () => {
       sileo.success('Contraseña actualizada correctamente');
       setIsEditingPassword(false);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error) {
+    } catch {
       sileo.error('Error al actualizar contraseña');
     }
   };

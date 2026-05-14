@@ -51,7 +51,7 @@ export default function Resultados() {
     };
 
     fetchResult();
-  }, [location.state]);
+  }, [location.state, payload]);
 
   if (loading) {
     return (

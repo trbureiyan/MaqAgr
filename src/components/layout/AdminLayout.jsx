@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
   BarChart3,
@@ -9,6 +9,7 @@ import {
   Wrench,
 } from "lucide-react";
 
+// eslint-disable-next-line no-unused-vars
 const SidebarItem = ({ to, icon: Icon, label, end = false }) => {
   return (
     <NavLink

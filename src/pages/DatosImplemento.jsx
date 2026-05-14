@@ -52,8 +52,9 @@ working_width_m: parsed.working_width_m || '',
 working_depth_cm: parsed.working_depth_cm || '',
 weight_kg: parsed.weight_kg || '',
 };
-} catch (e) {
+} catch (Error_parse) {
 // Fallback en caso de error
+console.error("Error parsing implemento_datos", Error_parse);
 }
 }
 return ESTADO_INICIAL;
