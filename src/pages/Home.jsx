@@ -96,19 +96,19 @@ const FEATURED_MACHINES = [
  * @returns {JSX.Element} Bloque de encabezado centrado.
  */
 const SectionHeader = ({ tag, title, description }) => (
-  <div className="mb-8 sm:mb-10 text-center">
+  <div className="mb-8 md:mb-12 text-center md:text-left">
     {/* Etiqueta de categoría — pequeña, en mayúsculas, color oliva */}
-    <p className="mb-2 text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#909d00]">
+    <p className="mb-2 text-xs font-bold uppercase tracking-widest text-primary">
       {tag}
     </p>
 
     {/* Título principal — escala tipográfica mobile-first */}
-    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#1e2939]">
+    <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
       {title}
     </h2>
 
-    {/* Descripción — ancho máximo para legibilidad en pantallas anchas */}
-    <p className="mx-auto mt-3 max-w-xl sm:max-w-2xl text-sm sm:text-base text-muted-foreground px-2">
+    {/* Descripción */}
+    <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-2xl">
       {description}
     </p>
   </div>
@@ -140,16 +140,16 @@ const Home = () => {
       <HomeVideo backgroundImageSrc={HeroBg} />
 
       {/* ── 2. Sección: Tractores Destacados ── */}
-      <section className="py-12 sm:py-16" aria-labelledby="tractores-heading">
+      <section className="py-16 sm:py-24 border-b border-border" aria-labelledby="tractores-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeader
-            tag="Destacados"
-            title="Tractores destacados"
-            description="Selección principal de tractores con diseño consistente, minimalista y enfocado en contenido."
+            tag="Maquinaria"
+            title="Tractores Destacados"
+            description="Consulta las especificaciones de tracción, potencia y peso de los equipos más utilizados a nivel nacional."
           />
 
           {/* Grilla responsive: 1 col móvil → 2 col sm → 3 col md */}
-          <div className="grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:gap-8 sm:grid-cols-2 md:grid-cols-3">
             {FEATURED_TRACTORS.map((tractor) => (
               <TractorMachineCard
                 key={tractor.title}
@@ -163,13 +163,13 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── 3. Sección: Máquinas Destacadas (fondo muted para contraste) ── */}
-      <section className="py-12 sm:py-16 bg-muted/30" aria-labelledby="maquinas-heading">
+      {/* ── 3. Sección: Máquinas Destacadas (fondo secondary para contraste) ── */}
+      <section className="py-16 sm:py-24 bg-secondary/50" aria-labelledby="maquinas-heading">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeader
-            tag="Catálogo"
-            title="Máquinas destacadas"
-            description="Equipos agrícolas priorizados con presentación uniforme para mejorar la exploración visual."
+            tag="Implementos"
+            title="Catálogo de Implementos"
+            description="Explora rastras, arados y cultivadores con sus requerimientos de suelo y demanda de potencia."
           />
 
           {/* Grilla responsive: 1 col móvil → 2 col sm → 3 col md */}

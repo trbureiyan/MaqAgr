@@ -47,10 +47,10 @@ function DatosLlanta() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-10 px-4">
+    <div className="min-h-[calc(100vh-64px)] bg-background flex flex-col items-center justify-start pt-10 pb-16 px-4">
       <div className="w-full max-w-4xl">
 
-        <div className="mb-6 px-1">
+        <div className="mb-8 px-1">
           <StepIndicator
             current={2}
             total={3}
@@ -58,34 +58,34 @@ function DatosLlanta() {
           />
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-card rounded border border-border/60 overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
 
             {/* ── Panel izquierdo: imagen ── */}
-            <div className="bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100 p-6 flex flex-col items-center justify-center gap-5">
-              <div className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-white border border-gray-100 flex items-center justify-center p-3">
+            <div className="bg-secondary/30 border-b md:border-b-0 md:border-r border-border/60 p-6 flex flex-col items-center justify-center gap-5">
+              <div className="w-full aspect-[4/3] rounded overflow-hidden bg-card border border-border/60 flex items-center justify-center p-3">
                 <img
                   src={Llanta}
                   alt="Llantas de tractor"
-                  className="max-h-full max-w-full object-contain"
+                  className="max-h-full max-w-full object-contain mix-blend-multiply"
                 />
               </div>
-              <p className="text-xs text-center text-gray-400 px-2">
+              <p className="text-xs text-center text-muted-foreground/80 px-2">
                 Los datos de la llanta y el suelo son opcionales pero mejoran la precisión del cálculo.
               </p>
             </div>
 
             {/* ── Panel derecho: formulario ── */}
             <div className="p-6 md:p-8">
-              <div className="mb-6">
-                <h1 className="text-xl font-semibold text-gray-900">Llantas y Suelo</h1>
-                <p className="text-sm text-gray-500 mt-1">
+              <div className="mb-6 border-b border-border/40 pb-4">
+                <h1 className="text-xl font-bold tracking-tight text-foreground">Llantas y Suelo</h1>
+                <p className="text-sm text-muted-foreground mt-1">
                   Especifica las características de rodamiento y el terreno. Todos estos campos son opcionales.
                 </p>
               </div>
 
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FieldWithPresets
                     id="diametroLlanta"
                     name="diametroLlanta"
@@ -132,18 +132,18 @@ function DatosLlanta() {
                   </select>
                 </div>
 
-                <div className="pt-4 flex justify-end gap-3">
+                <div className="pt-4 mt-8 border-t border-border/40 flex justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-background border border-border text-foreground text-sm font-semibold rounded hover:bg-muted transition-colors"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     Volver
                   </button>
                   <button
                     type="submit"
-                    className="flex items-center gap-2 px-6 py-2.5 bg-[#893d46] text-white text-sm font-semibold rounded-lg hover:bg-[#7a3540] active:bg-[#6b2e38] transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded hover:bg-primary/90 transition-colors shadow-sm"
                   >
                     Siguiente
                     <ChevronRight className="w-4 h-4" />

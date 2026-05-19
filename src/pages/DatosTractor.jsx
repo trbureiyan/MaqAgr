@@ -141,11 +141,11 @@ export default function DatosTractor() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-10 px-4">
+    <div className="min-h-[calc(100vh-64px)] bg-background flex flex-col items-center justify-start pt-10 pb-16 px-4">
       <div className="w-full max-w-4xl">
 
         {/* ── Encabezado fuera de la card ── */}
-        <div className="mb-6 px-1">
+        <div className="mb-8 px-1">
           <StepIndicator
             current={1}
             total={3}
@@ -153,16 +153,16 @@ export default function DatosTractor() {
           />
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-card rounded border border-border/60 overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
 
             {/* ── Panel izquierdo: imagen + catálogo ── */}
-            <div className="bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100 p-6 flex flex-col items-center gap-5">
-              <div className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-white border border-gray-100 flex items-center justify-center p-3">
+            <div className="bg-secondary/30 border-b md:border-b-0 md:border-r border-border/60 p-6 flex flex-col items-center gap-5">
+              <div className="w-full aspect-[4/3] rounded overflow-hidden bg-card border border-border/60 flex items-center justify-center p-3">
                 <img
                   src={imagenTractor}
                   alt="Tractor seleccionado"
-                  className="max-h-full max-w-full object-contain"
+                  className="max-h-full max-w-full object-contain mix-blend-multiply"
                 />
               </div>
 
@@ -170,7 +170,7 @@ export default function DatosTractor() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(true)}
-                  className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-lg border border-[#893d46]/30 text-[#893d46] text-sm font-medium hover:bg-[#893d46]/5 hover:border-[#893d46] transition-all"
+                  className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded border border-border text-foreground text-sm font-medium hover:bg-muted/50 hover:text-primary transition-all"
                 >
                   <span className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4" />
@@ -178,7 +178,7 @@ export default function DatosTractor() {
                   </span>
                   <ChevronRight className="w-4 h-4 opacity-50" />
                 </button>
-                <p className="text-xs text-center text-gray-400">
+                <p className="text-xs text-center text-muted-foreground/80">
                   Selecciona tu modelo para rellenar los datos automáticamente
                 </p>
               </div>
@@ -186,14 +186,14 @@ export default function DatosTractor() {
 
             {/* ── Panel derecho: formulario ── */}
             <div className="p-6 md:p-8">
-              <div className="mb-6">
-                <h1 className="text-xl font-semibold text-gray-900">Datos del motor</h1>
-                <p className="text-sm text-gray-500 mt-1">
+              <div className="mb-6 border-b border-border/40 pb-4">
+                <h1 className="text-xl font-bold tracking-tight text-foreground">Datos del motor</h1>
+                <p className="text-sm text-muted-foreground mt-1">
                   Especificaciones técnicas del tractor. Enfoca cada campo para ver valores de referencia.
                 </p>
               </div>
 
-              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+              <form className="space-y-6" onSubmit={handleSubmit} noValidate>
 
                 <FieldWithPresets
                   id="pb"
@@ -242,7 +242,7 @@ export default function DatosTractor() {
 
                 {/* Turbo — select binario, no necesita presets */}
                 <div>
-                  <label htmlFor="turbo" className="text-sm font-medium text-gray-700 leading-none block mb-1.5">
+                  <label htmlFor="turbo" className="text-sm font-medium leading-none block mb-1.5 text-foreground">
                     Motor turboalimentado
                   </label>
                   <select
@@ -259,16 +259,16 @@ export default function DatosTractor() {
                     <option value="no">No — motor atmosférico natural</option>
                   </select>
                   {errors.turbo && (
-                    <p id="turbo-error" className="mt-1.5 text-xs text-red-600" role="alert">
+                    <p id="turbo-error" className="mt-1.5 text-xs text-destructive" role="alert">
                       {errors.turbo}
                     </p>
                   )}
                 </div>
 
-                <div className="pt-2 flex justify-end">
+                <div className="pt-4 mt-8 border-t border-border/40 flex justify-end">
                   <button
                     type="submit"
-                    className="flex items-center gap-2 px-6 py-2.5 bg-[#893d46] text-white text-sm font-semibold rounded-lg hover:bg-[#7a3540] active:bg-[#6b2e38] transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded hover:bg-primary/90 transition-colors"
                   >
                     Siguiente
                     <ChevronRight className="w-4 h-4" />
@@ -284,18 +284,18 @@ export default function DatosTractor() {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-4xl md:max-w-5xl lg:max-w-6xl w-[95vw] max-h-[85vh] overflow-hidden flex flex-col p-6">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-gray-900">
+            <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
               Catálogo de Tractores
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-gray-500 -mt-1">
+          <p className="text-sm text-muted-foreground -mt-1">
             Selecciona tu modelo para rellenar los datos automáticamente.
           </p>
 
           <div className="flex-1 overflow-y-auto mt-4 pr-1">
             {isLoadingCatalog ? (
               <div className="flex items-center justify-center py-16">
-                <div className="w-7 h-7 border-[3px] border-[#893d46] border-t-transparent rounded-full animate-spin" aria-label="Cargando" />
+                <div className="w-7 h-7 border-[3px] border-primary border-t-transparent rounded-full animate-spin" aria-label="Cargando" />
               </div>
             ) : tractoresCatalogo.length === 0 ? (
               <div className="text-center py-12 text-gray-400 text-sm">
