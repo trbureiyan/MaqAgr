@@ -1,50 +1,40 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import LogoSVG from '../../../assets/svg/logo.svg';
 
 /**
+ * Componente Logo - Renderiza el logotipo textual de MaqAgr con tipografía Geist.
+ * 
+ * @component Logo
  * @param {Object} props - Propiedades del componente
- * @param {string} [props.size='default'] - Tamaño del logo ('small', 'default', 'large') // Default: default
- * @param {string} [props.color='#909d00'] - Color del logo (en formato HEX) // Default: color primario, contraste navbar 
- * @param {boolean} [props.link=false] - Si el logo debe ser un enlace a la página principal // Default: sin link
- * @param {string} [props.className=''] - Clases CSS adicionales // Permite agregar clases personalizadas al componente
+ * @param {string} [props.size='default'] - Tamaño del logo ('small', 'default', 'large')
+ * @param {boolean} [props.link=false] - Si el logo debe ser un enlace a la página principal
+ * @param {string} [props.className=''] - Clases CSS adicionales
  */
-
-const Logo = ({ size = 'default', color = '#909d00', link = false, className = '' }) => {
-  // Mapeo de tamaños a clases de altura
+const Logo = ({ size = 'default', link = false, className = '' }) => {
+  // Mapeo de tamaños a clases de texto
   const sizeClasses = {
-    small: 'h-10',
-    default: 'h-14',
-    large: 'h-20'
+    small: 'text-lg',
+    default: 'text-2xl',
+    large: 'text-4xl'
   };
   
-const heightClass = sizeClasses[size] || sizeClasses.default;
-
-// Filtro para los colores más comunes
-const filterPresets = {
-  '#6d7700': "invert(39%) sepia(72%) saturate(765%) hue-rotate(30deg) brightness(90%) contrast(101%)",
-  '#5a9203': "invert(50%) sepia(40%) saturate(5453%) hue-rotate(55deg) brightness(94%) contrast(98%)",
-  '#909d00': "invert(53%) sepia(19%) saturate(5305%) hue-rotate(37deg) brightness(98%) contrast(101%)"
-};
-
-const filterStyle = filterPresets[color] || filterPresets['#909d00'];
+  const textClass = sizeClasses[size] || sizeClasses.default;
   
-  // Componente de imagen del logo
-  const LogoImage = (
-    <img 
-      src={LogoSVG} 
-      alt="Logo MaqAgr" 
-      className={`${heightClass} w-auto ${className}`}
-      style={{ filter: filterStyle }}
-    />
+  // Estructura del logotipo
+  const Logotype = (
+    <div className={`flex items-center font-sans ${textClass} font-black tracking-tight select-none ${className}`}>
+      <span className="text-white">Maq</span>
+      <span className="text-[#909d00]">Agr</span>
+      {/* Detalle decorativo del logotipo (un punto discreto de la marca) */}
+      <span className="text-[#909d00] ml-0.5" aria-hidden="true">•</span>
+    </div>
   );
   
-  // Renderizar con o sin enlace según la prop 'link'
   return link ? (
-    <Link to="/" className="flex items-center">
-      {LogoImage}
+    <Link to="/" className="flex items-center hover:opacity-90 transition-opacity">
+      {Logotype}
     </Link>
-  ) : LogoImage;
+  ) : Logotype;
 };
 
 export default Logo;
