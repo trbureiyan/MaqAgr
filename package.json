@@ -11,6 +11,7 @@
     "lint:backend": "eslint .backend --ext js,jsx",
     "lint:all": "eslint . --ext js,jsx",
     "preview": "vite preview",
+    "test": "node --test tests/lib/*.test.js",
     "secure-install": "pnpm install --frozen-lockfile --ignore-scripts"
   },
   "dependencies": {

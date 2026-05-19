@@ -14,18 +14,14 @@
 
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Button from '../components/ui/buttons/Button';
-import TooltipInfo from '../components/ui/buttons/ToolTipInfo';
+import StepIndicator from '../components/ui/StepIndicator';
 import SueloImg from '../assets/img/suelo.png';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Constantes
 // ---------------------------------------------------------------------------
 
-/**
- * Opciones de tipo de suelo.
- * `value` coincide con el campo `soil_type` del backend.
- */
 const TIPOS_SUELO = [
   {
     value: 'clay',
@@ -58,101 +54,92 @@ const TIPOS_SUELO = [
 // Componente principal
 // ---------------------------------------------------------------------------
 
-/**
- * TipoSueloImplemento — Paso 2 del flujo "Tengo Maquinaria".
- *
- * @component
- * @returns {JSX.Element}
- */
 export default function TipoSueloImplemento() {
-const navigate = useNavigate();
-const location = useLocation();
-const [tipoSuelo, setTipoSuelo] = useState('');
-const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [tipoSuelo, setTipoSuelo] = useState('');
+  const [error, setError] = useState('');
 
-// Recibir datos del paso 1 vía navigate state (fallback a localStorage para compatibilidad)
-const implementData = location.state?.implementData || (() => {
-try { return JSON.parse(localStorage.getItem('implemento_datos') || '{}'); } catch { return {}; }
-})();
+  // Recibir datos del paso 1 vía navigate state (fallback a localStorage para compatibilidad)
+  const implementData = location.state?.implementData || (() => {
+    try { return JSON.parse(localStorage.getItem('implemento_datos') || '{}'); } catch { return {}; }
+  })();
 
-  // ── Manejadores ──────────────────────────────────────────────────────────
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-const handleSubmit = (e) => {
-e.preventDefault();
+    if (!tipoSuelo) {
+      setError('Por favor selecciona el tipo de suelo.');
+      return;
+    }
 
-if (!tipoSuelo) {
-setError('Por favor selecciona el tipo de suelo.');
-return;
-}
+    // También actualizar localStorage para compatibilidad
+    const datosPrevios = implementData;
+    localStorage.setItem('implemento_datos', JSON.stringify({
+      ...datosPrevios,
+      soil_type: tipoSuelo,
+    }));
 
-// También actualizar localStorage para compatibilidad
-const datosPrevios = implementData;
-localStorage.setItem('implemento_datos', JSON.stringify({
-...datosPrevios,
-soil_type: tipoSuelo,
-}));
-
-// Navegar con state completo (como el flujo Tengo Tractor)
-navigate('/ResultadosImplemento', {
-state: {
-implementData: {
-...datosPrevios,
-soilType: tipoSuelo,
-},
-},
-});
-};
-
-  // ── Render ────────────────────────────────────────────────────────────────
+    // Navegar con state completo (como el flujo Tengo Tractor)
+    navigate('/ResultadosImplemento', {
+      state: {
+        implementData: {
+          ...datosPrevios,
+          soilType: tipoSuelo,
+        },
+      },
+    });
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 sm:p-8">
-      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-4xl">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-10 px-4">
+      <div className="w-full max-w-4xl">
 
-        {/* ── Indicador de pasos ── */}
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-600 text-white text-sm font-bold">✓</span>
-          <div className="w-12 h-0.5 bg-[#991b1b]" />
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#991b1b] text-white text-sm font-bold">2</span>
-          <div className="w-12 h-0.5 bg-gray-300" />
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-500 text-sm font-bold">3</span>
+        <div className="mb-6 px-1">
+          <StepIndicator
+            current={2}
+            total={3}
+            labels={["Implemento", "Suelo", "Resultados"]}
+          />
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-8">
-          Tipo de suelo
-        </h1>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
 
-        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+            {/* ── Panel izquierdo: imagen ── */}
+            <div className="bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100 p-6 flex flex-col items-center justify-center gap-5">
+              <div className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-white border border-gray-100 flex items-center justify-center p-3">
+                <img
+                  src={SueloImg}
+                  alt="Tipo de suelo"
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+              <p className="text-xs text-center text-gray-400 px-2">
+                El tipo de suelo afecta directamente la resistencia al rodamiento y la potencia necesaria del tractor.
+              </p>
+            </div>
 
-          {/* ── Imagen ilustrativa ── */}
-          <div className="w-full md:w-1/2 flex items-center justify-center">
-            <img
-              src={SueloImg}
-              alt="Tipo de suelo"
-              className="w-full max-w-xs md:max-w-full h-auto rounded-lg object-contain"
-            />
-          </div>
-
-          {/* ── Formulario ── */}
-          <div className="w-full md:w-1/2">
-            <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-
-              <div>
-                <label className="block text-gray-700 font-medium mb-3">
+            {/* ── Panel derecho: formulario ── */}
+            <div className="p-6 md:p-8">
+              <div className="mb-6">
+                <h1 className="text-xl font-semibold text-gray-900">Condición del Terreno</h1>
+                <p className="text-sm text-gray-500 mt-1">
                   ¿En qué tipo de suelo se utilizará el implemento?
-                  <TooltipInfo content="El tipo de suelo afecta directamente la resistencia al rodamiento y la potencia necesaria del tractor." />
-                </label>
+                </p>
+              </div>
 
-                {/* ── Selector visual de tipo de suelo (cards de radio) ── */}
+              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+
                 <div className="grid grid-cols-1 gap-3">
                   {TIPOS_SUELO.map((suelo) => (
                     <label
                       key={suelo.value}
                       className={[
-                        'flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-150',
+                        'flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all duration-150',
                         tipoSuelo === suelo.value
-                          ? 'border-[#991b1b] bg-red-50'
-                          : 'border-gray-200 hover:border-gray-400',
+                          ? 'border-[#893d46] bg-[#893d46]/5 shadow-sm'
+                          : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/50',
                       ].join(' ')}
                     >
                       <input
@@ -164,41 +151,44 @@ soilType: tipoSuelo,
                           setTipoSuelo(suelo.value);
                           setError('');
                         }}
-                        className="mt-0.5 h-4 w-4 accent-[#991b1b] flex-shrink-0"
+                        className="mt-1 h-4 w-4 accent-[#893d46] flex-shrink-0"
                       />
                       <div>
-                        <p className="font-semibold text-gray-800 text-sm">{suelo.label}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{suelo.descripcion}</p>
+                        <p className={`font-medium text-sm leading-none ${tipoSuelo === suelo.value ? 'text-[#893d46]' : 'text-gray-900'}`}>
+                          {suelo.label}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">{suelo.descripcion}</p>
                       </div>
                     </label>
                   ))}
                 </div>
 
                 {error && (
-                  <p className="mt-2 text-sm text-red-600">{error}</p>
+                  <p className="mt-1.5 text-xs text-red-600" role="alert">
+                    {error}
+                  </p>
                 )}
-              </div>
 
-              {/* ── Botones de navegación ── */}
-              <div className="flex justify-end gap-3 pt-2">
-                <Button
-                  variant="outline"
-                  color="#991b1b"
-                  type="button"
-                  onClick={() => navigate(-1)}
-                >
-                  VOLVER
-                </Button>
-                <Button
-                  variant="primary"
-                  color="#991b1b"
-                  type="submit"
-                >
-                  SIGUIENTE
-                </Button>
-              </div>
+                <div className="pt-4 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Volver
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-[#893d46] text-white text-sm font-semibold rounded-lg hover:bg-[#7a3540] active:bg-[#6b2e38] transition-colors shadow-sm"
+                  >
+                    Ver Resultados
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
 
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       </div>
