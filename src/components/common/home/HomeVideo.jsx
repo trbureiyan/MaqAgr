@@ -75,40 +75,40 @@ const HomeVideo = ({ videoSrc, backgroundImageSrc }) => {
 
       {/* ── Contenido superpuesto: Título, descripción y CTAs ── */}
       <div className="relative z-10 w-full container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl text-left">
+        <div className="max-w-2xl text-left pl-4 sm:pl-0">
           
-          <span className="inline-block py-1 px-3 rounded-full bg-[#909d00]/20 text-[#909d00] font-semibold tracking-wider uppercase text-sm mb-4 border border-[#909d00]/30 backdrop-blur-sm">
-            Agricultura Inteligente
+          <span className="inline-block py-1 px-3 rounded text-[#909d00] font-bold tracking-widest uppercase text-xs mb-4 border border-[#909d00]/50 backdrop-blur-md bg-[#1e2939]/40">
+            Plataforma de Ingeniería
           </span>
           
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-tight mb-6 drop-shadow-lg">
-            Optimiza la <span className="text-[#909d00]">compatibilidad</span> de tu maquinaria
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-tight mb-6 drop-shadow-lg tracking-tight">
+            Compatibilidad agrícola <span className="text-[#909d00]">basada en datos</span>
           </h1>
           
-          <p className="text-lg sm:text-xl text-gray-200 mb-8 max-w-xl drop-shadow-md leading-relaxed">
-            Calcula los requerimientos técnicos exactos para tu tractor o implemento y descubre nuestro catálogo recomendado de equipos respaldados por expertos.
+          <p className="text-lg sm:text-xl text-slate-200 mb-8 max-w-xl drop-shadow-md leading-relaxed font-light">
+            Calcula la fuerza de tracción exacta y los requerimientos del suelo para emparejar tu tractor con el implemento adecuado. Evita el sobreesfuerzo mecánico y maximiza el rendimiento.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Button 
               to="/Calculadora" 
               variant="primary" 
-              color="#893d46" 
+              color="#909d00" 
               size="large"
-              shape="pill"
-              className="text-base font-bold shadow-lg shadow-[#893d46]/30 hover:shadow-[#893d46]/50 transition-all hover:-translate-y-0.5"
+              shape="rounded"
+              className="text-base font-semibold transition-all hover:bg-[#a6b500]"
             >
-              Calculadora Inteligente
+              Calculadora Técnica
             </Button>
             <Button 
               to="/Catalogo" 
               variant="outline" 
               color="#ffffff" 
               size="large"
-              shape="pill"
-              className="text-white border-2 hover:bg-white/10 text-base font-bold backdrop-blur-sm"
+              shape="rounded"
+              className="text-white border-2 hover:bg-white/10 text-base font-semibold backdrop-blur-sm"
             >
-              Explorar Catálogo
+              Consultar Catálogo
             </Button>
           </div>
           

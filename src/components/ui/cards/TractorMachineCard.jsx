@@ -44,13 +44,13 @@ import { Link } from 'react-router-dom';
 const TractorMachineCard = ({ imageSrc, link, title, description }) => {
   return (
     <article
-      className="group flex flex-col overflow-hidden rounded-lg bg-card
-                 shadow-sm hover:shadow-md
-                 transition-transform duration-200 hover:-translate-y-1
+      className="group flex flex-col overflow-hidden rounded bg-card
+                 border border-border/60 hover:border-[#909d00]/50
+                 transition-colors duration-200
                  w-full"
     >
       {/* ── Área de imagen — altura fija para uniformidad en grilla ── */}
-      <div className="flex items-center justify-center bg-muted/30 p-4 h-44 sm:h-52 md:h-56">
+      <div className="flex items-center justify-center bg-transparent border-b border-border/40 p-4 h-44 sm:h-52 md:h-56">
         <img
           src={imageSrc}
           alt={title}
@@ -62,7 +62,7 @@ const TractorMachineCard = ({ imageSrc, link, title, description }) => {
       {/* ── Bloque de contenido: título, descripción y enlace ── */}
       <div className="flex flex-1 flex-col gap-2 p-4 sm:p-5">
         {/* Título — máximo 2 líneas con ellipsis */}
-        <h3 className="line-clamp-2 text-base sm:text-lg font-semibold text-[#1e2939]">
+        <h3 className="line-clamp-2 text-base sm:text-lg font-bold text-foreground">
           {title}
         </h3>
 
@@ -75,11 +75,11 @@ const TractorMachineCard = ({ imageSrc, link, title, description }) => {
         <Link
           to={link}
           className="mt-2 sm:mt-3 inline-flex items-center gap-1.5
-                     text-sm font-semibold text-[#893d46]
-                     hover:text-[#893d46]/80 transition-colors"
-          aria-label={`Ver más sobre ${title}`}
+                     text-sm font-semibold text-primary
+                     hover:text-primary/80 transition-colors"
+          aria-label={`Ver ficha técnica de ${title}`}
         >
-          Aprender más
+          Ficha técnica
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       </div>

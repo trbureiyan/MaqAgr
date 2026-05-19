@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TractorCard from './ui/cards/TractorCard';
-import { IconCamp, IconMac, IconTrac } from "../assets/img";
+import { TractorIcon, ImplementIcon, SearchEquipIcon } from './ui/Icons/AgriIcons';
 
 const AppCalculadora = () => {
   const [scale, setScale] = useState(1);
@@ -51,21 +51,21 @@ const AppCalculadora = () => {
   const options = [
     {
       id: 'tractor',
-      imageSrc: IconTrac,
+      icon: TractorIcon,
       link: "/TengoTractor",
       title: "Tengo Tractor",
       description: "Encuentra implementos agrícolas compatibles con su tractor según su potencia disponible."
     },
     {
       id: 'maquinaria',
-      imageSrc: IconMac,
+      icon: ImplementIcon,
       link: "/TengoMaquinaria", 
       title: "Tengo Maquinaria",
       description: "Encuentra el tractor con la potencia adecuada para tu implemento y optimiza tu trabajo en el campo."
     },
     {
       id: 'equipo',
-      imageSrc: IconCamp,
+      icon: SearchEquipIcon,
       link: "/BuscoEquipo",
       title: "Busco Equipo",
       description: "Te guiamos en la selección del equipo ideal según tus necesidades. Encuentra la mejor combinación de tractor y maquinaria."
@@ -80,10 +80,10 @@ const AppCalculadora = () => {
           {options.map(option => (
             <div 
               key={option.id} 
-              className="w-full transition-all duration-300 hover:scale-[1.02]"
+              className="w-full"
             >
               <TractorCard 
-                imageSrc={option.imageSrc}
+                icon={option.icon}
                 link={option.link}
                 title={option.title}
                 description={option.description}
@@ -106,10 +106,10 @@ const AppCalculadora = () => {
         {options.map(option => (
           <div 
             key={option.id} 
-            className="w-[350px] transition-all duration-300 hover:scale-[1.02]"
+            className="w-[350px]"
           >
             <TractorCard 
-              imageSrc={option.imageSrc}
+              icon={option.icon}
               link={option.link}
               title={option.title}
               description={option.description}
@@ -121,15 +121,15 @@ const AppCalculadora = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 overflow-hidden">
-      <div className="container mx-auto py-8 sm:py-10 md:py-16 px-4 sm:px-6">
-        {/* Encabezado con tamaños de texto responsive */}
-        <div className="max-w-3xl mx-auto text-center mb-8 sm:mb-10 md:mb-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 mb-3 sm:mb-4">
-            Bienvenido al Sistema de Maquinaria Agrícola
+    <div className="min-h-screen bg-background overflow-hidden relative">
+      <div className="container mx-auto py-12 sm:py-16 md:py-24 px-4 sm:px-6">
+        {/* Encabezado con estructura sobria */}
+        <div className="max-w-3xl mx-auto text-center mb-12 sm:mb-16">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
+            Sistema de Maquinaria Agrícola
           </h1>
-          <p className="text-base sm:text-lg text-gray-600">
-            Seleccione la opción que mejor se adapte a sus necesidades
+          <p className="text-base sm:text-lg text-muted-foreground">
+            Selecciona la opción que mejor se adapte a tus requerimientos operativos.
           </p>
         </div>
         

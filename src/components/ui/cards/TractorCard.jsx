@@ -44,7 +44,7 @@ import { Link } from 'react-router-dom';
  *   description="Encuentra implementos agrícolas compatibles con su tractor."
  * />
  */
-const TractorCard = ({ imageSrc, link, title, description }) => {
+const TractorCard = ({ icon: Icon, imageSrc, link, title, description }) => {
   return (
     /* Toda la tarjeta es un enlace de navegación */
     <Link
@@ -53,29 +53,33 @@ const TractorCard = ({ imageSrc, link, title, description }) => {
       aria-label={`Ir al catálogo de ${title}`}
     >
       <div
-        className="overflow-hidden rounded-lg bg-card shadow-sm
-                   hover:shadow-md
-                   transition-transform duration-200 hover:-translate-y-1"
+        className="flex flex-col h-full overflow-hidden rounded bg-card
+                   border border-border/60 hover:border-[#909d00]/50
+                   transition-colors duration-200"
       >
-        {/* ── Área de imagen — altura adaptable por breakpoint ── */}
-        <div className="flex items-center justify-center bg-muted/30 p-5 sm:p-6">
-          <img
-            src={imageSrc}
-            alt={`Categoría ${title}`}
-            className="h-36 sm:h-40 w-full object-contain"
-            loading="lazy"
-          />
+        {/* ── Área de imagen/icono — altura adaptable por breakpoint ── */}
+        <div className="flex items-center justify-center bg-transparent border-b border-border/40 p-5 sm:p-6 h-36 sm:h-40">
+          {Icon ? (
+            <Icon className="size-20 sm:size-24 text-muted-foreground group-hover:text-primary transition-colors duration-200 stroke-[1.5]" />
+          ) : (
+            <img
+              src={imageSrc}
+              alt={`Categoría ${title}`}
+              className="h-full w-full object-contain filter grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+              loading="lazy"
+            />
+          )}
         </div>
 
         {/* ── Bloque de texto centrado ── */}
-        <div className="p-4 sm:p-5 text-center">
+        <div className="flex flex-1 flex-col p-4 sm:p-5 text-center">
           {/* Título de la categoría */}
-          <h3 className="text-base sm:text-lg font-bold text-[#893d46]">
+          <h3 className="text-base sm:text-lg font-bold text-foreground">
             {title}
           </h3>
 
           {/* Descripción breve — limitada a ~26 caracteres por línea */}
-          <p className="mx-auto mt-1.5 max-w-[26ch] text-sm leading-relaxed text-muted-foreground">
+          <p className="mx-auto mt-2 flex-1 max-w-[26ch] text-sm leading-relaxed text-muted-foreground">
             {description}
           </p>
         </div>

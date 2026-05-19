@@ -121,7 +121,7 @@ const FieldWithPresets = ({
     <div className="relative">
       {/* ── Fila de label ── */}
       <div className="flex items-center justify-between mb-1.5">
-        <label htmlFor={id} className="text-sm font-medium text-gray-700 leading-none">
+        <label htmlFor={id} className="text-sm font-medium text-foreground leading-none">
           {label}
         </label>
 
@@ -134,8 +134,8 @@ const FieldWithPresets = ({
             aria-controls={`${id}-help-panel`}
             className={`flex items-center gap-1 text-xs transition-colors rounded px-1.5 py-0.5 ${
               panelOpen
-                ? 'text-[#893d46] bg-red-50'
-                : 'text-gray-400 hover:text-[#893d46] hover:bg-red-50'
+                ? 'text-primary bg-primary/10'
+                : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
             }`}
             title="Ver valores de referencia"
           >
@@ -185,10 +185,10 @@ const FieldWithPresets = ({
         }`}
       >
         <div className="overflow-hidden">
-          <div className="pt-2 pb-1 space-y-2">
+          <div className="pt-2 pb-1 space-y-3">
             {/* Tooltip del campo */}
             {tooltip && (
-              <p className="text-xs text-gray-400 leading-relaxed">{tooltip}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{tooltip}</p>
             )}
 
             {/* Chips de presets */}
@@ -200,10 +200,10 @@ const FieldWithPresets = ({
                     type="button"
                     onClick={() => injectValue(preset.value)}
                     title={preset.hint}
-                    className={`px-2.5 py-1 text-xs rounded-md border font-medium transition-all ${
+                    className={`px-2.5 py-1 text-xs rounded border font-medium transition-all ${
                       value === preset.value
-                        ? 'bg-[#893d46] text-white border-[#893d46] shadow-sm'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-[#893d46] hover:text-[#893d46]'
+                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                        : 'bg-background text-muted-foreground border-border/60 hover:border-primary/50 hover:text-primary'
                     }`}
                   >
                     {preset.label}
@@ -221,13 +221,13 @@ const FieldWithPresets = ({
                   // Cerrar el panel tras usar la acción
                   setTimeout(() => setPanelOpen(false), 300);
                 }}
-                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#893d46] transition-colors mt-1"
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors mt-2"
               >
-                <span className="text-gray-300">→</span>
+                <span className="text-muted-foreground/50">→</span>
                 <span>
-                  No conozco el dato
+                  No conozco este dato
                   {unknownLabel && (
-                    <span className="ml-1 text-gray-400">
+                    <span className="ml-1 opacity-80">
                       ({unknownLabel})
                     </span>
                   )}
@@ -240,7 +240,7 @@ const FieldWithPresets = ({
 
       {/* ── Error ── */}
       {error && (
-        <p id={`${id}-error`} className="mt-1.5 text-xs text-red-600" role="alert">
+        <p id={`${id}-error`} className="mt-1.5 text-xs text-destructive" role="alert">
           {error}
         </p>
       )}
