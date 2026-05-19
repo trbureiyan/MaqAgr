@@ -90,6 +90,7 @@ powerRequirementHp: powerReqHp,
 workingDepthM,
 soilType: implementData.soilType || implementData.soil_type || 'loam',
 slopePercentage: 0, // El flujo actual no captura pendiente; default 0
+...(implementData.working_speed_kmh && { workingSpeedKmh: Number(implementData.working_speed_kmh) }),
 };
 
 const res = await calculateDirectMinimumPower(payload);

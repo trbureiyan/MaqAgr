@@ -49,12 +49,12 @@ const TractorCard = ({ imageSrc, link, title, description }) => {
     /* Toda la tarjeta es un enlace de navegación */
     <Link
       to={link}
-      className="group block w-full max-w-sm"
+      className="group block w-full max-w-sm h-full"
       aria-label={`Ir al catálogo de ${title}`}
     >
       <div
-        className="overflow-hidden rounded-lg bg-card shadow-sm
-                   hover:shadow-md
+        className="flex flex-col h-full overflow-hidden rounded-lg bg-card shadow-sm
+                   hover:shadow-md bg-white
                    transition-transform duration-200 hover:-translate-y-1"
       >
         {/* ── Área de imagen — altura adaptable por breakpoint ── */}
@@ -68,7 +68,7 @@ const TractorCard = ({ imageSrc, link, title, description }) => {
         </div>
 
         {/* ── Bloque de texto centrado ── */}
-        <div className="p-4 sm:p-5 text-center">
+        <div className="flex flex-col flex-1 p-4 sm:p-5 text-center">
           {/* Título de la categoría */}
           <h3 className="text-base sm:text-lg font-bold text-[#893d46]">
             {title}

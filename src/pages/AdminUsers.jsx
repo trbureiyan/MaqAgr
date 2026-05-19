@@ -53,6 +53,8 @@ export default function AdminUsers() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  // Inline feedback replaces native alert()
+  const [saveResult, setSaveResult] = useState(null); // { type: 'success'|'error', message: string }
 
   // Search/Filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -70,10 +72,8 @@ export default function AdminUsers() {
         setUsers([]);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Error al obtener usuarios:', err);
       setError('No se pudo cargar la lista de usuarios.');
-      console.error('Error al obtener usuarios');
-      // alert('Error al obtener usuarios');
     } finally {
       setLoading(false);
     }
@@ -91,6 +91,7 @@ export default function AdminUsers() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingUser(null);
+    setSaveResult(null);
   };
 
   const handleSaveUser = async (e) => {
@@ -99,6 +100,7 @@ export default function AdminUsers() {
 
     try {
       setIsSaving(true);
+      setSaveResult(null);
       
       const payload = {
         name: editingUser.name,
@@ -108,15 +110,16 @@ export default function AdminUsers() {
       };
 
       await updateUser(editingUser.userId, payload);
-      alert('Usuario actualizado correctamente');
+      setSaveResult({ type: 'success', message: 'Usuario actualizado correctamente.' });
       
       // Update local state to avoid full reload
       setUsers(prev => prev.map(u => u.userId === editingUser.userId ? { ...u, ...payload } : u));
       
-      handleCloseModal();
+      // Auto-close after short delay so user sees the confirmation
+      setTimeout(handleCloseModal, 1200);
     } catch (err) {
-      console.error(err);
-      alert('No se pudo actualizar el usuario');
+      console.error('Error al actualizar usuario:', err);
+      setSaveResult({ type: 'error', message: 'No se pudo actualizar el usuario. Intenta de nuevo.' });
     } finally {
       setIsSaving(false);
     }
@@ -145,11 +148,12 @@ export default function AdminUsers() {
         <div className="relative w-full sm:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input 
-            type="text" 
+            type="text"
+            aria-label="Buscar usuarios por nombre o correo"
             placeholder="Buscar por nombre o correo..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#893d46] focus:border-transparent transition-all"
           />
         </div>
         <div className="text-sm text-gray-500 font-medium">
@@ -214,8 +218,8 @@ export default function AdminUsers() {
                     <td className="px-6 py-4 text-right">
                       <button 
                         onClick={() => handleEditClick(user)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors inline-flex"
-                        title="Editar usuario"
+                        className="p-2 text-[#893d46] hover:bg-red-50 rounded-lg transition-colors inline-flex"
+                        aria-label={`Editar usuario ${user.name}`}
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -245,10 +249,13 @@ export default function AdminUsers() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="edit-user-modal-title"
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-xl z-50 overflow-hidden"
             >
               <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                <h3 className="text-xl font-bold text-gray-800">Editar Usuario</h3>
+                <h3 id="edit-user-modal-title" className="text-xl font-bold text-gray-800">Editar Usuario</h3>
                 <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 transition-colors">
                   <X className="w-5 h-5" />
                 </button>
@@ -303,6 +310,20 @@ export default function AdminUsers() {
                   </div>
                 </div>
 
+                {/* Inline feedback — replaces native alert() */}
+                {saveResult && (
+                  <div
+                    role="alert"
+                    className={`px-4 py-3 rounded-lg text-sm font-medium ${
+                      saveResult.type === 'success'
+                        ? 'bg-green-50 text-green-700 border border-green-200'
+                        : 'bg-red-50 text-red-700 border border-red-200'
+                    }`}
+                  >
+                    {saveResult.message}
+                  </div>
+                )}
+
                 <div className="pt-4 flex gap-3 justify-end border-t border-gray-100 mt-6">
                   <button 
                     type="button" 
@@ -314,7 +335,7 @@ export default function AdminUsers() {
                   <button 
                     type="submit" 
                     disabled={isSaving}
-                    className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 bg-[#893d46] text-white font-medium rounded-lg hover:bg-[#7a3540] transition-colors disabled:opacity-50 flex items-center gap-2"
                   >
                     {isSaving ? (
                       <>
