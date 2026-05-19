@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TractorCard from './ui/cards/TractorCard';
-import { TractorIcon, ImplementIcon, SearchEquipIcon } from './ui/Icons/AgriIcons';
+import { IconTrac, IconMac, IconCamp } from '../assets/img';
 
 const AppCalculadora = () => {
   const [scale, setScale] = useState(1);
@@ -51,21 +51,21 @@ const AppCalculadora = () => {
   const options = [
     {
       id: 'tractor',
-      icon: TractorIcon,
+      imageSrc: IconTrac,
       link: "/TengoTractor",
       title: "Tengo Tractor",
       description: "Encuentra implementos agrícolas compatibles con su tractor según su potencia disponible."
     },
     {
       id: 'maquinaria',
-      icon: ImplementIcon,
+      imageSrc: IconMac,
       link: "/TengoMaquinaria", 
       title: "Tengo Maquinaria",
       description: "Encuentra el tractor con la potencia adecuada para tu implemento y optimiza tu trabajo en el campo."
     },
     {
       id: 'equipo',
-      icon: SearchEquipIcon,
+      imageSrc: IconCamp,
       link: "/BuscoEquipo",
       title: "Busco Equipo",
       description: "Te guiamos en la selección del equipo ideal según tus necesidades. Encuentra la mejor combinación de tractor y maquinaria."
@@ -83,7 +83,7 @@ const AppCalculadora = () => {
               className="w-full"
             >
               <TractorCard 
-                icon={option.icon}
+                imageSrc={option.imageSrc}
                 link={option.link}
                 title={option.title}
                 description={option.description}
@@ -109,7 +109,7 @@ const AppCalculadora = () => {
             className="w-[350px]"
           >
             <TractorCard 
-              icon={option.icon}
+              imageSrc={option.imageSrc}
               link={option.link}
               title={option.title}
               description={option.description}

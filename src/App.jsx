@@ -50,7 +50,7 @@ import { CalculatorProvider } from './components/common/calculator/CalculatorCon
 import { Toaster } from 'sileo';
 import 'sileo/styles.css';
 import { Analytics } from '@vercel/analytics/react';
-import Home from './pages/Home';
+import Home from './pages/home/Home';
 
 // ---------------------------------------------------------------------------
 // Lazy imports — code splitting para rutas no críticas
@@ -66,88 +66,88 @@ import Home from './pages/Home';
 const AppCalculadora = lazy(() => import('./components/AppCalculadora'));
 
 /** Formulario de datos del tractor para la calculadora. */
-const DatosTractor = lazy(() => import('./pages/DatosTractor'));
+const DatosTractor = lazy(() => import('./pages/calculator/tractor/DatosTractor'));
 
 /** Formulario de datos de llantas para la calculadora. */
-const DatosLlantas = lazy(() => import('./pages/DatosLlanta'));
+const DatosLlantas = lazy(() => import('./pages/calculator/tractor/DatosLlanta'));
 
 /** Formulario de datos climáticos para la calculadora. */
-const DatosClimaticos = lazy(() => import('./pages/DatosClimaticos'));
+const DatosClimaticos = lazy(() => import('./pages/calculator/tractor/DatosClimaticos'));
 
 /** Página de resultados de la calculadora. */
-const Resultados = lazy(() => import('./pages/Resultados'));
+const Resultados = lazy(() => import('./pages/calculator/tractor/Resultados'));
 
 /** Página de inicio de sesión. */
-const Login = lazy(() => import('./pages/Login'));
+const Login = lazy(() => import('./pages/auth/Login'));
 
 /** Página de registro de usuario. */
-const Register = lazy(() => import('./pages/Register'));
+const Register = lazy(() => import('./pages/auth/Register'));
 
 /** Perfil de usuario normal. */
-const Profile = lazy(() => import('./pages/Profile'));
+const Profile = lazy(() => import('./pages/misc/Profile'));
 
 /** Recuperar contraseña. */
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 
 /** Restablecer contraseña. */
-const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
 
 /** Página Sobre Nosotros. */
-const SobreNosotros = lazy(() => import('./pages/SobreNosotros'));
+const SobreNosotros = lazy(() => import('./pages/misc/SobreNosotros'));
 
 /** Página principal del catálogo (selección de categoría). */
-const Catalogo = lazy(() => import('./pages/Catalogo'));
+const Catalogo = lazy(() => import('./pages/catalog/Catalogo'));
 
 /** Catálogo de tractores con filtros. */
-const CatalogoTrac = lazy(() => import('./pages/CatalogoTractores'));
+const CatalogoTrac = lazy(() => import('./pages/catalog/CatalogoTractores'));
 
 /** Catálogo de maquinaria con filtros. */
-const CatalogoMaq = lazy(() => import('./pages/CatalogoMaquinas'));
+const CatalogoMaq = lazy(() => import('./pages/catalog/CatalogoMaquinas'));
 
 /** Panel CRUD de administración de tractores (ruta protegida). */
-const TractorForm = lazy(() => import('./pages/TractorForm'));
+const TractorForm = lazy(() => import('./pages/admin/TractorForm'));
 
 /** Panel CRUD de administración de implementos (ruta protegida). */
-const ImplementForm = lazy(() => import('./pages/ImplementForm'));
+const ImplementForm = lazy(() => import('./pages/admin/ImplementForm'));
 
 /** Dashboard principal de administración (Antiguo) */
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 
 /** Estadísticas Generales del Panel de Administración */
-const AdminStatsGeneral = lazy(() => import('./pages/AdminStatsGeneral'));
-const AdminStatsRecommendations = lazy(() => import('./pages/AdminStatsRecommendations'));
-const AdminStatsUsers = lazy(() => import('./pages/AdminStatsUsers'));
+const AdminStatsGeneral = lazy(() => import('./pages/admin/AdminStatsGeneral'));
+const AdminStatsRecommendations = lazy(() => import('./pages/admin/AdminStatsRecommendations'));
+const AdminStatsUsers = lazy(() => import('./pages/admin/AdminStatsUsers'));
 
 /** Gestión de Usuarios (CRUD) */
-const AdminUsers = lazy(() => import('./pages/AdminUsers'));
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
 
 /** Página de detalle de tractor o máquina agrícola. */
-const TractorMachineDetail = lazy(() => import('./pages/TractorMachineDetail'));
+const TractorMachineDetail = lazy(() => import('./pages/catalog/TractorMachineDetail'));
 
 // ---------------------------------------------------------------------------
 // Vistas de Error (401, 403, 404) — lazy imports
 // ---------------------------------------------------------------------------
-const NotFound = lazy(() => import('./pages/NotFound'));
-const Unauthorized = lazy(() => import('./pages/Unauthorized'));
-const Forbidden = lazy(() => import('./pages/Forbidden'));
+const NotFound = lazy(() => import('./pages/misc/NotFound'));
+const Unauthorized = lazy(() => import('./pages/misc/Unauthorized'));
+const Forbidden = lazy(() => import('./pages/misc/Forbidden'));
 
 // ---------------------------------------------------------------------------
 // Flujo "Tengo Maquinaria" — lazy imports
 // ---------------------------------------------------------------------------
 
 /** Paso 1: datos técnicos del implemento. */
-const DatosImplemento = lazy(() => import('./pages/DatosImplemento'));
+const DatosImplemento = lazy(() => import('./pages/calculator/implement/DatosImplemento'));
 
 /** Paso 2: tipo de suelo donde se usará el implemento. */
-const TipoSueloImplemento = lazy(() => import('./pages/TipoSueloImplemento'));
+const TipoSueloImplemento = lazy(() => import('./pages/calculator/implement/TipoSueloImplemento'));
 
 /** Paso 3: resultados + tractores recomendados. */
-const ResultadosImplemento = lazy(() => import('./pages/ResultadosImplemento'));
+const ResultadosImplemento = lazy(() => import('./pages/calculator/implement/ResultadosImplemento'));
 
 // ---------------------------------------------------------------------------
 // Flujo "Busco Equipo" — lazy import
 // ---------------------------------------------------------------------------
-const BuscoEquipo = lazy(() => import('./pages/BuscoEquipo'));
+const BuscoEquipo = lazy(() => import('./pages/misc/BuscoEquipo'));
 
 // ---------------------------------------------------------------------------
 // Componente de carga (fallback de Suspense)
