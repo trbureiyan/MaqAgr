@@ -57,6 +57,7 @@ export default function DatosTractor() {
     return { pb: "", pmax_tdp: "", peso: "", turbo: "" };
   });
 
+  const [isSimpleMode, setIsSimpleMode] = useState(true);
   const [errors, setErrors] = useState({});
   const [tractoresCatalogo, setTractoresCatalogo] = useState([]);
   const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
@@ -111,6 +112,10 @@ export default function DatosTractor() {
 
   const validate = () => {
     const err = {};
+    if (isSimpleMode) {
+      if (!formData.pb) err.general = "Por favor busca y selecciona un tractor del catálogo.";
+      return err;
+    }
     if (!formData.pb || Number(formData.pb) <= 0) err.pb = "Ingresa la potencia bruta (HP).";
     if (!formData.pmax_tdp || Number(formData.pmax_tdp) <= 0) err.pmax_tdp = "Ingresa la potencia TDP (HP).";
     if (!formData.peso || Number(formData.peso) <= 0) err.peso = "Ingresa el peso operativo (kg).";
@@ -130,6 +135,7 @@ export default function DatosTractor() {
     }));
     navigate("/DatosLlantas", {
       state: {
+        isSimpleMode,
         tractorData: {
           pb: Number(formData.pb),
           pmax_tdp: Number(formData.pmax_tdp),
@@ -194,8 +200,36 @@ export default function DatosTractor() {
               </div>
 
               <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+                <div className="flex bg-gray-100 p-1 rounded-lg w-fit mb-6">
+                  <button 
+                    type="button"
+                    onClick={() => { setIsSimpleMode(true); setErrors({}); }}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${isSimpleMode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Calculadora Simple
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => { setIsSimpleMode(false); setErrors({}); }}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${!isSimpleMode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Calculadora Avanzada
+                  </button>
+                </div>
 
-                <FieldWithPresets
+                {errors.general && (
+                  <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm mb-4">
+                    {errors.general}
+                  </div>
+                )}
+
+                {isSimpleMode ? (
+                  <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-600 text-sm">
+                    En la calculadora simple, solo necesitas seleccionar tu tractor desde el catálogo haciendo clic en el botón "Buscar en catálogo".
+                  </div>
+                ) : (
+                  <>
+                    <FieldWithPresets
                   id="pb"
                   name="pb"
                   label="Potencia Bruta"
@@ -264,6 +298,8 @@ export default function DatosTractor() {
                     </p>
                   )}
                 </div>
+                </>
+                )}
 
                 <div className="pt-2 flex justify-end">
                   <button

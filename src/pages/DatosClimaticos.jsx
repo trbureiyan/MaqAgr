@@ -25,11 +25,16 @@ function DatosClimaticos() {
   const tractorData = location.state?.tractorData || {};
   const llantaData = location.state?.llantaData || {};
 
+  const isSimpleMode = location.state?.isSimpleMode || false;
+
   const [formData, setFormData] = useState({
     altitudeM: '',
     ambientTemperatureC: '',
     slopePercent: '',
     slippagePercent: '',
+    altitudSimple: '',
+    temperaturaSimple: '',
+    workingSpeedKmh: '',
   });
 
   const handleChange = (e) => {
@@ -45,10 +50,17 @@ function DatosClimaticos() {
       return Number.isFinite(parsed) ? parsed : null;
     };
 
-    const altitudeM = toNumberOrNull(formData.altitudeM);
-    const ambientTemperatureC = toNumberOrNull(formData.ambientTemperatureC);
-    const slopePercent = toNumberOrNull(formData.slopePercent);
-    const slippagePercentInput = toNumberOrNull(formData.slippagePercent);
+    const altitudeM = isSimpleMode
+      ? (formData.altitudSimple === 'mar' ? 0 : formData.altitudSimple === 'optimo' ? 1000 : formData.altitudSimple === 'alta' ? 2500 : null)
+      : toNumberOrNull(formData.altitudeM);
+      
+    const ambientTemperatureC = isSimpleMode
+      ? (formData.temperaturaSimple === 'frio' ? 15 : formData.temperaturaSimple === 'templado' ? 22 : formData.temperaturaSimple === 'caliente' ? 30 : null)
+      : toNumberOrNull(formData.ambientTemperatureC);
+      
+    const slopePercent = isSimpleMode ? 0 : toNumberOrNull(formData.slopePercent);
+    const slippagePercentInput = isSimpleMode ? 15 : toNumberOrNull(formData.slippagePercent);
+    const workingSpeedKmh = isSimpleMode ? null : toNumberOrNull(formData.workingSpeedKmh);
     
     // Si no se conoce el patinamiento, el backend usará 15% como default
     const slippagePercent = slippagePercentInput === null
@@ -69,6 +81,7 @@ function DatosClimaticos() {
       ambientTemperatureC,
       slopePercent,
       slippagePercent,
+      ...(workingSpeedKmh !== null && { workingSpeedKmh }),
     };
 
     navigate("/Resultados", {
@@ -118,65 +131,127 @@ function DatosClimaticos() {
               </div>
 
               <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <FieldWithPresets
-                    id="altitudeM"
-                    name="altitudeM"
-                    label="Altitud"
-                    tooltip="Altura sobre el nivel del mar en metros (msnm)"
-                    value={formData.altitudeM}
-                    onChange={handleChange}
-                    placeholder="msnm"
-                    presets={ALTITUD_PRESETS}
-                    unknownDefault={ALTITUD_UNKNOWN_DEFAULT}
-                    unknownLabel="dejar vacío"
-                    inputClass={getInputClass('altitudeM', {})}
-                  />
+                {isSimpleMode ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label htmlFor="altitudSimple" className="text-sm font-medium text-gray-700 leading-none block mb-1.5">
+                        Altitud
+                      </label>
+                      <select
+                        id="altitudSimple"
+                        name="altitudSimple"
+                        value={formData.altitudSimple}
+                        onChange={handleChange}
+                        className={getInputClass('altitudSimple', {})}
+                      >
+                        <option value="">Selecciona altitud (Opcional)</option>
+                        <option value="mar">Nivel del mar</option>
+                        <option value="optimo">Nivel óptimo</option>
+                        <option value="alta">Altura alta</option>
+                      </select>
+                    </div>
 
-                  <FieldWithPresets
-                    id="ambientTemperatureC"
-                    name="ambientTemperatureC"
-                    label="Temperatura ambiente"
-                    tooltip="Temperatura promedio en grados Celsius (°C)"
-                    value={formData.ambientTemperatureC}
-                    onChange={handleChange}
-                    placeholder="°C"
-                    presets={TEMPERATURA_PRESETS}
-                    unknownDefault={TEMPERATURA_UNKNOWN_DEFAULT}
-                    unknownLabel="dejar vacío"
-                    inputClass={getInputClass('ambientTemperatureC', {})}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <FieldWithPresets
-                    id="slopePercent"
-                    name="slopePercent"
-                    label="Pendiente"
-                    tooltip="Inclinación del terreno en porcentaje (%). 0% = plano."
-                    value={formData.slopePercent}
-                    onChange={handleChange}
-                    placeholder="%"
-                    presets={PENDIENTE_PRESETS}
-                    unknownDefault={PENDIENTE_UNKNOWN_DEFAULT}
-                    unknownLabel="0% (plano)"
-                    inputClass={getInputClass('slopePercent', {})}
-                  />
+                    <div>
+                      <label htmlFor="temperaturaSimple" className="text-sm font-medium text-gray-700 leading-none block mb-1.5">
+                        Temperatura
+                      </label>
+                      <select
+                        id="temperaturaSimple"
+                        name="temperaturaSimple"
+                        value={formData.temperaturaSimple}
+                        onChange={handleChange}
+                        className={getInputClass('temperaturaSimple', {})}
+                      >
+                        <option value="">Selecciona temperatura (Opcional)</option>
+                        <option value="frio">Frío</option>
+                        <option value="templado">Templado</option>
+                        <option value="caliente">Caliente</option>
+                      </select>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <FieldWithPresets
+                        id="altitudeM"
+                        name="altitudeM"
+                        label="Altitud"
+                        tooltip="Altura sobre el nivel del mar en metros (msnm)"
+                        value={formData.altitudeM}
+                        onChange={handleChange}
+                        placeholder="msnm"
+                        presets={ALTITUD_PRESETS}
+                        unknownDefault={ALTITUD_UNKNOWN_DEFAULT}
+                        unknownLabel="dejar vacío"
+                        inputClass={getInputClass('altitudeM', {})}
+                      />
 
-                  <FieldWithPresets
-                    id="slippagePercent"
-                    name="slippagePercent"
-                    label="Patinamiento"
-                    tooltip="Porcentaje estimado de patinamiento. Default del sistema: 15%."
-                    value={formData.slippagePercent}
-                    onChange={handleChange}
-                    placeholder="% (default: 15)"
-                    presets={PATINAMIENTO_PRESETS}
-                    unknownDefault={PATINAMIENTO_UNKNOWN_DEFAULT}
-                    unknownLabel="sistema usará 15%"
-                    inputClass={getInputClass('slippagePercent', {})}
-                  />
-                </div>
+                      <FieldWithPresets
+                        id="ambientTemperatureC"
+                        name="ambientTemperatureC"
+                        label="Temperatura ambiente"
+                        tooltip="Temperatura promedio en grados Celsius (°C)"
+                        value={formData.ambientTemperatureC}
+                        onChange={handleChange}
+                        placeholder="°C"
+                        presets={TEMPERATURA_PRESETS}
+                        unknownDefault={TEMPERATURA_UNKNOWN_DEFAULT}
+                        unknownLabel="dejar vacío"
+                        inputClass={getInputClass('ambientTemperatureC', {})}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <FieldWithPresets
+                        id="slopePercent"
+                        name="slopePercent"
+                        label="Pendiente"
+                        tooltip="Inclinación del terreno en porcentaje (%). 0% = plano."
+                        value={formData.slopePercent}
+                        onChange={handleChange}
+                        placeholder="%"
+                        presets={PENDIENTE_PRESETS}
+                        unknownDefault={PENDIENTE_UNKNOWN_DEFAULT}
+                        unknownLabel="0% (plano)"
+                        inputClass={getInputClass('slopePercent', {})}
+                      />
+
+                      <FieldWithPresets
+                        id="slippagePercent"
+                        name="slippagePercent"
+                        label="Patinamiento"
+                        tooltip="Porcentaje estimado de patinamiento. Default del sistema: 15%."
+                        value={formData.slippagePercent}
+                        onChange={handleChange}
+                        placeholder="% (default: 15)"
+                        presets={PATINAMIENTO_PRESETS}
+                        unknownDefault={PATINAMIENTO_UNKNOWN_DEFAULT}
+                        unknownLabel="sistema usará 15%"
+                        inputClass={getInputClass('slippagePercent', {})}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <FieldWithPresets
+                        id="workingSpeedKmh"
+                        name="workingSpeedKmh"
+                        label="Velocidad de trabajo"
+                        tooltip="Velocidad estimada de la labor en km/h."
+                        value={formData.workingSpeedKmh}
+                        onChange={handleChange}
+                        placeholder="km/h (default: 7)"
+                        presets={[
+                          { label: '5 km/h', value: '5', hint: 'Labor lenta / profunda' },
+                          { label: '7 km/h', value: '7', hint: 'Labor típica' },
+                          { label: '10 km/h', value: '10', hint: 'Labor rápida / superficial' },
+                        ]}
+                        unknownDefault="7"
+                        unknownLabel="sistema usará 7 km/h"
+                        inputClass={getInputClass('workingSpeedKmh', {})}
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div className="pt-4 flex justify-end gap-3">
                   <button

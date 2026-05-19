@@ -46,6 +46,7 @@ const ESTADO_INICIAL = {
   working_width_m:   '',
   working_depth_cm:  '',
   weight_kg:         '',
+  working_speed_kmh: '',
 };
 
 // ---------------------------------------------------------------------------
@@ -65,6 +66,7 @@ export default function DatosImplemento() {
           working_width_m: parsed.working_width_m || '',
           working_depth_cm: parsed.working_depth_cm || '',
           weight_kg: parsed.weight_kg || '',
+          working_speed_kmh: parsed.working_speed_kmh || '',
         };
       } catch (Error_parse) {
         console.error("Error parsing implemento_datos", Error_parse);
@@ -73,6 +75,7 @@ export default function DatosImplemento() {
     return ESTADO_INICIAL;
   });
 
+  const [isSimpleMode, setIsSimpleMode] = useState(true);
   const [errors, setErrors] = useState({});
   const [implementosCatalogo, setImplementosCatalogo] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -139,6 +142,12 @@ export default function DatosImplemento() {
 
   const validar = () => {
     const nuevosErrores = {};
+    if (isSimpleMode) {
+      if (!formData.implement_type && !selectedImplementId) {
+        nuevosErrores.general = 'Por favor busca y selecciona un implemento del catálogo.';
+      }
+      return nuevosErrores;
+    }
     if (!formData.implement_type)
       nuevosErrores.implement_type = 'Selecciona el tipo de implemento.';
     if (!formData.working_width_m || Number(formData.working_width_m) <= 0)
@@ -156,6 +165,7 @@ export default function DatosImplemento() {
       working_width_m: Number(formData.working_width_m) || formData.working_width_m,
       working_depth_cm: Number(formData.working_depth_cm) || formData.working_depth_cm,
       weight_kg: Number(formData.weight_kg) || formData.weight_kg,
+      working_speed_kmh: Number(formData.working_speed_kmh) || formData.working_speed_kmh,
     };
     localStorage.setItem('implemento_datos', JSON.stringify(dataToSave));
     return dataToSave;
@@ -174,6 +184,7 @@ export default function DatosImplemento() {
 
     navigate('/TipoSueloImplemento', {
       state: {
+        isSimpleMode,
         implementData: {
           ...implementData,
           implementId: selectedImplementId,
@@ -237,7 +248,35 @@ export default function DatosImplemento() {
               </div>
 
               <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+                <div className="flex bg-gray-100 p-1 rounded-lg w-fit mb-6">
+                  <button 
+                    type="button"
+                    onClick={() => { setIsSimpleMode(true); setErrors({}); }}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${isSimpleMode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Calculadora Simple
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => { setIsSimpleMode(false); setErrors({}); }}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${!isSimpleMode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Calculadora Avanzada
+                  </button>
+                </div>
 
+                {errors.general && (
+                  <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm mb-4">
+                    {errors.general}
+                  </div>
+                )}
+
+                {isSimpleMode ? (
+                  <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 text-gray-600 text-sm">
+                    En la calculadora simple, solo necesitas seleccionar el implemento desde el catálogo haciendo clic en el botón "Buscar en catálogo".
+                  </div>
+                ) : (
+                  <>
                 {/* Tipo de implemento */}
                 <div>
                   <label htmlFor="implement_type" className="text-sm font-medium text-gray-700 leading-none block mb-1.5">
@@ -317,6 +356,29 @@ export default function DatosImplemento() {
                   unknownLabel="~700 kg (mediano)"
                   inputClass={inputClass('weight_kg')}
                 />
+
+                <FieldWithPresets
+                  id="working_speed_kmh"
+                  name="working_speed_kmh"
+                  label="Velocidad de trabajo"
+                  tooltip="Velocidad estimada de la labor en km/h."
+                  value={formData.working_speed_kmh}
+                  onChange={handleChange}
+                  error={errors.working_speed_kmh}
+                  placeholder="km/h (opcional)"
+                  step="0.1"
+                  min="0"
+                  presets={[
+                    { label: '5 km/h', value: '5', hint: 'Labor lenta / profunda' },
+                    { label: '7 km/h', value: '7', hint: 'Labor típica' },
+                    { label: '10 km/h', value: '10', hint: 'Labor rápida / superficial' },
+                  ]}
+                  unknownDefault="7"
+                  unknownLabel="sistema usará 7 km/h"
+                  inputClass={inputClass('working_speed_kmh')}
+                />
+                </>
+                )}
 
                 <div className="pt-2 flex justify-end">
                   <button

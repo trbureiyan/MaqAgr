@@ -13,12 +13,15 @@
  * @module pages/Home
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import TractorImg from '../assets/img/1.png';
 import MachineImg from '../assets/img/2.png';
 import HeroBg from '../assets/img/hero_bg.png';
 import HomeVideo from '../components/common/home/HomeVideo';
 import TractorMachineCard from '../components/ui/cards/TractorMachineCard';
+import SkeletonCard from '../components/ui/loaders/SkeletonCard';
+import { getTractors } from '../services/tractorApi';
+import { getImplements } from '../services/implementApi';
 
 // ---------------------------------------------------------------------------
 // Datos estáticos de muestra
@@ -133,6 +136,55 @@ const SectionHeader = ({ tag, title, description }) => (
  * <Route path="/" element={<Home />} />
  */
 const Home = () => {
+  const [tractors, setTractors] = useState([]);
+  const [machines, setMachines] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const [tractorsRes, machinesRes] = await Promise.all([
+          getTractors({ limit: 3 }),
+          getImplements({ limit: 3 })
+        ]);
+
+        if (tractorsRes?.success && tractorsRes.data?.length > 0) {
+          setTractors(
+            tractorsRes.data.slice(0, 3).map((t) => ({
+              imageSrc: t.image || t.imageUrl || t.image_url || (t.images && t.images[0]) || TractorImg,
+              link: `/tractor/${t.tractorId || t.id}`,
+              title: `${t.brand} ${t.name || t.model}`,
+              description: `Tractor con una potencia de ${t.enginePowerHp} HP y tracción ${t.tractionType || 'N/A'}.`,
+            }))
+          );
+        } else {
+          setTractors(FEATURED_TRACTORS);
+        }
+
+        if (machinesRes?.success && machinesRes.data?.length > 0) {
+          setMachines(
+            machinesRes.data.slice(0, 3).map((m) => ({
+              imageSrc: m.image || m.imageUrl || m.image_url || (m.images && m.images[0]) || MachineImg,
+              link: `/maquinaria/${m.implementId || m.id}`,
+              title: `${m.brand} ${m.implementName || m.name}`,
+              description: `Implemento de ${m.workingWidthM || '?'} m de ancho. Requiere ${m.powerRequirementHp} HP.`,
+            }))
+          );
+        } else {
+          setMachines(FEATURED_MACHINES);
+        }
+      } catch (error) {
+        console.error('Error fetching featured items:', error);
+        setTractors(FEATURED_TRACTORS);
+        setMachines(FEATURED_MACHINES);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeatured();
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
 
@@ -150,15 +202,23 @@ const Home = () => {
 
           {/* Grilla responsive: 1 col móvil → 2 col sm → 3 col md */}
           <div className="grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
-            {FEATURED_TRACTORS.map((tractor) => (
-              <TractorMachineCard
-                key={tractor.title}
-                imageSrc={tractor.imageSrc}
-                link={tractor.link}
-                title={tractor.title}
-                description={tractor.description}
-              />
-            ))}
+            {loading ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </>
+            ) : (
+              tractors.map((tractor, index) => (
+                <TractorMachineCard
+                  key={index}
+                  imageSrc={tractor.imageSrc}
+                  link={tractor.link}
+                  title={tractor.title}
+                  description={tractor.description}
+                />
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -174,15 +234,23 @@ const Home = () => {
 
           {/* Grilla responsive: 1 col móvil → 2 col sm → 3 col md */}
           <div className="grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
-            {FEATURED_MACHINES.map((machine) => (
-              <TractorMachineCard
-                key={machine.title}
-                imageSrc={machine.imageSrc}
-                link={machine.link}
-                title={machine.title}
-                description={machine.description}
-              />
-            ))}
+            {loading ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </>
+            ) : (
+              machines.map((machine, index) => (
+                <TractorMachineCard
+                  key={index}
+                  imageSrc={machine.imageSrc}
+                  link={machine.link}
+                  title={machine.title}
+                  description={machine.description}
+                />
+              ))
+            )}
           </div>
         </div>
       </section>

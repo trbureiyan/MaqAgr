@@ -21,10 +21,13 @@ function DatosLlanta() {
   const location = useLocation();
   const tractorData = location.state?.tractorData || {};
 
+  const isSimpleMode = location.state?.isSimpleMode || false;
+
   const [formData, setFormData] = useState({
     diametroLlanta: '',
     presionInflado: '',
     tipoSuelo: '',
+    tamañoLlanta: '',
   });
 
   const handleChange = (e) => {
@@ -36,10 +39,13 @@ function DatosLlanta() {
     event.preventDefault();
     navigate('/DatosClimaticos', {
       state: {
+        isSimpleMode,
         tractorData,
         llantaData: {
-          diametroLlanta: Number(formData.diametroLlanta) || null,
-          presionInflado: Number(formData.presionInflado) || null,
+          diametroLlanta: isSimpleMode 
+            ? (formData.tamañoLlanta === 'pequenas' ? 24 : formData.tamañoLlanta === 'medianas' ? 30 : formData.tamañoLlanta === 'grandes' ? 38 : null)
+            : Number(formData.diametroLlanta) || null,
+          presionInflado: isSimpleMode ? null : Number(formData.presionInflado) || null,
           tipoSuelo: formData.tipoSuelo || null,
         },
       },
@@ -85,35 +91,57 @@ function DatosLlanta() {
               </div>
 
               <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <FieldWithPresets
-                    id="diametroLlanta"
-                    name="diametroLlanta"
-                    label="Diámetro de llanta"
-                    tooltip="Diámetro total de la llanta en pulgadas (in)"
-                    value={formData.diametroLlanta}
-                    onChange={handleChange}
-                    placeholder="Pulgadas (in)"
-                    presets={DIAMETRO_LLANTA_PRESETS}
-                    unknownDefault={DIAMETRO_LLANTA_UNKNOWN_DEFAULT}
-                    unknownLabel="dejar vacío"
-                    inputClass={getInputClass('diametroLlanta', {})}
-                  />
+                {isSimpleMode ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label htmlFor="tamañoLlanta" className="text-sm font-medium text-gray-700 leading-none block mb-1.5">
+                        Tamaño de la llanta
+                      </label>
+                      <select
+                        id="tamañoLlanta"
+                        name="tamañoLlanta"
+                        value={formData.tamañoLlanta}
+                        onChange={handleChange}
+                        className={getInputClass('tamañoLlanta', {})}
+                      >
+                        <option value="">Selecciona el tamaño (Opcional)</option>
+                        <option value="pequenas">Pequeñas</option>
+                        <option value="medianas">Medianas</option>
+                        <option value="grandes">Grandes</option>
+                      </select>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <FieldWithPresets
+                      id="diametroLlanta"
+                      name="diametroLlanta"
+                      label="Diámetro de llanta"
+                      tooltip="Diámetro total de la llanta en pulgadas (in)"
+                      value={formData.diametroLlanta}
+                      onChange={handleChange}
+                      placeholder="Pulgadas (in)"
+                      presets={DIAMETRO_LLANTA_PRESETS}
+                      unknownDefault={DIAMETRO_LLANTA_UNKNOWN_DEFAULT}
+                      unknownLabel="dejar vacío"
+                      inputClass={getInputClass('diametroLlanta', {})}
+                    />
 
-                  <FieldWithPresets
-                    id="presionInflado"
-                    name="presionInflado"
-                    label="Presión de inflado"
-                    tooltip="Presión de las llantas en PSI"
-                    value={formData.presionInflado}
-                    onChange={handleChange}
-                    placeholder="PSI"
-                    presets={PRESION_PRESETS}
-                    unknownDefault={PRESION_UNKNOWN_DEFAULT}
-                    unknownLabel="dejar vacío"
-                    inputClass={getInputClass('presionInflado', {})}
-                  />
-                </div>
+                    <FieldWithPresets
+                      id="presionInflado"
+                      name="presionInflado"
+                      label="Presión de inflado"
+                      tooltip="Presión de las llantas en PSI"
+                      value={formData.presionInflado}
+                      onChange={handleChange}
+                      placeholder="PSI"
+                      presets={PRESION_PRESETS}
+                      unknownDefault={PRESION_UNKNOWN_DEFAULT}
+                      unknownLabel="dejar vacío"
+                      inputClass={getInputClass('presionInflado', {})}
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label htmlFor="tipoSuelo" className="text-sm font-medium text-gray-700 leading-none block mb-1.5">

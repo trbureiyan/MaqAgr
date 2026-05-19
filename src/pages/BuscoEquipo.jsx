@@ -4,6 +4,7 @@ import { sileo } from "sileo";
 import Button from "../components/ui/buttons/Button";
 import TooltipInfo from "../components/ui/buttons/ToolTipInfo";
 import SkeletonCard from "../components/ui/loaders/SkeletonCard";
+import FieldWithPresets from "../components/ui/FieldWithPresets";
 
 // Asumiendo que existen tarjetas genéricas para mostrarlos
 // Si no, adaptaremos el UI simple. Usaremos `TractorCard` u otro existente
@@ -42,6 +43,7 @@ export default function BuscoEquipo() {
     labor_type: "",
     min_power_hp: "",
     max_weight_kg: "",
+    working_speed_kmh: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -238,10 +240,10 @@ export default function BuscoEquipo() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <div>
           <label className="block text-gray-700 font-medium mb-1">
-            Potencia Requerida aprox. (HP){" "}
+            Potencia Req. (HP){" "}
             <span className="text-sm font-normal text-gray-400 opacity-80">
               - Opcional
             </span>
@@ -259,7 +261,7 @@ export default function BuscoEquipo() {
 
         <div>
           <label className="block text-gray-700 font-medium mb-1">
-            Límite de Peso Operativo (kg){" "}
+            Peso límite (kg){" "}
             <span className="text-sm font-normal text-gray-400 opacity-80">
               - Opcional
             </span>
@@ -275,6 +277,27 @@ export default function BuscoEquipo() {
             placeholder="Max kg. Ej: 4000"
           />
         </div>
+      </div>
+
+      <div className="mt-4">
+        <FieldWithPresets
+          id="working_speed_kmh"
+          name="working_speed_kmh"
+          label="Velocidad de trabajo"
+          tooltip="Velocidad estimada de la labor en km/h."
+          value={formData.working_speed_kmh}
+          onChange={handleChange}
+          error={errors.working_speed_kmh}
+          placeholder="km/h (Opcional)"
+          step="0.1"
+          min="0"
+          presets={[
+            { label: '5 km/h', value: '5', hint: 'Labor lenta / profunda' },
+            { label: '7 km/h', value: '7', hint: 'Labor típica' },
+            { label: '10 km/h', value: '10', hint: 'Labor rápida / superficial' },
+          ]}
+          inputClass={inputClass("working_speed_kmh")}
+        />
       </div>
     </div>
   );
