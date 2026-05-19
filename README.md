@@ -258,10 +258,10 @@ El script [`scripts/bootstrap-pnpm.ps1`](https://github.com/trbureiyan/MaqAgr/bl
 - Origen del proyecto MaqAgr:
   Este repositorio (https://github.com/trbureiyan/MaqAgr) es un fork del proyecto original MaqAgr de https://github.com/David9604/Maqagr.
 - Autores:
-  - [David9604](https://github.com/David9604)
-  - [FlacoAfk](https://github.com/FlacoAfk)
-  - [JercOmg](https://github.com/JercOmg)
-  - [trbureiyan](https://github.com/trbureiyan)
+  - [David9604](https://github.com/David9604) | Juan David Yate Vargas
+  - [FlacoAfk](https://github.com/FlacoAfk) | Julian Medina Monje
+  - [JercOmg](https://github.com/JercOmg) | Juan Esteban Rojas
+  - [trbureiyan](https://github.com/trbureiyan) | Brayan Toro Bustos
 
 ---
 
