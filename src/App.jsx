@@ -68,14 +68,7 @@ const AppCalculadora = lazy(() => import('./components/AppCalculadora'));
 /** Formulario de datos del tractor para la calculadora. */
 const DatosTractor = lazy(() => import('./pages/calculator/tractor/DatosTractor'));
 
-/** Formulario de datos de llantas para la calculadora. */
-const DatosLlantas = lazy(() => import('./pages/calculator/tractor/DatosLlanta'));
 
-/** Formulario de datos climáticos para la calculadora. */
-const DatosClimaticos = lazy(() => import('./pages/calculator/tractor/DatosClimaticos'));
-
-/** Página de resultados de la calculadora. */
-const Resultados = lazy(() => import('./pages/calculator/tractor/Resultados'));
 
 /** Página de inicio de sesión. */
 const Login = lazy(() => import('./pages/auth/Login'));
@@ -138,11 +131,7 @@ const Forbidden = lazy(() => import('./pages/misc/Forbidden'));
 /** Paso 1: datos técnicos del implemento. */
 const DatosImplemento = lazy(() => import('./pages/calculator/implement/DatosImplemento'));
 
-/** Paso 2: tipo de suelo donde se usará el implemento. */
-const TipoSueloImplemento = lazy(() => import('./pages/calculator/implement/TipoSueloImplemento'));
 
-/** Paso 3: resultados + tractores recomendados. */
-const ResultadosImplemento = lazy(() => import('./pages/calculator/implement/ResultadosImplemento'));
 
 // ---------------------------------------------------------------------------
 // Flujo "Busco Equipo" — lazy import
@@ -211,9 +200,9 @@ function App() {
                       <Route path="/"                  element={<Home />} />
                       <Route path="/Calculadora"       element={<AppCalculadora />} />
                       <Route path="/TengoTractor"      element={<DatosTractor />} />
-                      <Route path="/DatosLlantas"      element={<DatosLlantas />} />
-                      <Route path="/DatosClimaticos"   element={<DatosClimaticos />} />
-                      <Route path="/Resultados"        element={<Resultados />} />
+                      <Route path="/DatosLlantas"      element={<Navigate to="/TengoTractor" replace />} />
+                      <Route path="/DatosClimaticos"   element={<Navigate to="/TengoTractor" replace />} />
+                      <Route path="/Resultados"        element={<Navigate to="/TengoTractor" replace />} />
                       <Route path="/Login"             element={<Login />} />
                       <Route path="/Registro"          element={<Register />} />
                       <Route path="/forgot-password"   element={<ForgotPassword />} />
@@ -249,8 +238,8 @@ function App() {
 
                       {/* ── Flujo: Tengo Maquinaria (3 pasos) ── */}
                       <Route path="/TengoMaquinaria"      element={<DatosImplemento />} />
-                      <Route path="/TipoSueloImplemento"  element={<TipoSueloImplemento />} />
-                      <Route path="/ResultadosImplemento" element={<ResultadosImplemento />} />
+                      <Route path="/TipoSueloImplemento"  element={<Navigate to="/TengoMaquinaria" replace />} />
+                      <Route path="/ResultadosImplemento" element={<Navigate to="/TengoMaquinaria" replace />} />
 
                       {/* ── Flujo: Busco Equipo ── */}
                       <Route path="/BuscoEquipo"          element={<BuscoEquipo />} />

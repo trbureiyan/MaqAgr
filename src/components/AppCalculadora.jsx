@@ -80,7 +80,7 @@ const AppCalculadora = () => {
           {options.map(option => (
             <div 
               key={option.id} 
-              className="w-full"
+              className="w-full transition-all duration-300 hover:scale-[1.02]"
             >
               <TractorCard 
                 imageSrc={option.imageSrc}
@@ -97,7 +97,7 @@ const AppCalculadora = () => {
     // Vista desktop con transformación de escala
     return (
       <div 
-        className="flex flex-row justify-center gap-6 max-w-6xl mx-auto transition-transform duration-300"
+        className="flex flex-row justify-center items-stretch gap-6 max-w-6xl mx-auto transition-transform duration-300"
         style={{
           transform: `scale(${scale})`,
           transformOrigin: 'center top'
@@ -106,7 +106,7 @@ const AppCalculadora = () => {
         {options.map(option => (
           <div 
             key={option.id} 
-            className="w-[350px]"
+            className="flex w-[350px] transition-all duration-300 hover:scale-[1.02]"
           >
             <TractorCard 
               imageSrc={option.imageSrc}

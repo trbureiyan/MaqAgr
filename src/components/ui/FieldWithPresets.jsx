@@ -76,6 +76,7 @@ const FieldWithPresets = ({
 }) => {
   const [panelOpen, setPanelOpen] = useState(false);
   const blurTimerRef = useRef(null);
+  const containerRef = useRef(null);
   const hasHelp = presets.length > 0 || unknownDefault !== undefined;
 
   /**
@@ -99,7 +100,11 @@ const FieldWithPresets = ({
    * El delay permite que los clics en chips y botones del panel se ejecuten antes
    * de que el panel desaparezca.
    */
-  const handleBlur = () => {
+  const handleBlur = (e) => {
+    const relatedTarget = e.relatedTarget || document.activeElement;
+    if (containerRef.current && containerRef.current.contains(relatedTarget)) {
+      return;
+    }
     blurTimerRef.current = setTimeout(() => {
       setPanelOpen(false);
     }, BLUR_CLOSE_DELAY_MS);
@@ -118,7 +123,7 @@ const FieldWithPresets = ({
   };
 
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
       {/* ── Fila de label ── */}
       <div className="flex items-center justify-between mb-1.5">
         <label htmlFor={id} className="text-sm font-medium text-foreground leading-none">

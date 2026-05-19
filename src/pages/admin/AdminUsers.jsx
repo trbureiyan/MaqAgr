@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { getAllUsers, updateUser } from '../../services/adminApi';
 import { 
   Users, 
@@ -58,6 +58,7 @@ export default function AdminUsers() {
 
   // Search/Filter state
   const [searchTerm, setSearchTerm] = useState('');
+  const timeoutRef = useRef(null);
 
   const fetchUsers = async () => {
     try {
@@ -81,6 +82,11 @@ export default function AdminUsers() {
 
   useEffect(() => {
     fetchUsers();
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, []);
 
   const handleEditClick = (user) => {
@@ -92,6 +98,10 @@ export default function AdminUsers() {
     setIsModalOpen(false);
     setEditingUser(null);
     setSaveResult(null);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
   };
 
   const handleSaveUser = async (e) => {
@@ -116,7 +126,10 @@ export default function AdminUsers() {
       setUsers(prev => prev.map(u => u.userId === editingUser.userId ? { ...u, ...payload } : u));
       
       // Auto-close after short delay so user sees the confirmation
-      setTimeout(handleCloseModal, 1200);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(handleCloseModal, 1200);
     } catch (err) {
       console.error('Error al actualizar usuario:', err);
       setSaveResult({ type: 'error', message: 'No se pudo actualizar el usuario. Intenta de nuevo.' });

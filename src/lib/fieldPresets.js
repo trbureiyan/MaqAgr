@@ -221,3 +221,19 @@ export const PESO_IMPLEMENTO_PRESETS = [
 
 /** Valor por defecto cuando no se conoce el peso del implemento. */
 export const PESO_IMPLEMENTO_UNKNOWN_DEFAULT = '700';
+
+/**
+ * Presets para el Requerimiento de Potencia base (HP).
+ *
+ * @type {Array<{label: string, value: string, hint: string}>}
+ */
+export const POTENCIA_REQUERIDA_PRESETS = [
+  { label: '40 HP', value: '40', hint: 'Implemento pequeño / liviano' },
+  { label: '70 HP', value: '70', hint: 'Implemento estándar' },
+  { label: '100 HP', value: '100', hint: 'Implemento pesado' },
+  { label: '150 HP', value: '150', hint: 'Implemento extra pesado / grande' },
+];
+
+/** Valor por defecto cuando no se conoce la potencia requerida. */
+export const POTENCIA_REQUERIDA_UNKNOWN_DEFAULT = '70';
+

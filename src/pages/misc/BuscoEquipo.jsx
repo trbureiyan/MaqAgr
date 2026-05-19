@@ -7,6 +7,7 @@ import StepIndicator from "../../components/ui/StepIndicator";
 import { IconCamp } from "../../assets/img";
 import { getInputClass } from "../../lib/formUtils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import FieldWithPresets from "../../components/ui/FieldWithPresets";
 
 import { getTractors } from "../../services/tractorApi";
 import { getImplements } from "../../services/implementApi";
@@ -42,6 +43,7 @@ export default function BuscoEquipo() {
     labor_type: "",
     min_power_hp: "",
     max_weight_kg: "",
+    working_speed_kmh: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -272,6 +274,27 @@ export default function BuscoEquipo() {
             placeholder="Max kg. Ej: 4000"
           />
         </div>
+      </div>
+
+      <div className="mt-4">
+        <FieldWithPresets
+          id="working_speed_kmh"
+          name="working_speed_kmh"
+          label="Velocidad de trabajo"
+          tooltip="Velocidad estimada de la labor en km/h."
+          value={formData.working_speed_kmh}
+          onChange={handleChange}
+          error={errors.working_speed_kmh}
+          placeholder="km/h (Opcional)"
+          step="0.1"
+          min="0"
+          presets={[
+            { label: '5 km/h', value: '5', hint: 'Labor lenta / profunda' },
+            { label: '7 km/h', value: '7', hint: 'Labor típica' },
+            { label: '10 km/h', value: '10', hint: 'Labor rápida / superficial' },
+          ]}
+          inputClass={getInputClass("working_speed_kmh", errors)}
+        />
       </div>
     </div>
   );
