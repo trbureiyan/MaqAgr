@@ -11,7 +11,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '.';
 import Button from '../../ui/buttons/Button';
-import { TractorIcon } from '../../ui/Icons/AgriIcons';
+import { Tractor } from 'lucide-react';
 
 const AuthForm = ({ formType }) => {
   const navigate = useNavigate();
@@ -92,7 +92,7 @@ const AuthForm = ({ formType }) => {
         {/* Encabezado */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 bg-primary flex items-center justify-center rounded-sm mb-4">
-            <TractorIcon className="w-6 h-6 text-primary-foreground" />
+            <Tractor className="w-6 h-6 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             {formType === 'login' ? 'Bienvenido de nuevo' : 'Crear una cuenta'}
