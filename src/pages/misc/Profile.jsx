@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../components/common/auth';
 import { sileo } from 'sileo';
-import backgroundImage from '../../assets/img/fondo.jpg';
+import backgroundImage from '../../assets/background/monochrome-olive-corrugated-texture-shadow-pexels-hngstrm.webp';
 import Button from '../../components/ui/buttons/Button';
 
 const Profile = () => {

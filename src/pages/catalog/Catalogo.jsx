@@ -13,7 +13,8 @@
 
 import React from 'react';
 import TractorCard from '../../components/ui/cards/TractorCard';
-import { IconTrac as Tractor, IconMac as Maquina } from '../../assets/img';
+import Tractor from '../../assets/icons/IconTrac.png';
+import Maquina from '../../assets/icons/IconMac.png';
 
 // ---------------------------------------------------------------------------
 // Datos estáticos de categorías

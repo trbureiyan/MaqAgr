@@ -136,7 +136,7 @@ const DatosImplemento = lazy(() => import('./pages/calculator/implement/DatosImp
 // ---------------------------------------------------------------------------
 // Flujo "Busco Equipo" — lazy import
 // ---------------------------------------------------------------------------
-const BuscoEquipo = lazy(() => import('./pages/misc/BuscoEquipo'));
+const BuscoEquipo = lazy(() => import('./pages/calculator/misc/BuscoEquipo'));
 
 // ---------------------------------------------------------------------------
 // Componente de carga (fallback de Suspense)

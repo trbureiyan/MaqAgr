@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { sileo } from "sileo";
-import TooltipInfo from "../../components/ui/buttons/ToolTipInfo";
-import SkeletonCard from "../../components/ui/loaders/SkeletonCard";
-import StepIndicator from "../../components/ui/StepIndicator";
-import { IconCamp } from "../../assets/img";
-import { getInputClass } from "../../lib/formUtils";
+import TooltipInfo from "../../../components/ui/buttons/ToolTipInfo";
+import SkeletonCard from "../../../components/ui/loaders/SkeletonCard";
+import StepIndicator from "../../../components/ui/StepIndicator";
+import IconCamp from "../../../assets/icons/IconCamp.png";
+import { getInputClass } from "../../../lib/formUtils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import FieldWithPresets from "../../components/ui/FieldWithPresets";
+import FieldWithPresets from "../../../components/ui/FieldWithPresets";
 
-import { getTractors } from "../../services/tractorApi";
-import { getImplements } from "../../services/implementApi";
+import { getTractors } from "../../../services/tractorApi";
+import { getImplements } from "../../../services/implementApi";
 
 const TIPOS_SUELO = [
   { value: "Clay", label: "Arcilloso (Clay)" },

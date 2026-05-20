@@ -25,8 +25,8 @@ import { useParams, useLocation } from 'react-router-dom';
 import Button from '../../components/ui/buttons/Button';
 import { getTractorById } from '../../services/tractorApi';
 import { getImplementById } from '../../services/implementApi';
-import TractorImgFallback from '../../assets/img/Tractor Prueva.webp';
-import MaquinaImgFallback from '../../assets/img/2.png';
+import { PiTractorFill as TractorImgFallback } from "react-icons/pi";
+import MaquinaImgFallback from '../../assets/icons/plow.webp';
 
 /**
  * Mapeo de claves de campo a etiquetas legibles en español.
@@ -303,13 +303,17 @@ const TractorDetail = () => {
 
             {/* Imagen del equipo */}
             <div className="flex-1">
-              <div className="bg-gray-100 rounded-lg overflow-hidden shadow-lg">
-                <img
-                  src={item.imageSrc}
-                  alt={item.title}
-                  className="w-full h-auto object-contain aspect-video mix-blend-multiply"
-                  loading="lazy"
-                />
+              <div className="bg-gray-100 rounded-lg overflow-hidden shadow-lg flex items-center justify-center p-6 aspect-video text-muted-foreground">
+                {typeof item.imageSrc === 'function' || (typeof item.imageSrc === 'object' && item.imageSrc !== null) ? (
+                  React.createElement(item.imageSrc, { className: "w-28 h-28 text-red-800" })
+                ) : (
+                  <img
+                    src={item.imageSrc}
+                    alt={item.title}
+                    className="w-full h-auto object-contain mix-blend-multiply"
+                    loading="lazy"
+                  />
+                )}
               </div>
             </div>
           </div>

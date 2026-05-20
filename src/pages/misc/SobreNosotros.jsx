@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from '../../components/ui/buttons/Button';
-import FondoAgr from '../../assets/img/fondo.jpg'; // Assuming this exists based on AuthForm
-import MachineImg from '../../assets/img/2.png';
+import FondoAgr from '../../assets/background/monochrome-olive-corrugated-texture-shadow-pexels-hngstrm.webp';
+import MachineImg from '../../assets/icons/plow.webp';
 
 const VALUES = [
   {

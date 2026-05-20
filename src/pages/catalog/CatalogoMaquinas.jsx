@@ -18,7 +18,7 @@ import TractorMachineCard from '../../components/ui/cards/TractorMachineCard';
 import SkeletonCard from '../../components/ui/loaders/SkeletonCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import MaquinaImg from '../../assets/img/2.png';
+import MaquinaImg from '../../assets/icons/plow.webp';
 import { getImplements } from '../../services/implementApi';
 import useDebounce from '../../hooks/useDebounce';
 

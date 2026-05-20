@@ -50,13 +50,17 @@ const TractorMachineCard = ({ imageSrc, link, title, description }) => {
                  w-full"
     >
       {/* ── Área de imagen — altura fija para uniformidad en grilla ── */}
-      <div className="flex items-center justify-center bg-transparent border-b border-border/40 p-4 h-44 sm:h-52 md:h-56">
-        <img
-          src={imageSrc}
-          alt={title}
-          className="h-full w-full object-contain"
-          loading="lazy"
-        />
+      <div className="flex items-center justify-center bg-transparent border-b border-border/40 p-4 h-44 sm:h-52 md:h-56 text-muted-foreground">
+        {typeof imageSrc === 'function' || (typeof imageSrc === 'object' && imageSrc !== null) ? (
+          React.createElement(imageSrc, { className: "w-20 h-20 text-primary" })
+        ) : (
+          <img
+            src={imageSrc}
+            alt={title}
+            className="h-full w-full object-contain"
+            loading="lazy"
+          />
+        )}
       </div>
 
       {/* ── Bloque de contenido: título, descripción y enlace ── */}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import TractorCard from './ui/cards/TractorCard';
-import { IconTrac, IconMac, IconCamp } from '../assets/img';
+import IconTrac from '../assets/icons/IconTrac.png';
+import IconMac from '../assets/icons/IconMac.png';
+import IconCamp from '../assets/icons/IconCamp.png';
 
 const AppCalculadora = () => {
   const [scale, setScale] = useState(1);

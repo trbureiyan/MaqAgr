@@ -18,7 +18,7 @@ import TractorMachineCard from '../../components/ui/cards/TractorMachineCard';
 import SkeletonCard from '../../components/ui/loaders/SkeletonCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import TractorImg from '../../assets/img/Tractor Prueva.webp';
+import { PiTractorFill as TractorImg } from "react-icons/pi";
 import { getTractors } from '../../services/tractorApi';
 import useDebounce from '../../hooks/useDebounce';
 

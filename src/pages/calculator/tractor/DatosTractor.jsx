@@ -10,7 +10,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { sileo } from "sileo";
-import { Tractor, Llanta, Nube } from "../../../assets/img";
+import { PiTractorFill, PiTireFill } from "react-icons/pi";
+import { GiSunCloud } from "react-icons/gi";
 import FieldWithPresets from "../../../components/ui/FieldWithPresets";
 import { getInputClass } from "../../../lib/formUtils";
 import {
@@ -44,7 +45,7 @@ export default function DatosTractor() {
   const [tractorsCatalog, setTractorsCatalog] = useState([]);
   const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [tractorImage, setTractorImage] = useState(Tractor);
+  const [tractorImage, setTractorImage] = useState(() => PiTractorFill);
 
   // Estados de cálculo final
   const [loading, setLoading] = useState(false);
@@ -107,8 +108,8 @@ export default function DatosTractor() {
     }));
     const img =
       tractor.image || tractor.imageUrl || tractor.image_url ||
-      (tractor.images && tractor.images[0]) || Tractor;
-    setTractorImage(img);
+      (tractor.images && tractor.images[0]) || PiTractorFill;
+    setTractorImage(() => img);
     setErrors({});
     setIsModalOpen(false);
   };
@@ -188,7 +189,7 @@ export default function DatosTractor() {
       temperaturaSimple: "",
       workingSpeedKmh: "",
     });
-    setTractorImage(Tractor);
+    setTractorImage(() => PiTractorFill);
     setResult(null);
     setErrors({});
   };
@@ -729,13 +730,25 @@ export default function DatosTractor() {
             <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
 
               {/* Panel Izquierdo: Imagen Descriptiva */}
-              <div className="bg-secondary/30 border-b md:border-b-0 md:border-r border-border/60 p-6 flex flex-col items-center gap-5 justify-between">
+              <div className="bg-secondary/30 border-b md:border-b-0 md:border-r border-border/60 p-6 flex flex-col items-center gap-5 justify-between text-muted-foreground">
                 <div className="w-full aspect-[4/3] rounded overflow-hidden bg-card border border-border/60 flex items-center justify-center p-3">
-                  <img
-                    src={step === 1 ? tractorImage : step === 2 ? Llanta : Nube}
-                    alt="Paso de la calculadora"
-                    className="max-h-full max-w-full object-contain mix-blend-multiply"
-                  />
+                  {step === 1 ? (
+                    typeof tractorImage === 'string' ? (
+                      <img
+                        src={tractorImage}
+                        alt="Tractor"
+                        className="max-h-full max-w-full object-contain mix-blend-multiply"
+                      />
+                    ) : React.isValidElement(tractorImage) ? (
+                      React.cloneElement(tractorImage, { className: "w-20 h-20 text-primary" })
+                    ) : typeof tractorImage === 'function' || typeof tractorImage === 'object' ? (
+                      React.createElement(tractorImage, { className: "w-20 h-20 text-primary" })
+                    ) : null
+                  ) : step === 2 ? (
+                    <PiTireFill className="w-20 h-20 text-primary" />
+                  ) : (
+                    <GiSunCloud className="w-20 h-20 text-primary" />
+                  )}
                 </div>
 
                 {step === 1 && (
@@ -838,11 +851,18 @@ export default function DatosTractor() {
                     aria-label={`Seleccionar ${tractor.brand} ${tractor.model}, ${tractor.enginePowerHp} HP`}
                   >
                     <div className="h-24 w-full flex items-center justify-center bg-gray-50 rounded mb-3 p-2 group-hover:bg-primary/5 transition-colors">
-                      <img
-                        src={tractor.image || tractor.imageUrl || tractor.image_url || (tractor.images && tractor.images[0]) || Tractor}
-                        alt={`${tractor.brand} ${tractor.model}`}
-                        className="max-h-full max-w-full object-contain"
-                      />
+                      {(() => {
+                        const imgSource = tractor.image || tractor.imageUrl || tractor.image_url || (tractor.images && tractor.images[0]);
+                        return imgSource ? (
+                          <img
+                            src={imgSource}
+                            alt={`${tractor.brand} ${tractor.model}`}
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        ) : (
+                          <PiTractorFill className="w-12 h-12 text-muted-foreground group-hover:text-primary transition-colors" />
+                        );
+                      })()}
                     </div>
                     <p className="font-semibold text-gray-800 text-sm leading-tight">{tractor.brand}</p>
                     <p className="text-gray-500 text-xs mt-0.5 mb-2">{tractor.model}</p>

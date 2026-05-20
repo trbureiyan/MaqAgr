@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IconMac, IconTrac } from "../../assets/img";
+import IconMac from "../../assets/icons/IconMac.png";
+import IconTrac from "../../assets/icons/IconTrac.png";
 // Reutilizamos el estilo de tarjeta del catálogo o la calculadora
 import TractorCard from '../../components/ui/cards/TractorCard';
 

@@ -11,7 +11,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { sileo } from "sileo";
-import { MachineImg, Suelo, TractorImg } from "../../../assets/img";
+import { PiTractorFill as TractorImg } from "react-icons/pi";
+import MachineImg from "../../../assets/icons/plow.webp";
+import Suelo from "../../../assets/icons/suelo.webp";
 import TooltipInfo from "../../../components/ui/buttons/ToolTipInfo";
 import FieldWithPresets from "../../../components/ui/FieldWithPresets";
 import StepIndicator from "../../../components/ui/StepIndicator";
