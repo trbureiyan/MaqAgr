@@ -20,7 +20,7 @@
 
 
 import React, { useState, useRef } from "react";
-import InfoIcon from "../Icons/InfoIcon";
+import InfoIcon from "../icons/InfoIcon";
 
 const TooltipInfo = ({ content, children }) => {
   // Estado que controla la visibilidad del tooltip
