@@ -12,7 +12,7 @@
  */
 
 import React from 'react';
-import TractorCard from '../../components/ui/cards/TractorCard';
+import TractorCard from '@/features/tractors/components/TractorCard';
 import Tractor from '../../assets/icons/IconTrac.png';
 import Maquina from '../../assets/icons/IconMac.png';
 

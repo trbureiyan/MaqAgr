@@ -2,7 +2,7 @@
  * @fileoverview Vista para acceso denegado (403).
  */
 import React from 'react';
-import Button from '../../components/ui/buttons/Button';
+import Button from '@/components/ui/LegacyButton';
 
 const Forbidden = () => {
   return (

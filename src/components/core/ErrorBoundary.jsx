@@ -1,5 +1,5 @@
 import React from "react";
-import Button from "../ui/buttons/Button";
+import Button from '@/components/ui/LegacyButton';
 
 /**
  * Componente Límite de Errores (Error Boundary) global.

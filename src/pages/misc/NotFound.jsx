@@ -2,7 +2,7 @@
  * @fileoverview Vista para páginas no encontradas (404).
  */
 import React from 'react';
-import Button from '../../components/ui/buttons/Button';
+import Button from '@/components/ui/LegacyButton';
 
 const NotFound = () => {
   return (

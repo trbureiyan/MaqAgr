@@ -16,9 +16,9 @@
 import React, { useState, useEffect } from 'react';
 import { PiTractorFill as TractorImg } from "react-icons/pi";
 import MachineImg from '../../assets/icons/plow.webp';
-import Hero from '../../components/common/home/Hero';
-import TractorMachineCard from '../../components/ui/cards/TractorMachineCard';
-import SkeletonCard from '../../components/ui/loaders/SkeletonCard';
+import Hero from '@/components/layout/Hero';
+import TractorMachineCard from '@/features/tractors/components/TractorMachineCard';
+import SkeletonCard from '@/components/ui/SkeletonCard';
 import { getTractors } from '../../services/tractorApi';
 import { getImplements } from '../../services/implementApi';
 

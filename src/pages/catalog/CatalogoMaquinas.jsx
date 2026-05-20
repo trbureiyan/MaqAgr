@@ -14,8 +14,8 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import TractorMachineCard from '../../components/ui/cards/TractorMachineCard';
-import SkeletonCard from '../../components/ui/loaders/SkeletonCard';
+import TractorMachineCard from '@/features/tractors/components/TractorMachineCard';
+import SkeletonCard from '@/components/ui/SkeletonCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import MaquinaImg from '../../assets/icons/plow.webp';

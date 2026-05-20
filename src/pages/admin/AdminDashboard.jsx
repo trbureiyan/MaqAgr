@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import IconMac from "../../assets/icons/IconMac.png";
 import IconTrac from "../../assets/icons/IconTrac.png";
 // Reutilizamos el estilo de tarjeta del catálogo o la calculadora
-import TractorCard from '../../components/ui/cards/TractorCard';
+import TractorCard from '@/features/tractors/components/TractorCard';
 
 /**
  * AdminDashboard — Panel Administrativo Intermedio

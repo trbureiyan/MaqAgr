@@ -9,8 +9,8 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '.';
-import Button from '../../ui/buttons/Button';
+import { useAuth } from '../hooks/useAuth';
+import Button from '@/components/ui/LegacyButton';
 import { Tractor } from 'lucide-react';
 
 const AuthForm = ({ formType }) => {

@@ -14,11 +14,11 @@ import { sileo } from "sileo";
 import { PiTractorFill as TractorImg } from "react-icons/pi";
 import MachineImg from "../../../assets/icons/plow.webp";
 import Suelo from "../../../assets/icons/suelo.webp";
-import TooltipInfo from "../../../components/ui/buttons/ToolTipInfo";
-import FieldWithPresets from "../../../components/ui/FieldWithPresets";
+import TooltipInfo from "@/components/ui/tooltip-info";
+import FieldWithPresets from "@/features/calculator/components/FieldWithPresets";
 import StepIndicator from "../../../components/ui/StepIndicator";
-import TractorMachineCard from "../../../components/ui/cards/TractorMachineCard";
-import SkeletonCard from "../../../components/ui/loaders/SkeletonCard";
+import TractorMachineCard from "@/features/tractors/components/TractorMachineCard";
+import SkeletonCard from "@/components/ui/SkeletonCard";
 import { getInputClass } from "../../../lib/formUtils";
 import {
   ANCHO_TRABAJO_PRESETS, ANCHO_TRABAJO_UNKNOWN_DEFAULT,

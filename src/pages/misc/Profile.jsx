@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../components/common/auth';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { sileo } from 'sileo';
 import backgroundImage from '../../assets/background/monochrome-olive-corrugated-texture-shadow-pexels-hngstrm.webp';
-import Button from '../../components/ui/buttons/Button';
+import Button from '@/components/ui/LegacyButton';
 
 const Profile = () => {
   const { user, updateProfile, changePassword } = useAuth();

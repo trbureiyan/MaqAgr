@@ -1,7 +1,7 @@
 import React from 'react';
-import Button from '../../components/ui/buttons/Button';
-import FondoAgr from '../../assets/background/monochrome-olive-corrugated-texture-shadow-pexels-hngstrm.webp';
-import MachineImg from '../../assets/icons/plow.webp';
+import Button from '@/components/ui/LegacyButton';
+import FondoAgr from '../../assets/domain/branding-tractor-field-sunset-pexels-andres-alaniz.webp';
+import MachineImg from '../../assets/domain/bg-atmospheric-field-foggy-pexels-landsmann.webp';
 
 const VALUES = [
   {

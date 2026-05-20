@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { sileo } from "sileo";
 import { PiTractorFill, PiTireFill } from "react-icons/pi";
 import { GiSunCloud } from "react-icons/gi";
-import FieldWithPresets from "../../../components/ui/FieldWithPresets";
+import FieldWithPresets from "@/features/calculator/components/FieldWithPresets";
 import { getInputClass } from "../../../lib/formUtils";
 import {
   PB_PRESETS, PB_UNKNOWN_DEFAULT,
@@ -35,7 +35,7 @@ import {
 } from "../../../components/ui/dialog";
 import { ChevronRight, ChevronLeft, BookOpen, RotateCcw } from "lucide-react";
 import StepIndicator from "../../../components/ui/StepIndicator";
-import SkeletonCard from "../../../components/ui/loaders/SkeletonCard";
+import SkeletonCard from "@/components/ui/SkeletonCard";
 
 export default function DatosTractor() {
   const navigate = useNavigate();

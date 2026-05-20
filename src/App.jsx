@@ -43,10 +43,10 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar, Footer, AdminLayout } from './components/layout';
-import { AuthProvider } from './components/common/auth';
-import ProtectedRoute from './components/common/auth/ProtectedRoute';
-import ErrorBoundary from './components/common/ErrorBoundary';
-import { CalculatorProvider } from './components/common/calculator/CalculatorContext';
+import { AuthProvider } from '@/features/auth/context/AuthContext';
+import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
+import ErrorBoundary from '@/components/core/ErrorBoundary';
+import { CalculatorProvider } from '@/features/calculator/context/CalculatorContext';
 import { Toaster } from 'sileo';
 import 'sileo/styles.css';
 import { Analytics } from '@vercel/analytics/react';
@@ -63,7 +63,7 @@ import Home from './pages/home/Home';
  */
 
 /** Calculadora de compatibilidad tractor-implemento. */
-const AppCalculadora = lazy(() => import('./components/AppCalculadora'));
+const AppCalculadora = lazy(() => import('@/features/calculator/components/AppCalculadora'));
 
 /** Formulario de datos del tractor para la calculadora. */
 const DatosTractor = lazy(() => import('./pages/calculator/tractor/DatosTractor'));

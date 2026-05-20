@@ -22,7 +22,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import Button from '../../components/ui/buttons/Button';
+import Button from '@/components/ui/LegacyButton';
 import { getTractorById } from '../../services/tractorApi';
 import { getImplementById } from '../../services/implementApi';
 import { PiTractorFill as TractorImgFallback } from "react-icons/pi";

@@ -13,10 +13,10 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../common/auth';
-import Logo from '../ui/Icons/logo';
-import { ProfileIcon } from '../ui/Icons';
-import Button from '../ui/buttons/Button';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import Logo from '@/components/icons/logo';
+import { ProfileIcon } from '@/components/icons';
+import Button from '@/components/ui/LegacyButton';
 import { NotificationDropdown } from './NotificationDropdown';
 
 // ---------------------------------------------------------------------------

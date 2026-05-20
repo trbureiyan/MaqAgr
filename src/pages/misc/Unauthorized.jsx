@@ -2,7 +2,7 @@
  * @fileoverview Vista para acceso no autorizado o sesión expirada (401).
  */
 import React from 'react';
-import Button from '../../components/ui/buttons/Button';
+import Button from '@/components/ui/LegacyButton';
 
 const Unauthorized = () => {
   return (

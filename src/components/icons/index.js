@@ -4,7 +4,7 @@
  * permitiendo importaciones más limpias y mantenibles.
  * 
  * @example
- * import { SearchIcon, EditIcon } from '../components/ui/Icons';
+ * import { SearchIcon, EditIcon } from '@/components/icons/Icons';
  */
 
 import InfoIcon from './InfoIcon';
