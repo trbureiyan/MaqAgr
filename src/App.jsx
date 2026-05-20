@@ -42,7 +42,8 @@
 
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Navbar, Footer, AdminLayout } from './components/layout';
+import { Navbar, Footer, AdminLayout, PageTransition } from './components/layout';
+import { AnimatePresence } from 'motion/react';
 import { AuthProvider } from '@/features/auth/context/AuthContext';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import ErrorBoundary from '@/components/core/ErrorBoundary';
@@ -186,60 +187,62 @@ function AppContent() {
          * PageLoader se muestra mientras se descarga el chunk de la ruta.
          */}
         <Suspense fallback={<PageLoader />}>
-          <Routes>
-            {/* ── Rutas públicas ── */}
-            <Route path="/"                  element={<Home />} />
-            <Route path="/Calculadora"       element={<AppCalculadora />} />
-            <Route path="/TengoTractor"      element={<DatosTractor />} />
-            <Route path="/DatosLlantas"      element={<Navigate to="/TengoTractor" replace />} />
-            <Route path="/DatosClimaticos"   element={<Navigate to="/TengoTractor" replace />} />
-            <Route path="/Resultados"        element={<Navigate to="/TengoTractor" replace />} />
-            <Route path="/Login"             element={<Login />} />
-            <Route path="/Registro"          element={<Register />} />
-            <Route path="/forgot-password"   element={<ForgotPassword />} />
-            <Route path="/reset-password"    element={<ResetPassword />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path="/perfil" element={<Profile />} />
-            </Route>
-            <Route path="/SobreNosotros"     element={<SobreNosotros />} />
-
-            {/* ── Catálogo ── */}
-            <Route path="/Catalogo"          element={<Catalogo />} />
-            <Route path="/CatalogoTractor"   element={<CatalogoTrac />} />
-            <Route path="/CatalogoMaquinas"  element={<CatalogoMaq />} />
-
-            {/* ── Detalle de equipo (tractor o máquina) ── */}
-            <Route path="/tractor/:id"       element={<TractorMachineDetail />} />
-            <Route path="/maquinaria/:id"    element={<TractorMachineDetail />} />
-
-            {/* ── Rutas protegidas: panel de administración ── */}
-            <Route element={<ProtectedRoute allowedRoles={['admin', 1]} />}>
-              <Route element={<AdminLayout />}>
-                <Route path="/admin" element={<Navigate to="/admin/stats/general" replace />} />
-                <Route path="/admin/TractorForm" element={<TractorForm />} />
-                <Route path="/admin/ImplementForm" element={<ImplementForm />} />
-                
-                {/* Nuevas vistas del panel de administración */}
-                <Route path="/admin/stats/general" element={<AdminStatsGeneral />} />
-                <Route path="/admin/stats/recommendations" element={<AdminStatsRecommendations />} />
-                <Route path="/admin/stats/users" element={<AdminStatsUsers />} />
-                <Route path="/admin/users" element={<AdminUsers />} />
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              {/* ── Rutas públicas ── */}
+              <Route path="/"                  element={<PageTransition><Home /></PageTransition>} />
+              <Route path="/Calculadora"       element={<PageTransition><AppCalculadora /></PageTransition>} />
+              <Route path="/TengoTractor"      element={<PageTransition><DatosTractor /></PageTransition>} />
+              <Route path="/DatosLlantas"      element={<Navigate to="/TengoTractor" replace />} />
+              <Route path="/DatosClimaticos"   element={<Navigate to="/TengoTractor" replace />} />
+              <Route path="/Resultados"        element={<Navigate to="/TengoTractor" replace />} />
+              <Route path="/Login"             element={<PageTransition><Login /></PageTransition>} />
+              <Route path="/Registro"          element={<PageTransition><Register /></PageTransition>} />
+              <Route path="/forgot-password"   element={<PageTransition><ForgotPassword /></PageTransition>} />
+              <Route path="/reset-password"    element={<PageTransition><ResetPassword /></PageTransition>} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/perfil" element={<PageTransition><Profile /></PageTransition>} />
               </Route>
-            </Route>
+              <Route path="/SobreNosotros"     element={<PageTransition><SobreNosotros /></PageTransition>} />
 
-            {/* ── Flujo: Tengo Maquinaria (3 pasos) ── */}
-            <Route path="/TengoMaquinaria"      element={<DatosImplemento />} />
-            <Route path="/TipoSueloImplemento"  element={<Navigate to="/TengoMaquinaria" replace />} />
-            <Route path="/ResultadosImplemento" element={<Navigate to="/TengoMaquinaria" replace />} />
+              {/* ── Catálogo ── */}
+              <Route path="/Catalogo"          element={<PageTransition><Catalogo /></PageTransition>} />
+              <Route path="/CatalogoTractor"   element={<PageTransition><CatalogoTrac /></PageTransition>} />
+              <Route path="/CatalogoMaquinas"  element={<PageTransition><CatalogoMaq /></PageTransition>} />
 
-            {/* ── Flujo: Busco Equipo ── */}
-            <Route path="/BuscoEquipo"          element={<BuscoEquipo />} />
+              {/* ── Detalle de equipo (tractor o máquina) ── */}
+              <Route path="/tractor/:id"       element={<PageTransition><TractorMachineDetail /></PageTransition>} />
+              <Route path="/maquinaria/:id"    element={<PageTransition><TractorMachineDetail /></PageTransition>} />
 
-            {/* ── Estados de Error y Fallback ── */}
-            <Route path="/unauthorized"         element={<Unauthorized />} />
-            <Route path="/forbidden"            element={<Forbidden />} />
-            <Route path="*"                     element={<NotFound />} />
-          </Routes>
+              {/* ── Rutas protegidas: panel de administración ── */}
+              <Route element={<ProtectedRoute allowedRoles={['admin', 1]} />}>
+                <Route element={<AdminLayout />}>
+                  <Route path="/admin" element={<Navigate to="/admin/stats/general" replace />} />
+                  <Route path="/admin/TractorForm" element={<TractorForm />} />
+                  <Route path="/admin/ImplementForm" element={<ImplementForm />} />
+                  
+                  {/* Nuevas vistas del panel de administración */}
+                  <Route path="/admin/stats/general" element={<AdminStatsGeneral />} />
+                  <Route path="/admin/stats/recommendations" element={<AdminStatsRecommendations />} />
+                  <Route path="/admin/stats/users" element={<AdminStatsUsers />} />
+                  <Route path="/admin/users" element={<AdminUsers />} />
+                </Route>
+              </Route>
+
+              {/* ── Flujo: Tengo Maquinaria (3 pasos) ── */}
+              <Route path="/TengoMaquinaria"      element={<PageTransition><DatosImplemento /></PageTransition>} />
+              <Route path="/TipoSueloImplemento"  element={<Navigate to="/TengoMaquinaria" replace />} />
+              <Route path="/ResultadosImplemento" element={<Navigate to="/TengoMaquinaria" replace />} />
+
+              {/* ── Flujo: Busco Equipo ── */}
+              <Route path="/BuscoEquipo"          element={<PageTransition><BuscoEquipo /></PageTransition>} />
+
+              {/* ── Estados de Error y Fallback ── */}
+              <Route path="/unauthorized"         element={<PageTransition><Unauthorized /></PageTransition>} />
+              <Route path="/forbidden"            element={<PageTransition><Forbidden /></PageTransition>} />
+              <Route path="*"                     element={<PageTransition><NotFound /></PageTransition>} />
+            </Routes>
+          </AnimatePresence>
         </Suspense>
       </main>
 
