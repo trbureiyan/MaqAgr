@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { sileo } from "sileo";
-import backgroundImage from "../../assets/background/monochrome-olive-corrugated-texture-shadow-pexels-hngstrm.webp";
-import Button from "@/components/ui/LegacyButton";
+import backgroundImage from "@/assets/background/deep-teal-minimalist-curved-landscape-pexels-steve.webp";
 import { Link } from "react-router-dom";
 
 const ForgotPassword = () => {
@@ -26,35 +25,33 @@ const ForgotPassword = () => {
   };
 
   const inputClass =
-    "w-full border-t-0 border-l-0 border-r-0 border-b-2 border-white bg-transparent text-white placeholder-gray-400 px-0 py-2 focus:ring-0 focus:border-yellow-400 text-sm sm:text-base";
-  const labelClass = "block text-white font-bold mb-2 text-sm sm:text-base";
+    'w-full rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors';
+  const labelClass = 'block text-sm font-medium leading-none text-foreground mb-1.5';
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-gray-800 bg-opacity-85 bg-blend-overlay bg-cover bg-center bg-no-repeat w-full"
+      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat w-full relative"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      <div className="w-full max-w-md mx-auto py-8 px-4 sm:px-6">
-        <div className="bg-gray-800 rounded-3xl shadow-xl overflow-hidden px-5 sm:px-8 pt-8 pb-10">
-          <h2 className="text-center text-xl sm:text-2xl font-bold text-white mb-6">
-            RECUPERAR CONTRASEÑA
+      <div className="absolute inset-0 bg-foreground/50" />
+
+      <div className="w-full max-w-md mx-auto py-8 px-4 sm:px-6 relative z-10">
+        <div className="bg-card/95 backdrop-blur-sm border border-border/40 rounded-md overflow-hidden px-5 sm:px-8 pt-8 pb-10">
+          <h2 className="text-center text-xl sm:text-2xl font-bold text-foreground mb-6">
+            Recuperar contraseña
           </h2>
 
           {isSuccess ? (
             <div className="text-center space-y-6">
-              <p className="text-white">
+              <p className="text-foreground">
                 Se ha enviado un enlace de recuperación a tu correo electrónico.
               </p>
-              <Button
-                variant="primary"
-                color="#EAB308"
+              <Link
                 to="/Login"
-                fullWidth
-                shape="pill"
-                textColor="#000000"
+                className="w-full flex justify-center items-center h-10 px-4 bg-primary text-primary-foreground text-sm font-semibold rounded-md hover:bg-primary/90 transition-colors"
               >
                 Volver a Iniciar Sesión
-              </Button>
+              </Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -71,23 +68,19 @@ const ForgotPassword = () => {
               </div>
 
               <div className="pt-2">
-                <Button
+                <button
                   type="submit"
-                  variant="primary"
-                  color="#EAB308"
-                  fullWidth
-                  shape="pill"
-                  textColor="#000000"
                   disabled={isLoading}
+                  className="w-full flex justify-center items-center h-10 px-4 bg-primary text-primary-foreground text-sm font-semibold rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? "Procesando..." : "Enviar Instrucciones"}
-                </Button>
+                  {isLoading ? "Procesando..." : "Enviar instrucciones"}
+                </button>
               </div>
 
               <div className="text-center mt-4">
                 <Link
                   to="/Login"
-                  className="text-white hover:text-yellow-200 text-sm transition-colors hover:underline"
+                  className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
                 >
                   Volver al Login
                 </Link>

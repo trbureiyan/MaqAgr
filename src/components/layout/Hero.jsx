@@ -8,7 +8,9 @@
  */
 
 import { Link } from 'react-router-dom';
-import { Tractor, ClipboardCheck } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Tractor } from 'lucide-react';
+import heroImage from '@/assets/domain/branding-tractor-field-sunset-pexels-andres-alaniz.webp';
 
 const HomeVideo = () => {
   return (
@@ -47,51 +49,26 @@ const HomeVideo = () => {
             </div>
           </div>
 
-          {/* Contenido derecho (Panel informativo) */}
+          {/* Contenido derecho (Imagen de dominio) */}
           <div className="flex-1 w-full lg:w-auto relative hidden md:block">
-            <div className="max-w-[520px] mx-auto space-y-4">
-              <div className="bg-card border border-border/60 rounded p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-primary/10 border border-primary/20 rounded flex items-center justify-center">
-                    <Tractor className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-base font-semibold text-foreground">Ruta de cálculo en 3 pasos</p>
-                    <p className="text-sm text-muted-foreground">Motor, llantas y clima para un resultado confiable.</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="border border-border/50 rounded px-3 py-2 text-sm text-center text-foreground">Motor</div>
-                  <div className="border border-border/50 rounded px-3 py-2 text-sm text-center text-foreground">Llantas</div>
-                  <div className="border border-border/50 rounded px-3 py-2 text-sm text-center text-foreground">Clima</div>
-                </div>
-              </div>
+            <motion.div
+              className="relative max-w-[520px] mx-auto"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            >
+              <img
+                src={heroImage}
+                alt="Tractor agrícola en campo al atardecer"
+                className="w-full max-h-[420px] object-cover rounded-md border border-border/40"
+              />
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-secondary/40 border border-border/60 rounded p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <ClipboardCheck className="w-5 h-5 text-primary" />
-                    <h3 className="text-base font-semibold text-foreground">Resultados claros</h3>
-                  </div>
-                  <ul className="text-sm text-muted-foreground space-y-2">
-                    <li>Fuerza de tracción requerida y margen seguro.</li>
-                    <li>Compatibilidad tractor-implemento validada.</li>
-                    <li>Alertas tempranas de sobreesfuerzo mecánico.</li>
-                  </ul>
-                </div>
-                <div className="bg-card border border-border/60 rounded p-5">
-                  <h3 className="text-base font-semibold text-foreground mb-2">Decisión rápida</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Compara equipos con el mismo suelo y elige el que exige menos tracción.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="text-xs px-2 py-1 rounded border border-border/50 text-foreground">Tracción</span>
-                    <span className="text-xs px-2 py-1 rounded border border-border/50 text-foreground">Deslizamiento</span>
-                    <span className="text-xs px-2 py-1 rounded border border-border/50 text-foreground">Consumo</span>
-                  </div>
-                </div>
+              {/* Badge flotante — estadística mínima */}
+              <div className="absolute bottom-3 left-3 flex items-center gap-2 bg-foreground/80 text-background backdrop-blur-sm rounded-md px-3 py-1.5">
+                <Tractor className="w-4 h-4" />
+                <span className="text-xs font-semibold">150+ Tractores registrados</span>
               </div>
-            </div>
+            </motion.div>
           </div>
 
         </div>

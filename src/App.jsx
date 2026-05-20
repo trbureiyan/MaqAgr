@@ -41,7 +41,7 @@
  */
 
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar, Footer, AdminLayout } from './components/layout';
 import { AuthProvider } from '@/features/auth/context/AuthContext';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
@@ -160,12 +160,97 @@ const PageLoader = () => (
   </div>
 );
 
-// ---------------------------------------------------------------------------
-// Componente raíz
-// ---------------------------------------------------------------------------
+/**
+ * Componente principal de contenido de la aplicación.
+ *
+ * Debe ser hijo de <Router> para poder usar useLocation().
+ */
+function AppContent() {
+  const location = useLocation();
+
+  // Ocultar footer en páginas de inicio de sesión, registro, recuperación y restablecimiento de contraseña
+  const hideFooterPaths = ['/login', '/registro', '/forgot-password', '/reset-password'];
+  const showFooter = !hideFooterPaths.includes(location.pathname.toLowerCase());
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Toaster position="top-right" />
+
+      {/* Barra de navegación global */}
+      <Navbar />
+
+      {/* Área de contenido principal — crece para empujar el footer */}
+      <main className="flex-grow">
+        {/*
+         * Suspense envuelve todas las rutas lazy.
+         * PageLoader se muestra mientras se descarga el chunk de la ruta.
+         */}
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* ── Rutas públicas ── */}
+            <Route path="/"                  element={<Home />} />
+            <Route path="/Calculadora"       element={<AppCalculadora />} />
+            <Route path="/TengoTractor"      element={<DatosTractor />} />
+            <Route path="/DatosLlantas"      element={<Navigate to="/TengoTractor" replace />} />
+            <Route path="/DatosClimaticos"   element={<Navigate to="/TengoTractor" replace />} />
+            <Route path="/Resultados"        element={<Navigate to="/TengoTractor" replace />} />
+            <Route path="/Login"             element={<Login />} />
+            <Route path="/Registro"          element={<Register />} />
+            <Route path="/forgot-password"   element={<ForgotPassword />} />
+            <Route path="/reset-password"    element={<ResetPassword />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/perfil" element={<Profile />} />
+            </Route>
+            <Route path="/SobreNosotros"     element={<SobreNosotros />} />
+
+            {/* ── Catálogo ── */}
+            <Route path="/Catalogo"          element={<Catalogo />} />
+            <Route path="/CatalogoTractor"   element={<CatalogoTrac />} />
+            <Route path="/CatalogoMaquinas"  element={<CatalogoMaq />} />
+
+            {/* ── Detalle de equipo (tractor o máquina) ── */}
+            <Route path="/tractor/:id"       element={<TractorMachineDetail />} />
+            <Route path="/maquinaria/:id"    element={<TractorMachineDetail />} />
+
+            {/* ── Rutas protegidas: panel de administración ── */}
+            <Route element={<ProtectedRoute allowedRoles={['admin', 1]} />}>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<Navigate to="/admin/stats/general" replace />} />
+                <Route path="/admin/TractorForm" element={<TractorForm />} />
+                <Route path="/admin/ImplementForm" element={<ImplementForm />} />
+                
+                {/* Nuevas vistas del panel de administración */}
+                <Route path="/admin/stats/general" element={<AdminStatsGeneral />} />
+                <Route path="/admin/stats/recommendations" element={<AdminStatsRecommendations />} />
+                <Route path="/admin/stats/users" element={<AdminStatsUsers />} />
+                <Route path="/admin/users" element={<AdminUsers />} />
+              </Route>
+            </Route>
+
+            {/* ── Flujo: Tengo Maquinaria (3 pasos) ── */}
+            <Route path="/TengoMaquinaria"      element={<DatosImplemento />} />
+            <Route path="/TipoSueloImplemento"  element={<Navigate to="/TengoMaquinaria" replace />} />
+            <Route path="/ResultadosImplemento" element={<Navigate to="/TengoMaquinaria" replace />} />
+
+            {/* ── Flujo: Busco Equipo ── */}
+            <Route path="/BuscoEquipo"          element={<BuscoEquipo />} />
+
+            {/* ── Estados de Error y Fallback ── */}
+            <Route path="/unauthorized"         element={<Unauthorized />} />
+            <Route path="/forbidden"            element={<Forbidden />} />
+            <Route path="*"                     element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </main>
+
+      {/* Pie de página global condicional */}
+      {showFooter && <Footer />}
+    </div>
+  );
+}
 
 /**
- * App — Componente raíz de la aplicación MaqAgr.
+ * Componente principal de la aplicación.
  *
  * Envuelve toda la aplicación en `AuthProvider` para acceso global al contexto
  * de autenticación. El layout usa `flex flex-col min-h-screen` para que el
@@ -182,79 +267,7 @@ function App() {
       <AuthProvider>
         <CalculatorProvider>
           <Router>
-            <div className="min-h-screen flex flex-col">
-              <Toaster position="top-right" />
-
-              {/* Barra de navegación global */}
-              <Navbar />
-
-              {/* Área de contenido principal — crece para empujar el footer */}
-              <main className="flex-grow">
-                {/*
-                 * Suspense envuelve todas las rutas lazy.
-                 * PageLoader se muestra mientras se descarga el chunk de la ruta.
-                 */}
-                  <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                      {/* ── Rutas públicas ── */}
-                      <Route path="/"                  element={<Home />} />
-                      <Route path="/Calculadora"       element={<AppCalculadora />} />
-                      <Route path="/TengoTractor"      element={<DatosTractor />} />
-                      <Route path="/DatosLlantas"      element={<Navigate to="/TengoTractor" replace />} />
-                      <Route path="/DatosClimaticos"   element={<Navigate to="/TengoTractor" replace />} />
-                      <Route path="/Resultados"        element={<Navigate to="/TengoTractor" replace />} />
-                      <Route path="/Login"             element={<Login />} />
-                      <Route path="/Registro"          element={<Register />} />
-                      <Route path="/forgot-password"   element={<ForgotPassword />} />
-                      <Route path="/reset-password"    element={<ResetPassword />} />
-                      <Route element={<ProtectedRoute />}>
-                        <Route path="/perfil" element={<Profile />} />
-                      </Route>
-                      <Route path="/SobreNosotros"     element={<SobreNosotros />} />
-
-                      {/* ── Catálogo ── */}
-                      <Route path="/Catalogo"          element={<Catalogo />} />
-                      <Route path="/CatalogoTractor"   element={<CatalogoTrac />} />
-                      <Route path="/CatalogoMaquinas"  element={<CatalogoMaq />} />
-
-                      {/* ── Detalle de equipo (tractor o máquina) ── */}
-                      <Route path="/tractor/:id"       element={<TractorMachineDetail />} />
-                      <Route path="/maquinaria/:id"    element={<TractorMachineDetail />} />
-
-                      {/* ── Rutas protegidas: panel de administración ── */}
-                      <Route element={<ProtectedRoute allowedRoles={['admin', 1]} />}>
-                        <Route element={<AdminLayout />}>
-                          <Route path="/admin" element={<Navigate to="/admin/stats/general" replace />} />
-                          <Route path="/admin/TractorForm" element={<TractorForm />} />
-                          <Route path="/admin/ImplementForm" element={<ImplementForm />} />
-                          
-                          {/* Nuevas vistas del panel de administración */}
-                          <Route path="/admin/stats/general" element={<AdminStatsGeneral />} />
-                          <Route path="/admin/stats/recommendations" element={<AdminStatsRecommendations />} />
-                          <Route path="/admin/stats/users" element={<AdminStatsUsers />} />
-                          <Route path="/admin/users" element={<AdminUsers />} />
-                        </Route>
-                      </Route>
-
-                      {/* ── Flujo: Tengo Maquinaria (3 pasos) ── */}
-                      <Route path="/TengoMaquinaria"      element={<DatosImplemento />} />
-                      <Route path="/TipoSueloImplemento"  element={<Navigate to="/TengoMaquinaria" replace />} />
-                      <Route path="/ResultadosImplemento" element={<Navigate to="/TengoMaquinaria" replace />} />
-
-                      {/* ── Flujo: Busco Equipo ── */}
-                      <Route path="/BuscoEquipo"          element={<BuscoEquipo />} />
-
-                      {/* ── Estados de Error y Fallback ── */}
-                      <Route path="/unauthorized"         element={<Unauthorized />} />
-                      <Route path="/forbidden"            element={<Forbidden />} />
-                      <Route path="*"                     element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-              </main>
-
-              {/* Pie de página global */}
-              <Footer />
-            </div>
+            <AppContent />
             {/* Vercel Web Analytics */}
             <Analytics />
           </Router>

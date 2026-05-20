@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { sileo } from 'sileo';
-import backgroundImage from '../../assets/background/monochrome-olive-corrugated-texture-shadow-pexels-hngstrm.webp';
-import Button from '@/components/ui/LegacyButton';
+import backgroundImage from '@/assets/background/sage-green-3d-podium-shadow-play-crazy-motions.webp';
 
 const Profile = () => {
   const { user, updateProfile, changePassword } = useAuth();
@@ -47,22 +46,30 @@ const Profile = () => {
     }
   };
 
-  const inputClass = 'w-full border-t-0 border-l-0 border-r-0 border-b-2 border-white bg-transparent text-white placeholder-gray-400 px-0 py-2 focus:ring-0 focus:border-yellow-400 text-sm sm:text-base mb-4';
-  const labelClass = 'block text-white font-bold mb-2 text-sm sm:text-base';
+  const inputClass = 'w-full rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors mb-4';
+  const labelClass = 'block text-sm font-medium leading-none text-foreground mb-1.5';
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-gray-800 bg-opacity-85 bg-blend-overlay bg-cover bg-center bg-no-repeat w-full"
+      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat w-full relative"
       style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      <div className="w-full py-8 px-4 sm:px-6 lg:py-12">
+      {/* Overlay for readability */}
+      <div className="absolute inset-0 bg-foreground/50" />
+
+      <div className="w-full py-8 px-4 sm:px-6 lg:py-12 relative z-10">
         <div className="w-full max-w-2xl mx-auto space-y-8 mt-12 sm:mt-0">
-          <div className="bg-gray-800 rounded-3xl shadow-xl overflow-hidden px-5 sm:px-8 pt-8 pb-10">
+          {/* Profile Card */}
+          <div className="bg-card/95 backdrop-blur-sm border border-border/40 rounded-md overflow-hidden px-5 sm:px-8 pt-8 pb-10">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-white">Mi Perfil</h2>
-              <Button variant="outline" color="#EAB308" onClick={() => setIsEditingProfile(!isEditingProfile)} size="small" shape="pill">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Mi Perfil</h2>
+              <button
+                type="button"
+                onClick={() => setIsEditingProfile(!isEditingProfile)}
+                className="text-sm font-semibold px-4 py-1.5 rounded-md border border-primary text-primary hover:bg-primary/10 transition-colors"
+              >
                 {isEditingProfile ? 'Cancelar' : 'Actualizar Perfil'}
-              </Button>
+              </button>
             </div>
             
             <form onSubmit={handleProfileSubmit}>
@@ -88,20 +95,28 @@ const Profile = () => {
 
               {isEditingProfile && (
                 <div className="pt-4 flex justify-end">
-                  <Button type="submit" variant="primary" color="#EAB308" shape="pill" textColor="#000000">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-md hover:bg-primary/90 transition-colors"
+                  >
                     Guardar Cambios
-                  </Button>
+                  </button>
                 </div>
               )}
             </form>
           </div>
 
-          <div className="bg-gray-800 rounded-3xl shadow-xl overflow-hidden px-5 sm:px-8 pt-8 pb-10">
+          {/* Password Card */}
+          <div className="bg-card/95 backdrop-blur-sm border border-border/40 rounded-md overflow-hidden px-5 sm:px-8 pt-8 pb-10">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-white">Cambiar Contraseña</h2>
-              <Button variant="outline" color="#EAB308" onClick={() => setIsEditingPassword(!isEditingPassword)} size="small" shape="pill">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Cambiar Contraseña</h2>
+              <button
+                type="button"
+                onClick={() => setIsEditingPassword(!isEditingPassword)}
+                className="text-sm font-semibold px-4 py-1.5 rounded-md border border-primary text-primary hover:bg-primary/10 transition-colors"
+              >
                 {isEditingPassword ? 'Cancelar' : 'Cambiar Contraseña'}
-              </Button>
+              </button>
             </div>
 
             {isEditingPassword ? (
@@ -134,13 +149,16 @@ const Profile = () => {
                 />
 
                 <div className="pt-4 flex justify-end">
-                  <Button type="submit" variant="primary" color="#EAB308" shape="pill" textColor="#000000">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-md hover:bg-primary/90 transition-colors"
+                  >
                     Actualizar Contraseña
-                  </Button>
+                  </button>
                 </div>
               </form>
             ) : (
-              <p className="text-gray-300 text-sm">Tu contraseña no se muestra por razones de seguridad. Haz clic en "Cambiar Contraseña" para establecer una nueva.</p>
+              <p className="text-muted-foreground text-sm">Tu contraseña no se muestra por razones de seguridad. Haz clic en "Cambiar Contraseña" para establecer una nueva.</p>
             )}
           </div>
         </div>
