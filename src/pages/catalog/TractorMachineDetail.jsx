@@ -132,18 +132,18 @@ const mapImplementToMockFormat = (machine) => ({
  * @returns {JSX.Element} Sección con título y tabla de datos.
  */
 const DataTable = ({ title, data }) => (
-  <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-    <h2 className="text-xl sm:text-2xl font-bold text-red-800 mb-4 sm:mb-6">{title}</h2>
+  <div className="bg-card rounded border border-border p-4 sm:p-6 shadow-sm">
+    <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">{title}</h2>
     <div className="grid grid-cols-1 gap-y-3 gap-x-8 md:grid-cols-2">
       {Object.entries(data).map(([key, value]) => (
-        <div key={key} className="border-b border-gray-200 pb-2">
+        <div key={key} className="border-b border-border pb-2">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
             {/* Etiqueta del campo — legible en español */}
-            <span className="font-medium text-gray-700 text-sm">
+            <span className="font-medium text-muted-foreground text-sm">
               {FIELD_LABELS[key] ?? key.replace(/([A-Z])/g, ' $1').trim()}
             </span>
             {/* Valor del campo */}
-            <span className="text-gray-900 text-sm sm:text-right">{value}</span>
+            <span className="text-foreground text-sm sm:text-right">{value}</span>
           </div>
         </div>
       ))}
@@ -218,12 +218,12 @@ const TractorDetail = () => {
         <div className="text-center">
           {/* Spinner de carga */}
           <div
-            className="w-14 h-14 sm:w-16 sm:h-16 border-4 border-red-800 border-t-transparent
+            className="w-14 h-14 sm:w-16 sm:h-16 border-4 border-primary border-t-transparent
                        rounded-full animate-spin mx-auto"
             role="status"
             aria-label="Cargando información del equipo"
           />
-          <p className="mt-4 text-base sm:text-lg text-gray-600">Cargando información...</p>
+          <p className="mt-4 text-base sm:text-lg text-muted-foreground">Cargando información...</p>
         </div>
       </div>
     );
@@ -232,10 +232,10 @@ const TractorDetail = () => {
   if (error || !item) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
-        <h1 className="text-xl sm:text-2xl font-bold text-red-800">
+        <h1 className="text-xl sm:text-2xl font-bold text-primary">
           {error || 'Ítem no encontrado'}
         </h1>
-        <Button variant="primary" color="#9f0712" to="/" className="mt-4">
+        <Button variant="primary" color="#909d00" to="/" className="mt-4">
           Volver al inicio
         </Button>
       </div>
@@ -262,10 +262,10 @@ const TractorDetail = () => {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="bg-gray-100 min-h-screen pb-10 sm:pb-12">
+    <div className="bg-background min-h-screen pb-10 sm:pb-12">
 
       {/* ── Hero: imagen + título + descripción + CTA ── */}
-      <div className="bg-white shadow-md">
+      <div className="bg-card shadow-sm border-b border-border">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/*
            * Layout hero:
@@ -276,14 +276,14 @@ const TractorDetail = () => {
 
             {/* Bloque de texto */}
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-red-800 mb-3 sm:mb-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-3 sm:mb-4">
                 {item.title}
               </h1>
               {/* Línea decorativa */}
-              <div className="w-20 sm:w-24 h-1 bg-red-800 mb-4 sm:mb-6" aria-hidden="true" />
+              <div className="w-20 sm:w-24 h-1 bg-primary mb-4 sm:mb-6" aria-hidden="true" />
 
               {/* Descripción dinámica según categoría */}
-              <p className="text-gray-700 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
+              <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
                 {item.category === 'Tractor'
                   ? `Tractor ${item.identificacion.marca} ${item.identificacion.modelo}.`
                   : `${item.identificacion.nombreComercial}, marca ${item.identificacion.marca}.`}
@@ -292,7 +292,7 @@ const TractorDetail = () => {
               {/* CTA: descargar ficha técnica */}
               <Button
                 variant="primary"
-                color="#9f0712"
+                color="#909d00"
                 href={item.fichaTecnicaUrl}
                 download
                 className="w-full sm:w-auto"
@@ -303,9 +303,9 @@ const TractorDetail = () => {
 
             {/* Imagen del equipo */}
             <div className="flex-1">
-              <div className="bg-gray-100 rounded-lg overflow-hidden shadow-lg flex items-center justify-center p-6 aspect-video text-muted-foreground">
+              <div className="bg-secondary/30 rounded-lg overflow-hidden shadow-sm border border-border/60 flex items-center justify-center p-6 aspect-video text-muted-foreground">
                 {typeof item.imageSrc === 'function' || (typeof item.imageSrc === 'object' && item.imageSrc !== null) ? (
-                  React.createElement(item.imageSrc, { className: "w-28 h-28 text-red-800" })
+                  React.createElement(item.imageSrc, { className: "w-28 h-28 text-primary" })
                 ) : (
                   <img
                     src={item.imageSrc}
@@ -324,7 +324,7 @@ const TractorDetail = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8">
 
         {/* Barra de pestañas con scroll horizontal en móvil */}
-        <div className="border-b border-gray-200 overflow-x-auto">
+        <div className="border-b border-border overflow-x-auto">
           <nav
             className="flex -mb-px min-w-max"
             role="tablist"
@@ -340,8 +340,8 @@ const TractorDetail = () => {
                 className={`py-3 sm:py-4 px-4 sm:px-6 text-center border-b-2 font-medium
                             text-xs sm:text-sm whitespace-nowrap transition-colors duration-200 ${
                   activeTab === tab
-                    ? 'border-red-800 text-red-800'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 }`}
               >
                 {TAB_NAMES[tab]}

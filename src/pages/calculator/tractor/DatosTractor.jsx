@@ -837,7 +837,7 @@ export default function DatosTractor() {
                 <div className="w-7 h-7 border-[3px] border-primary border-t-transparent rounded-full animate-spin" aria-label="Cargando" />
               </div>
             ) : tractorsCatalog.length === 0 ? (
-              <div className="text-center py-12 text-gray-400 text-sm">
+              <div className="text-center py-12 text-muted-foreground text-sm">
                 No hay tractores en el catálogo.
               </div>
             ) : (
@@ -846,11 +846,11 @@ export default function DatosTractor() {
                   <button
                     key={tractor.tractorId}
                     type="button"
-                    className="text-left border border-gray-200 rounded p-4 hover:border-primary hover:shadow-sm transition-all flex flex-col bg-white group"
+                    className="text-left border border-border rounded p-4 hover:border-primary hover:shadow-sm transition-all flex flex-col bg-card group"
                     onClick={() => handleTractorSelect(tractor)}
                     aria-label={`Seleccionar ${tractor.brand} ${tractor.model}, ${tractor.enginePowerHp} HP`}
                   >
-                    <div className="h-24 w-full flex items-center justify-center bg-gray-50 rounded mb-3 p-2 group-hover:bg-primary/5 transition-colors">
+                    <div className="h-24 w-full flex items-center justify-center bg-secondary/20 rounded mb-3 p-2 group-hover:bg-primary/5 transition-colors">
                       {(() => {
                         const imgSource = tractor.image || tractor.imageUrl || tractor.image_url || (tractor.images && tractor.images[0]);
                         return imgSource ? (
@@ -864,13 +864,13 @@ export default function DatosTractor() {
                         );
                       })()}
                     </div>
-                    <p className="font-semibold text-gray-800 text-sm leading-tight">{tractor.brand}</p>
-                    <p className="text-gray-500 text-xs mt-0.5 mb-2">{tractor.model}</p>
+                    <p className="font-semibold text-foreground text-sm leading-tight">{tractor.brand}</p>
+                    <p className="text-muted-foreground text-xs mt-0.5 mb-2">{tractor.model}</p>
                     <div className="mt-auto flex items-center justify-between">
                       <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">
                         {tractor.enginePowerHp} HP
                       </span>
-                      <span className="text-xs text-gray-400">{tractor.weightKg} kg</span>
+                      <span className="text-xs text-muted-foreground/80">{tractor.weightKg} kg</span>
                     </div>
                   </button>
                 ))}

@@ -758,24 +758,24 @@ export default function DatosImplemento() {
                   <button
                     key={impl.implementId}
                     type="button"
-                    className="text-left border border-gray-200 rounded p-4 hover:border-primary hover:shadow-sm transition-all flex flex-col bg-white group"
+                    className="text-left border border-border rounded p-4 hover:border-primary hover:shadow-sm transition-all flex flex-col bg-card group"
                     onClick={() => handleImplementoSelect(impl)}
                     aria-label={`Seleccionar ${impl.brand} ${impl.implementName}, ${impl.powerRequirementHp} HP requerido`}
                   >
-                    <div className="h-24 w-full flex items-center justify-center bg-gray-50 rounded mb-3 p-2 group-hover:bg-primary/5 transition-colors">
+                    <div className="h-24 w-full flex items-center justify-center bg-secondary/20 rounded mb-3 p-2 group-hover:bg-primary/5 transition-colors">
                       <img
                         src={impl.image || impl.imageUrl || impl.image_url || (impl.images && impl.images[0]) || MachineImg}
                         alt={impl.implementName}
                         className="max-h-full max-w-full object-contain"
                       />
                     </div>
-                    <p className="font-semibold text-gray-800 text-sm leading-tight">{impl.brand}</p>
-                    <p className="text-gray-500 text-xs mt-0.5 mb-2">{impl.implementName}</p>
+                    <p className="font-semibold text-foreground text-sm leading-tight">{impl.brand}</p>
+                    <p className="text-muted-foreground text-xs mt-0.5 mb-2">{impl.implementName}</p>
                     <div className="mt-auto flex justify-between items-center">
                       <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">
                         {impl.powerRequirementHp} HP Req.
                       </span>
-                      <span className="text-xs text-gray-400">{impl.weightKg} kg</span>
+                      <span className="text-xs text-muted-foreground/80">{impl.weightKg} kg</span>
                     </div>
                   </button>
                 ))}

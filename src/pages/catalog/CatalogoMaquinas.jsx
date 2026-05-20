@@ -134,7 +134,7 @@ export default function CatalogoMaquinas() {
             </div>
 
             {error && (
-              <div className="p-4 bg-red-100 text-red-700 rounded-md">
+              <div className="p-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-md">
                 {error}
               </div>
             )}
