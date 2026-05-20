@@ -235,7 +235,7 @@ export default function BuscoEquipo() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <div>
           <label htmlFor="min_power_hp" className="text-sm font-medium leading-none block mb-1.5 text-foreground">
             Potencia Requerida aprox. (HP){" "}

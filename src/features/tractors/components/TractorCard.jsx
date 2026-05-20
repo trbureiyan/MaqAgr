@@ -49,7 +49,7 @@ const TractorCard = ({ icon: Icon, imageSrc, link, title, description }) => {
     /* Toda la tarjeta es un enlace de navegación */
     <Link
       to={link}
-      className="group block w-full max-w-sm"
+      className="group block w-full max-w-sm h-full"
       aria-label={`Ir al catálogo de ${title}`}
     >
       <div
