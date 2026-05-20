@@ -10,12 +10,12 @@
 
 /**
  * Clases base comunes para todos los inputs de la calculadora.
- * Separado del tema de shadcn para mantener el estilo propio del flujo.
+ * Mantiene la línea sobria y plana ("Calm-Industrial").
  *
  * @type {string}
  */
 export const INPUT_BASE =
-  'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#991b1b] transition-colors';
+  'w-full px-4 py-2 bg-background border border-border/60 rounded text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-muted-foreground';
 
 /**
  * Retorna las clases CSS para un campo de formulario según su estado de error.

@@ -101,14 +101,14 @@ export const NotificationDropdown = () => {
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button 
         onClick={toggleDropdown}
-        className="relative p-2.5 rounded-full bg-transparent hover:bg-white/10 text-white transition-colors focus:outline-none"
+        className="relative p-2 rounded-full bg-transparent text-slate-200 hover:bg-white/10 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
         aria-label="Notificaciones"
         aria-expanded={isOpen}
         aria-controls="notification-panel"
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">
+          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}

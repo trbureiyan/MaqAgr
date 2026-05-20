@@ -21,6 +21,7 @@ import {
   ANCHO_TRABAJO_PRESETS, ANCHO_TRABAJO_UNKNOWN_DEFAULT,
   PROFUNDIDAD_PRESETS, PROFUNDIDAD_UNKNOWN_DEFAULT,
   PESO_IMPLEMENTO_PRESETS, PESO_IMPLEMENTO_UNKNOWN_DEFAULT,
+  POTENCIA_REQUERIDA_PRESETS, POTENCIA_REQUERIDA_UNKNOWN_DEFAULT,
 } from '../../src/lib/fieldPresets.js';
 
 // ---------------------------------------------------------------------------
@@ -65,6 +66,7 @@ describe('fieldPresets — structure', () => {
     ['ANCHO_TRABAJO_PRESETS', ANCHO_TRABAJO_PRESETS],
     ['PROFUNDIDAD_PRESETS', PROFUNDIDAD_PRESETS],
     ['PESO_IMPLEMENTO_PRESETS', PESO_IMPLEMENTO_PRESETS],
+    ['POTENCIA_REQUERIDA_PRESETS', POTENCIA_REQUERIDA_PRESETS],
   ];
 
   for (const [name, presets] of allPresets) {
@@ -83,6 +85,7 @@ describe('fieldPresets — numeric values', () => {
     ['PB_PRESETS', PB_PRESETS],
     ['PMAX_TDP_PRESETS', PMAX_TDP_PRESETS],
     ['PESO_PRESETS', PESO_PRESETS],
+    ['DIAMETRO_LLANTA_PRESETS', DIAMETRO_LLANTA_PRESETS],
     ['PRESION_PRESETS', PRESION_PRESETS],
     ['ALTITUD_PRESETS', ALTITUD_PRESETS],
     ['TEMPERATURA_PRESETS', TEMPERATURA_PRESETS],
@@ -91,6 +94,7 @@ describe('fieldPresets — numeric values', () => {
     ['ANCHO_TRABAJO_PRESETS', ANCHO_TRABAJO_PRESETS],
     ['PROFUNDIDAD_PRESETS', PROFUNDIDAD_PRESETS],
     ['PESO_IMPLEMENTO_PRESETS', PESO_IMPLEMENTO_PRESETS],
+    ['POTENCIA_REQUERIDA_PRESETS', POTENCIA_REQUERIDA_PRESETS],
   ];
 
   for (const [name, presets] of numericPresets) {
@@ -146,6 +150,11 @@ describe('fieldPresets — unknown defaults', () => {
   test('PESO_IMPLEMENTO_UNKNOWN_DEFAULT is parseable as positive number', () => {
     strictEqual(typeof PESO_IMPLEMENTO_UNKNOWN_DEFAULT, 'string');
     ok(Number(PESO_IMPLEMENTO_UNKNOWN_DEFAULT) > 0);
+  });
+
+  test('POTENCIA_REQUERIDA_UNKNOWN_DEFAULT is parseable as positive number', () => {
+    strictEqual(typeof POTENCIA_REQUERIDA_UNKNOWN_DEFAULT, 'string');
+    ok(Number(POTENCIA_REQUERIDA_UNKNOWN_DEFAULT) > 0);
   });
 });
 

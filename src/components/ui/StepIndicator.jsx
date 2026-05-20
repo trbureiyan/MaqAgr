@@ -22,27 +22,27 @@ const StepIndicator = ({ current, total, labels }) => (
       const isActive = step === current;
       return (
         <React.Fragment key={step}>
-          <div className="flex flex-col items-center gap-1">
+          <div className="flex flex-col items-center gap-1.5">
             <div
-              className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold transition-colors ${
+              className={`flex items-center justify-center w-7 h-7 rounded text-xs font-bold transition-all border ${
                 isActive
-                  ? 'bg-[#893d46] text-white ring-4 ring-[#893d46]/20'
+                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                   : isDone
-                  ? 'bg-[#893d46]/20 text-[#893d46]'
-                  : 'bg-gray-100 text-gray-400'
+                  ? 'bg-primary/10 text-primary border-primary/20'
+                  : 'bg-muted text-muted-foreground border-border/40'
               }`}
               aria-label={`Paso ${step} de ${total}${isActive ? ', actual' : isDone ? ', completado' : ', pendiente'}`}
             >
               {isDone ? '✓' : step}
             </div>
             {labels && (
-              <span className={`text-xs hidden sm:block ${isActive ? 'text-[#893d46] font-medium' : 'text-gray-400'}`}>
+              <span className={`text-xs hidden sm:block tracking-tight ${isActive ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                 {labels[i]}
               </span>
             )}
           </div>
           {i < total - 1 && (
-            <div className={`h-px w-8 sm:w-16 mx-1 mb-3 sm:mb-0 transition-colors ${isDone ? 'bg-[#893d46]/40' : 'bg-gray-200'}`} />
+            <div className={`h-px w-8 sm:w-16 mx-2 sm:mb-0 mb-4 transition-colors ${isDone ? 'bg-primary/40' : 'bg-border/60'}`} />
           )}
         </React.Fragment>
       );
