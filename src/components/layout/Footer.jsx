@@ -1,10 +1,6 @@
 /**
  * @fileoverview Pie de página global de MaqAgr.
  *
- * Componente estático que muestra el crédito del equipo de desarrollo
- * con un enlace a la página "Sobre Nosotros". Se adapta a cualquier
- * ancho de pantalla gracias al contenedor centrado con padding responsive.
- *
  * @module components/layout/Footer
  */
 
