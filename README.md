@@ -1,3 +1,5 @@
+<img width="50" height="50" alt="maqagr-logo" src="https://github.com/user-attachments/assets/4d1c5b7a-988c-45b9-8637-9a0fd721a3cf" />
+
 # MaqAgr - Frontend
 
 <img width="1376" height="768" alt="Gemini_Generated_Image_j6savkj6savkj6sa (1)" src="https://github.com/user-attachments/assets/41892393-0d8f-40ab-a130-5f7fd0ff76a3" />
@@ -30,6 +32,12 @@
 ---
 
 ## Resumen funcional
+
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=oglxA58VsIM">
+    <img src="https://img.youtube.com/vi/oglxA58VsIM/maxresdefault.jpg" alt="Ver video en YouTube" style="width:100%; max-width:600px;">
+  </a>
+</div>
 
 MaqAgr permite:
 
