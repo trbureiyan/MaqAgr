@@ -1,9 +1,6 @@
 /**
  * @fileoverview Hero section para la página de inicio (Calm-Industrial).
  *
- * Minimalista, sin videos de fondo pesados ni overlays oscuros. 
- * Combina tipografía grande, alto contraste y enfoque en la funcionalidad.
- *
  * @module components/common/home/HomeVideo
  */
 

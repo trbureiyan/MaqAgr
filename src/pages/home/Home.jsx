@@ -30,8 +30,10 @@ import {
   FileText,
   BadgeAlert,
   AlertTriangle,
-  Zap
+  Zap,
+  Quote 
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import MachineImg from '../../assets/icons/plow.webp';
 import Hero from '@/components/layout/Hero';
 import TractorMachineCard from '@/features/tractors/components/TractorMachineCard';
@@ -490,6 +492,46 @@ const Home = () => {
               ))
             )}
           </div>
+        </div>
+      </section>
+      
+      {/* Sección: Llamado a la Acción (CTA Final) */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="bg-[#1e2939] text-white rounded-2xl p-8 sm:p-12 relative overflow-hidden border border-white/10 shadow-xl"
+          >
+            {/* Círculos decorativos de fondo */}
+            <div className="absolute right-0 bottom-0 w-80 h-80 bg-[#909d00]/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute left-10 top-10 w-40 h-40 bg-[#893d46]/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                Empieza a calcular ahora mismo
+              </h2>
+              <p className="mt-4 text-sm sm:text-base text-white/70 max-w-2xl mx-auto leading-relaxed">
+                Ingresa los datos de tu tractor o implemento y obtén un análisis inmediato respaldado por ciencia. Evita pérdidas de combustible y protege la estructura de tu suelo.
+              </p>
+              
+              <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+                <Link
+                  to='/Calculadora'
+                  className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-semibold rounded bg-[#909d00] hover:bg-[#909d00]/90 text-white transition-all shadow-md shadow-[#909d00]/10 hover:scale-[1.02]"
+                >
+                  Ir a la Calculadora
+                </Link>
+                <Link
+                  to='/Catalogo'
+                  className="inline-flex items-center justify-center px-6 py-3 border border-white/20 text-base font-semibold rounded bg-white/5 hover:bg-white/10 text-white transition-all hover:scale-[1.02]"
+                >
+                  Explorar Catálogo
+                </Link>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
