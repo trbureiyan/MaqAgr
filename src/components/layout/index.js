@@ -10,9 +10,11 @@
 import Navbar from './Navbar';
 import Footer from './Footer';
 import AdminLayout from './AdminLayout';
+import PageTransition from './PageTransition';
 
 export {
   Navbar,
   Footer,
-  AdminLayout
+  AdminLayout,
+  PageTransition
 };

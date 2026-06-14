@@ -1,3 +1,5 @@
+<img width="50" height="50" alt="maqagr-logo" src="https://github.com/user-attachments/assets/4d1c5b7a-988c-45b9-8637-9a0fd721a3cf" />
+
 # MaqAgr - Frontend
 
 <img width="1376" height="768" alt="Gemini_Generated_Image_j6savkj6savkj6sa (1)" src="https://github.com/user-attachments/assets/41892393-0d8f-40ab-a130-5f7fd0ff76a3" />
@@ -23,8 +25,6 @@
 - [Variables de entorno](#variables-de-entorno)
 - [Modo Mock vs API remota](#modo-mock-vs-api-remota)
 - [Scripts disponibles](#scripts-disponibles)
-- [Pruebas](#pruebas)
-- [Despliegue en Vercel](#despliegue-en-vercel)
 - [Convenciones de código](#convenciones-de-código)
 - [Performance budget](#performance-budget)
 - [Referencias y autores](#referencias-y-autores)
@@ -32,6 +32,12 @@
 ---
 
 ## Resumen funcional
+
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=oglxA58VsIM">
+    <img src="https://img.youtube.com/vi/oglxA58VsIM/maxresdefault.jpg" alt="Ver video en YouTube" style="width:100%; max-width:600px;">
+  </a>
+</div>
 
 MaqAgr permite:
 
@@ -57,7 +63,7 @@ MaqAgr permite:
 | Mapeo de datos | snake_case ↔ camelCase (`src/lib/dataMappers.js`) |
 | Linter | ESLint 9 |
 | Deploy | Vercel |
-| Package manager | npm (`package-lock.json`) |
+| Package manager | pnpm (`pnpm-lock.yaml`) |
 
 ---
 
@@ -87,7 +93,7 @@ Cada servicio decide en tiempo de ejecución si responde con mock local o API re
 
 ---
 
-## Estructura del proyecto
+## Estructura fundamental del proyecto
 
 ```text
 MaqAgr/
@@ -111,7 +117,7 @@ MaqAgr/
 ├── vercel.json
 ├── eslint.config.js
 ├── package.json
-└── package-lock.json
+└── pnpm-lock.yaml
 ```
 
 Alias de imports configurados en `vite.config.js`:
@@ -128,21 +134,33 @@ Alias de imports configurados en `vite.config.js`:
 
 ### Prerrequisitos
 
-- Node.js 20+
-- npm 10+
+- Node.js 22+
+- Corepack habilitado o disponible en la instalación de Node.js
+- pnpm 11.1.0
 
 ### 1) Clonar e instalar
 
 ```bash
 git clone https://github.com/trbureiyan/MaqAgr.git
 cd MaqAgr
-npm ci
+```
+
+En Windows, el camino recomendado para el equipo es ejecutar el bootstrap de PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap-pnpm.ps1 -Pristine -Verify
+```
+
+Si prefieres dejar solo la instalación base sin validaciones extra:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap-pnpm.ps1
 ```
 
 Alternativa sin scripts de instalación:
 
 ```bash
-npm run secure-install
+pnpm run secure-install
 ```
 
 ### 2) Configurar `.env`
@@ -162,7 +180,7 @@ Copy-Item .env.example .env
 ### 3) Levantar entorno local
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Vite inicia por defecto en `http://localhost:5173` (o el puerto configurado de forma local).
@@ -205,14 +223,18 @@ Este enfoque permite trabajar UI, validaciones y estados asíncronos sin bloquea
 
 | Script | Descripción |
 |--------|-------------|
-| `npm run dev` | Servidor de desarrollo con HMR |
-| `npm run build` | Build de producción (`dist/`) |
-| `npm run preview` | Preview local del build |
-| `npm run lint` | Alias de `lint:frontend` |
-| `npm run lint:frontend` | Lint de `src/` |
-| `npm run lint:backend` | Lint de referencia de `.backend/` |
-| `npm run lint:all` | Lint global del repositorio |
-| `npm run secure-install` | Instalación con scripts deshabilitados (`npm install --ignore-scripts`) |
+| `pnpm run dev` | Servidor de desarrollo con HMR |
+| `pnpm run build` | Build de producción (`dist/`) |
+| `pnpm run preview` | Preview local del build |
+| `pnpm run lint` | Alias de `lint:frontend` |
+| `pnpm run lint:frontend` | Lint de `src/` |
+| `pnpm run lint:backend` | Lint de referencia de `.backend/` |
+| `pnpm run lint:all` | Lint global del repositorio |
+| `pnpm run secure-install` | Instalación con scripts deshabilitados (`pnpm install --frozen-lockfile --ignore-scripts`) |
+
+### Bootstrap de Windows
+
+El script [`scripts/bootstrap-pnpm.ps1`](https://github.com/trbureiyan/MaqAgr/blob/refactor/switch-to-pnpm/scripts/bootstrap-pnpm.ps1) deja el entorno listo para trabajar en Windows, eliminando rastros de npm y fijando pnpm 11.1.0.
 
 ---
 
@@ -244,10 +266,10 @@ Este enfoque permite trabajar UI, validaciones y estados asíncronos sin bloquea
 - Origen del proyecto MaqAgr:
   Este repositorio (https://github.com/trbureiyan/MaqAgr) es un fork del proyecto original MaqAgr de https://github.com/David9604/Maqagr.
 - Autores:
-  - [David9604](https://github.com/David9604)
-  - [FlacoAfk](https://github.com/FlacoAfk)
-  - [JercOmg](https://github.com/JercOmg)
-  - [trbureiyan](https://github.com/trbureiyan)
+  - [David9604](https://github.com/David9604) | Juan David Yate Vargas
+  - [FlacoAfk](https://github.com/FlacoAfk) | Julian Medina Monje
+  - [JercOmg](https://github.com/JercOmg) | Juan Esteban Rojas
+  - [trbureiyan](https://github.com/trbureiyan) | Brayan Toro Bustos
 
 ---
 

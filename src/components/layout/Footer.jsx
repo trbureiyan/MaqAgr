@@ -1,10 +1,6 @@
 /**
  * @fileoverview Pie de página global de MaqAgr.
  *
- * Componente estático que muestra el crédito del equipo de desarrollo
- * con un enlace a la página "Sobre Nosotros". Se adapta a cualquier
- * ancho de pantalla gracias al contenedor centrado con padding responsive.
- *
  * @module components/layout/Footer
  */
 
@@ -30,11 +26,11 @@ import { Link } from 'react-router-dom';
  */
 const Footer = () => {
   return (
-    <footer className="bg-[#1e2939] py-5">
+    <footer className="bg-[#1e2939] border-t border-white/10 py-6 mt-auto">
       {/* Contenedor centrado con padding horizontal responsive */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
         {/* Texto de copyright con enlace al equipo */}
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-slate-300">
           © 2026{' '}
           <Link
             to="/SobreNosotros"

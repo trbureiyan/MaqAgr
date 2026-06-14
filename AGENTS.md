@@ -18,6 +18,7 @@ This project has been hardened against supply chain attacks using [fendo](https:
 - Do not add git-based or tarball URL dependencies unless explicitly approved.
 - **Do not run `npm update`**, `npx npm-check-updates`, or any blind upgrade command. Review each update individually.
 - **Use deterministic installs**: prefer `pnpm install --frozen-lockfile` over `pnpm install` in CI and scripts.
+- **NPM IS STRICTLY FORBIDDEN**: This project and team must exclusively use pnpm (>=11.1.0). Do not run any `npm` commands or suggest them.
 <!-- fendo:end -->
 
 ## Testing

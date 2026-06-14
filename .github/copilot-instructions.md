@@ -14,9 +14,9 @@ You are an expert AI programming assistant working on **MaqAgr**, a web-based de
 ## Architecture & Conventions
 
 1. **API Service Pattern**:
-   - Centralized logic in `src/services/tractorApi.js`.
-   - Toggle behavior via `VITE_ENABLE_REMOTE_TRACTOR_API`.
-   - **Requirement**: Always implement mock fallback logic alongside remote API calls.
+   - Centralized logic in `src/services/tractorApi.js` and other domain services.
+   - Toggle behavior via `VITE_ENABLE_REMOTE_*_API` context variables.
+   - **Requirement**: Always implement mock fallback logic alongside remote API calls. You must also include realistic fake latency (`setTimeout`) mimicking remote networks before resolving mock data.
 2. **File Naming**:
    - **Pages & Components**: `PascalCase.jsx` (e.g., `TractorList.jsx`, `Home.jsx`).
    - **Services & Utils**: `camelCase.js` (e.g., `tractorApi.js`).
@@ -29,8 +29,9 @@ You are an expert AI programming assistant working on **MaqAgr**, a web-based de
    - Avoid using the default `assert` object.
 4. **Dependencies & Supply Chain**:
    - **Never use `^` or `~`** in dependency version specifiers. Always pin exact versions in `package.json`.
-   - **Always commit the lockfile** (`package-lock.json`).
-   - Use deterministic installs: `npm ci` or `npm install --ignore-scripts`.
+   - **Always commit the lockfile** (`pnpm-lock.yaml`).
+   - Use deterministic installs: `pnpm install --frozen-lockfile`.
+   - **NPM IS STRICTLY FORBIDDEN**: This project exclusively uses pnpm (>=11.1.0). Never suggest or run npm commands.
 
 ## Domain & Code Style
 
@@ -42,6 +43,8 @@ You are an expert AI programming assistant working on **MaqAgr**, a web-based de
 - **Environment**: Access variables via `import.meta.env`. Prefix with `VITE_`.
 
 ## Integration with Backend
+
+> **Note (.backend Context)**: Any local folder named `.backend` (including its `/docs` & `/out` subfolders) is strictly **READ-ONLY** for LLM agents. Never edit files inside `.backend` or allow them to influence the frontend's global repository configurations. This folder exists solely to provide context on backend business logic and documentation, and should only be accessed when explicitly requested by the user.
 
 - **STRICT Data Mapping (Casing)**: The Express backend strictly expects and returns JSON in `snake_case` (e.g., `engine_power_hp`). The React frontend operates entirely in `camelCase` (e.g., `enginePowerHp`). **Any Fetch request (GET/POST/PUT) MUST apply explicit translation/mapping mappings before rendering UI and before sending payloads to the backend.**
 - **REST API**:
