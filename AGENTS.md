@@ -1,17 +1,15 @@
 # AGENTS
 
-<!-- fendo:start -->
-
 ## Supply Chain Security
 
-This project has been hardened against supply chain attacks using [fendo](https://github.com/midudev/fendo).
+This project has been hardened against supply chain attacks via `pnpm-workspace.yaml` configuration.
 
 ### Rules for AI assistants and contributors
 
 - **Never use `^` or `~`** in dependency version specifiers. Always pin exact versions.
 - **Always commit the lockfile** (`pnpm-lock.yaml`). Never delete it or add it to `.gitignore`.
 - **Install scripts are disabled**. If a new dependency requires a build step, it must be explicitly approved.
-- **New package versions must be at least 1 day old** before they can be installed (release age gating is enabled).
+- **New package versions must be at least 1 day old** before they can be installed (release age gating is enabled via `minimumReleaseAge: 1440` in `pnpm-workspace.yaml`).
 - When adding a dependency, verify it on [npmjs.com](https://www.npmjs.com) before installing.
 - Prefer well-maintained packages with verified publishers and provenance.
 - Run `pnpm install` with the lockfile present — never bypass it.
@@ -19,7 +17,6 @@ This project has been hardened against supply chain attacks using [fendo](https:
 - **Do not run `npm update`**, `npx npm-check-updates`, or any blind upgrade command. Review each update individually.
 - **Use deterministic installs**: prefer `pnpm install --frozen-lockfile` over `pnpm install` in CI and scripts.
 - **NPM IS STRICTLY FORBIDDEN**: This project and team must exclusively use pnpm (>=11.1.0). Do not run any `npm` commands or suggest them.
-<!-- fendo:end -->
 
 ## Testing
 
