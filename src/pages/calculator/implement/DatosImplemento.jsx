@@ -172,34 +172,47 @@ export default function DatosImplemento() {
 
   const validateStep1 = () => {
     const err = {};
+    const missing = [];
+
     if (isSimpleMode) {
-      if (!formData.implement_type && !selectedImplementId) {
+      if (!formData.power_requirement_hp && !selectedImplementId) {
         err.general = "Por favor busca y selecciona un implemento del catálogo.";
+        sileo.warning("Estás dejando vacío el implemento del catálogo.");
       }
       return err;
     }
+
     if (!formData.implement_type) {
       err.implement_type = "Selecciona el tipo de implemento.";
+      missing.push("Tipo de implemento");
     }
 
     const width = Number(formData.working_width_m);
     if (!formData.working_width_m || !Number.isFinite(width) || width <= 0) {
       err.working_width_m = "Ingresa un ancho de trabajo válido (mayor a 0).";
+      missing.push("Ancho de trabajo");
     }
 
     const depth = Number(formData.working_depth_cm);
     if (!formData.working_depth_cm || !Number.isFinite(depth) || depth <= 0) {
       err.working_depth_cm = "Ingresa una profundidad de trabajo válida (mayor a 0).";
+      missing.push("Profundidad de trabajo");
     }
 
     const weight = Number(formData.weight_kg);
     if (!formData.weight_kg || !Number.isFinite(weight) || weight <= 0) {
       err.weight_kg = "Ingresa el peso del implemento como un número válido.";
+      missing.push("Peso del implemento");
     }
 
     const power = Number(formData.power_requirement_hp);
     if (!formData.power_requirement_hp || !Number.isFinite(power) || power <= 0) {
       err.power_requirement_hp = "Ingresa el requerimiento de potencia base (HP) como un número válido.";
+      missing.push("Potencia requerida base");
+    }
+
+    if (missing.length > 0) {
+      sileo.warning(`Estás dejando vacío(s) el/los campo(s): ${missing.join(", ")}.`);
     }
 
     return err;
@@ -209,6 +222,7 @@ export default function DatosImplemento() {
     const err = {};
     if (!formData.soil_type) {
       err.soil_type = "Por favor selecciona el tipo de suelo.";
+      sileo.warning("Estás dejando vacío el campo: Tipo de suelo.");
     }
     return err;
   };
