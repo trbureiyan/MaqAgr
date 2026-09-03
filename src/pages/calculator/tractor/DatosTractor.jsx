@@ -62,7 +62,7 @@ export default function DatosTractor() {
     // Paso 2: Llantas
     diametroLlanta: "",
     presionInflado: "",
-    soil_type: "loam",
+    soil_type: "",
     tamanoLlanta: "", // Simple Mode
 
     // Paso 3: Clima
@@ -116,8 +116,31 @@ export default function DatosTractor() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+
+      if (name === "pb") {
+        const num = Number(value);
+        if (value !== "" && Number.isFinite(num) && num > 0) {
+          next.pmax_tdp = String(+(num * 0.86).toFixed(1));
+        } else if (value === "") {
+          next.pmax_tdp = "";
+        }
+      } else if (name === "pmax_tdp") {
+        const num = Number(value);
+        if (value !== "" && Number.isFinite(num) && num > 0) {
+          next.pb = String(+(num / 0.86).toFixed(1));
+        } else if (value === "") {
+          next.pb = "";
+        }
+      }
+
+      return next;
+    });
+
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+    if (name === "pb" && errors.pmax_tdp) setErrors((prev) => ({ ...prev, pmax_tdp: "" }));
+    if (name === "pmax_tdp" && errors.pb) setErrors((prev) => ({ ...prev, pb: "" }));
   };
 
   const validateStep1 = () => {
@@ -179,7 +202,7 @@ export default function DatosTractor() {
       turbo: "",
       diametroLlanta: "",
       presionInflado: "",
-      soil_type: "loam",
+      soil_type: "",
       tamanoLlanta: "",
       altitudeM: "",
       ambientTemperatureC: "",
@@ -327,6 +350,7 @@ export default function DatosTractor() {
             error={errors.pb}
             placeholder="HP"
             min="1"
+            unit="HP"
             presets={PB_PRESETS}
             unknownDefault={PB_UNKNOWN_DEFAULT}
             unknownLabel="80 HP, valor típico"
@@ -343,6 +367,7 @@ export default function DatosTractor() {
             error={errors.pmax_tdp}
             placeholder="HP"
             min="1"
+            unit="HP"
             presets={PMAX_TDP_PRESETS}
             unknownDefault={PMAX_TDP_UNKNOWN_DEFAULT}
             unknownLabel="69 HP (86% de 80)"
@@ -359,6 +384,7 @@ export default function DatosTractor() {
             error={errors.peso}
             placeholder="kg"
             min="1"
+            unit="kg"
             presets={PESO_PRESETS}
             unknownDefault={PESO_UNKNOWN_DEFAULT}
             unknownLabel="4 500 kg, estándar mediano"
@@ -433,6 +459,7 @@ export default function DatosTractor() {
             onChange={handleChange}
             placeholder="Pulgadas (in)"
             min="0"
+            unit="in"
             presets={DIAMETRO_LLANTA_PRESETS}
             unknownDefault={DIAMETRO_LLANTA_UNKNOWN_DEFAULT}
             unknownLabel="dejar vacío"
@@ -448,6 +475,7 @@ export default function DatosTractor() {
             onChange={handleChange}
             placeholder="PSI"
             min="0"
+            unit="PSI"
             presets={PRESION_PRESETS}
             unknownDefault={PRESION_UNKNOWN_DEFAULT}
             unknownLabel="dejar vacío"
@@ -457,47 +485,27 @@ export default function DatosTractor() {
       )}
 
       <div>
-        <p className="text-sm font-medium text-foreground mb-3">Condición del suelo</p>
-        <div className="grid grid-cols-1 gap-3">
-          {[
-            { value: 'clay',   label: 'Arcilloso', descripcion: 'Suelo pesado, alta retención de agua, difícil de trabajar en húmedo.' },
-            { value: 'sandy',  label: 'Arenoso',   descripcion: 'Suelo ligero, baja retención de agua, fácil de trabajar.' },
-            { value: 'loam',   label: 'Franco',    descripcion: 'Suelo equilibrado, mezcla de arena, limo y arcilla. Ideal para cultivos.' },
-            { value: 'silt',   label: 'Limoso',    descripcion: 'Suelo de grano fino, muy fértil pero propenso a la compactación.' },
-          ].map((suelo) => (
-            <label
-              key={suelo.value}
-              className={[
-                'flex items-start gap-3 p-3.5 rounded border cursor-pointer transition-all duration-150',
-                formData.soil_type === suelo.value
-                  ? 'border-primary bg-secondary/10 shadow-sm'
-                  : 'border-border/60 hover:border-border hover:bg-secondary/5',
-              ].join(' ')}
-            >
-              <input
-                type="radio"
-                name="soil_type"
-                value={suelo.value}
-                checked={formData.soil_type === suelo.value}
-                onChange={() =>
-                  setFormData((prev) => ({ ...prev, soil_type: suelo.value }))
-                }
-                className="mt-1 h-4 w-4 accent-primary flex-shrink-0"
-              />
-              <div>
-                <p className={`font-semibold text-sm leading-none ${formData.soil_type === suelo.value ? 'text-primary' : 'text-foreground'}`}>
-                  {suelo.label}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                  {suelo.descripcion}
-                </p>
-              </div>
-            </label>
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Opcional — el tipo de suelo afecta la resistencia a la rodadura.
-        </p>
+        <label htmlFor="soil_type" className="text-sm font-medium text-foreground block mb-1.5">
+          Tipo de suelo
+        </label>
+        <select
+          id="soil_type"
+          name="soil_type"
+          value={formData.soil_type}
+          onChange={handleChange}
+          className={getInputClass('soil_type', errors)}
+        >
+          <option value="">Seleccione una opción</option>
+          <option value="clay">Arcilloso — Suelo pesado, alta retención de agua</option>
+          <option value="sandy">Arenoso — Suelo ligero, baja retención de agua</option>
+          <option value="loam">Franco — Suelo equilibrado, mezcla de arena, limo y arcilla</option>
+          <option value="silt">Limoso — Suelo de grano fino, propenso a compactación</option>
+        </select>
+        {errors.soil_type && (
+          <p className="mt-1.5 text-xs text-destructive" role="alert">
+            {errors.soil_type}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -561,9 +569,10 @@ export default function DatosTractor() {
               onChange={handleChange}
               placeholder="msnm"
               min="0"
+              unit="msnm"
               presets={ALTITUD_PRESETS}
-              unknownDefault={ALTITUD_UNKNOWN_DEFAULT}
-              unknownLabel="dejar vacío"
+              unknownDefault="0"
+              unknownLabel="0 msnm (nivel del mar)"
               inputClass={getInputClass('altitudeM', {})}
             />
 
@@ -575,9 +584,10 @@ export default function DatosTractor() {
               value={formData.ambientTemperatureC}
               onChange={handleChange}
               placeholder="°C"
+              unit="°C"
               presets={TEMPERATURA_PRESETS}
-              unknownDefault={TEMPERATURA_UNKNOWN_DEFAULT}
-              unknownLabel="dejar vacío"
+              unknownDefault="22"
+              unknownLabel="22 °C (templado)"
               inputClass={getInputClass('ambientTemperatureC', {})}
             />
           </div>
@@ -592,9 +602,10 @@ export default function DatosTractor() {
               onChange={handleChange}
               placeholder="%"
               min="0"
+              unit="%"
               presets={PENDIENTE_PRESETS}
-              unknownDefault={PENDIENTE_UNKNOWN_DEFAULT}
-              unknownLabel="0% (plano)"
+              unknownDefault="0"
+              unknownLabel="0% (terreno plano)"
               inputClass={getInputClass('slopePercent', {})}
             />
 
@@ -607,9 +618,10 @@ export default function DatosTractor() {
               onChange={handleChange}
               placeholder="% (default: 15)"
               min="0"
+              unit="%"
               presets={PATINAMIENTO_PRESETS}
-              unknownDefault={PATINAMIENTO_UNKNOWN_DEFAULT}
-              unknownLabel="sistema usará 15%"
+              unknownDefault="15"
+              unknownLabel="15% (estándar recomendado)"
               inputClass={getInputClass('slippagePercent', {})}
             />
           </div>
@@ -624,13 +636,14 @@ export default function DatosTractor() {
               onChange={handleChange}
               placeholder="km/h (default: 7)"
               min="0"
+              unit="km/h"
               presets={[
                 { label: '5 km/h', value: '5', hint: 'Labor lenta / profunda' },
                 { label: '7 km/h', value: '7', hint: 'Labor típica' },
                 { label: '10 km/h', value: '10', hint: 'Labor rápida / superficial' },
               ]}
               unknownDefault="7"
-              unknownLabel="sistema usará 7 km/h"
+              unknownLabel="7 km/h (estándar)"
               inputClass={getInputClass('workingSpeedKmh', {})}
             />
           </div>
