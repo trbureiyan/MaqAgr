@@ -326,6 +326,7 @@ export default function DatosTractor() {
             onChange={handleChange}
             error={errors.pb}
             placeholder="HP"
+            min="1"
             presets={PB_PRESETS}
             unknownDefault={PB_UNKNOWN_DEFAULT}
             unknownLabel="80 HP, valor típico"
@@ -341,6 +342,7 @@ export default function DatosTractor() {
             onChange={handleChange}
             error={errors.pmax_tdp}
             placeholder="HP"
+            min="1"
             presets={PMAX_TDP_PRESETS}
             unknownDefault={PMAX_TDP_UNKNOWN_DEFAULT}
             unknownLabel="69 HP (86% de 80)"
@@ -356,6 +358,7 @@ export default function DatosTractor() {
             onChange={handleChange}
             error={errors.peso}
             placeholder="kg"
+            min="1"
             presets={PESO_PRESETS}
             unknownDefault={PESO_UNKNOWN_DEFAULT}
             unknownLabel="4 500 kg, estándar mediano"
@@ -429,6 +432,7 @@ export default function DatosTractor() {
             value={formData.diametroLlanta}
             onChange={handleChange}
             placeholder="Pulgadas (in)"
+            min="0"
             presets={DIAMETRO_LLANTA_PRESETS}
             unknownDefault={DIAMETRO_LLANTA_UNKNOWN_DEFAULT}
             unknownLabel="dejar vacío"
@@ -443,6 +447,7 @@ export default function DatosTractor() {
             value={formData.presionInflado}
             onChange={handleChange}
             placeholder="PSI"
+            min="0"
             presets={PRESION_PRESETS}
             unknownDefault={PRESION_UNKNOWN_DEFAULT}
             unknownLabel="dejar vacío"
@@ -528,6 +533,7 @@ export default function DatosTractor() {
               value={formData.altitudeM}
               onChange={handleChange}
               placeholder="msnm"
+              min="0"
               presets={ALTITUD_PRESETS}
               unknownDefault={ALTITUD_UNKNOWN_DEFAULT}
               unknownLabel="dejar vacío"
@@ -558,6 +564,7 @@ export default function DatosTractor() {
               value={formData.slopePercent}
               onChange={handleChange}
               placeholder="%"
+              min="0"
               presets={PENDIENTE_PRESETS}
               unknownDefault={PENDIENTE_UNKNOWN_DEFAULT}
               unknownLabel="0% (plano)"
@@ -572,6 +579,7 @@ export default function DatosTractor() {
               value={formData.slippagePercent}
               onChange={handleChange}
               placeholder="% (default: 15)"
+              min="0"
               presets={PATINAMIENTO_PRESETS}
               unknownDefault={PATINAMIENTO_UNKNOWN_DEFAULT}
               unknownLabel="sistema usará 15%"
@@ -588,6 +596,7 @@ export default function DatosTractor() {
               value={formData.workingSpeedKmh}
               onChange={handleChange}
               placeholder="km/h (default: 7)"
+              min="0"
               presets={[
                 { label: '5 km/h', value: '5', hint: 'Labor lenta / profunda' },
                 { label: '7 km/h', value: '7', hint: 'Labor típica' },

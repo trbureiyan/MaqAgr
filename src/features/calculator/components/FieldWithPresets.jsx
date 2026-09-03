@@ -161,9 +161,32 @@ const FieldWithPresets = ({
         step={step}
         min={min}
         value={value}
-        onChange={onChange}
+        onChange={(e) => {
+          // When a numeric minimum is defined, clamp the value in real time
+          // so the user cannot enter 0 or negative numbers visually.
+          if (type === 'number' && min !== undefined && min !== null && min !== '') {
+            const numericMin = Number(min);
+            const numericVal = Number(e.target.value);
+            if (e.target.value !== '' && Number.isFinite(numericVal) && numericVal < numericMin) {
+              e.target.value = String(numericMin);
+              onChange({ target: { name, value: String(numericMin) } });
+              return;
+            }
+          }
+          onChange(e);
+        }}
         onFocus={handleFocus}
-        onBlur={handleBlur}
+        onBlur={(e) => {
+          // On blur, also clamp — catches cases where the user typed fast
+          if (type === 'number' && min !== undefined && min !== null && min !== '') {
+            const numericMin = Number(min);
+            const numericVal = Number(e.target.value);
+            if (e.target.value !== '' && Number.isFinite(numericVal) && numericVal < numericMin) {
+              onChange({ target: { name, value: String(numericMin) } });
+            }
+          }
+          handleBlur(e);
+        }}
         placeholder={placeholder}
         className={inputClass}
         aria-invalid={Boolean(error)}
