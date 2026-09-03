@@ -62,7 +62,7 @@ export default function DatosTractor() {
     // Paso 2: Llantas
     diametroLlanta: "",
     presionInflado: "",
-    tipoSuelo: "",
+    soil_type: "loam",
     tamanoLlanta: "", // Simple Mode
 
     // Paso 3: Clima
@@ -179,7 +179,7 @@ export default function DatosTractor() {
       turbo: "",
       diametroLlanta: "",
       presionInflado: "",
-      tipoSuelo: "",
+      soil_type: "loam",
       tamanoLlanta: "",
       altitudeM: "",
       ambientTemperatureC: "",
@@ -253,7 +253,7 @@ export default function DatosTractor() {
       hasTurbo,
       tireDiameterIn: diametroLlanta,
       tirePressurePsi: presionInflado,
-      soilType: formData.tipoSuelo || null,
+      soilType: formData.soil_type || 'loam',
       altitudeM,
       ambientTemperatureC,
       slopePercent,
@@ -457,20 +457,47 @@ export default function DatosTractor() {
       )}
 
       <div>
-        <label htmlFor="tipoSuelo" className="text-sm font-medium text-foreground block mb-1.5">
-          Condición del suelo
-        </label>
-        <select
-          id="tipoSuelo"
-          name="tipoSuelo"
-          value={formData.tipoSuelo}
-          onChange={handleChange}
-          className={getInputClass('tipoSuelo', {})}
-        >
-          <option value="">Selecciona el tipo de suelo (Opcional)</option>
-          <option value="firme">Firme — Suelo seco, compactado, sin labrar</option>
-          <option value="blando">Blando — Suelo suelto, arado recientemente, arenoso</option>
-        </select>
+        <p className="text-sm font-medium text-foreground mb-3">Condición del suelo</p>
+        <div className="grid grid-cols-1 gap-3">
+          {[
+            { value: 'clay',   label: 'Arcilloso', descripcion: 'Suelo pesado, alta retención de agua, difícil de trabajar en húmedo.' },
+            { value: 'sandy',  label: 'Arenoso',   descripcion: 'Suelo ligero, baja retención de agua, fácil de trabajar.' },
+            { value: 'loam',   label: 'Franco',    descripcion: 'Suelo equilibrado, mezcla de arena, limo y arcilla. Ideal para cultivos.' },
+            { value: 'silt',   label: 'Limoso',    descripcion: 'Suelo de grano fino, muy fértil pero propenso a la compactación.' },
+          ].map((suelo) => (
+            <label
+              key={suelo.value}
+              className={[
+                'flex items-start gap-3 p-3.5 rounded border cursor-pointer transition-all duration-150',
+                formData.soil_type === suelo.value
+                  ? 'border-primary bg-secondary/10 shadow-sm'
+                  : 'border-border/60 hover:border-border hover:bg-secondary/5',
+              ].join(' ')}
+            >
+              <input
+                type="radio"
+                name="soil_type"
+                value={suelo.value}
+                checked={formData.soil_type === suelo.value}
+                onChange={() =>
+                  setFormData((prev) => ({ ...prev, soil_type: suelo.value }))
+                }
+                className="mt-1 h-4 w-4 accent-primary flex-shrink-0"
+              />
+              <div>
+                <p className={`font-semibold text-sm leading-none ${formData.soil_type === suelo.value ? 'text-primary' : 'text-foreground'}`}>
+                  {suelo.label}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                  {suelo.descripcion}
+                </p>
+              </div>
+            </label>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Opcional — el tipo de suelo afecta la resistencia a la rodadura.
+        </p>
       </div>
     </div>
   );
