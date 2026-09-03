@@ -26,14 +26,17 @@ import {
   PATINAMIENTO_PRESETS, PATINAMIENTO_UNKNOWN_DEFAULT,
 } from "../../../lib/fieldPresets";
 import { getTractors } from "../../../services/tractorApi";
+import { getImplements } from "../../../services/implementApi";
 import { calculateDirectPowerLoss } from "../../../services/calculationApi";
+import TractorMachineCard from "@/features/tractors/components/TractorMachineCard";
+import MachineImg from "../../../assets/icons/plow.webp";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "../../../components/ui/dialog";
-import { ChevronRight, ChevronLeft, BookOpen, RotateCcw } from "lucide-react";
+import { ChevronRight, ChevronLeft, BookOpen, RotateCcw, Search } from "lucide-react";
 import StepIndicator from "../../../components/ui/StepIndicator";
 import SkeletonCard from "@/components/ui/SkeletonCard";
 
@@ -50,6 +53,9 @@ export default function DatosTractor() {
   // Estados de cálculo final
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [implementsList, setImplementsList] = useState([]);
+  const [busquedaImplemento, setBusquedaImplemento] = useState("");
+  const [isLoadingImplements, setIsLoadingImplements] = useState(false);
 
   // Estado del formulario unificado
   const [formData, setFormData] = useState({
@@ -62,7 +68,7 @@ export default function DatosTractor() {
     // Paso 2: Llantas
     diametroLlanta: "",
     presionInflado: "",
-    tipoSuelo: "",
+    soil_type: "",
     tamanoLlanta: "", // Simple Mode
 
     // Paso 3: Clima
@@ -116,33 +122,69 @@ export default function DatosTractor() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+
+      if (name === "pb") {
+        const num = Number(value);
+        if (value !== "" && Number.isFinite(num) && num > 0) {
+          next.pmax_tdp = String(+(num * 0.86).toFixed(1));
+        } else if (value === "") {
+          next.pmax_tdp = "";
+        }
+      } else if (name === "pmax_tdp") {
+        const num = Number(value);
+        if (value !== "" && Number.isFinite(num) && num > 0) {
+          next.pb = String(+(num / 0.86).toFixed(1));
+        } else if (value === "") {
+          next.pb = "";
+        }
+      }
+
+      return next;
+    });
+
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+    if (name === "pb" && errors.pmax_tdp) setErrors((prev) => ({ ...prev, pmax_tdp: "" }));
+    if (name === "pmax_tdp" && errors.pb) setErrors((prev) => ({ ...prev, pb: "" }));
   };
 
   const validateStep1 = () => {
     const err = {};
+    const missing = [];
+
     if (isSimpleMode) {
       if (!formData.pb) {
         err.general = "Por favor busca y selecciona un tractor del catálogo.";
+        sileo.warning("Estás dejando vacío el tractor del catálogo.");
       }
       return err;
     }
+
     const pbVal = Number(formData.pb);
     if (!formData.pb || !Number.isFinite(pbVal) || pbVal <= 0) {
       err.pb = "Ingresa la potencia bruta (HP) como un número válido.";
+      missing.push("Potencia Bruta");
     }
     const pmaxVal = Number(formData.pmax_tdp);
     if (!formData.pmax_tdp || !Number.isFinite(pmaxVal) || pmaxVal <= 0) {
       err.pmax_tdp = "Ingresa la potencia TDP (HP) como un número válido.";
+      missing.push("Potencia Máxima TDP");
     }
     const pesoVal = Number(formData.peso);
     if (!formData.peso || !Number.isFinite(pesoVal) || pesoVal <= 0) {
       err.peso = "Ingresa el peso operativo (kg) como un número válido.";
+      missing.push("Peso Operativo");
     }
     if (!formData.turbo) {
       err.turbo = "Selecciona si el motor tiene turbo.";
+      missing.push("Motor turboalimentado");
     }
+
+    if (missing.length > 0) {
+      sileo.warning(`Estás dejando vacío(s) el/los campo(s): ${missing.join(", ")}.`);
+    }
+
     return err;
   };
 
@@ -155,8 +197,35 @@ export default function DatosTractor() {
       }
       setStep(2);
     } else if (step === 2) {
+      const emptyFields = [];
+      if (isSimpleMode) {
+        if (!formData.tamanoLlanta) emptyFields.push("Tamaño de llanta");
+      } else {
+        if (!formData.diametroLlanta) emptyFields.push("Diámetro de llanta");
+        if (!formData.presionInflado) emptyFields.push("Presión de inflado");
+      }
+      if (!formData.soil_type) emptyFields.push("Tipo de suelo");
+
+      if (emptyFields.length > 0) {
+        sileo.warning(`Estás dejando vacío(s) el/los campo(s): ${emptyFields.join(", ")}.`);
+      }
       setStep(3);
     } else if (step === 3) {
+      const emptyFields = [];
+      if (isSimpleMode) {
+        if (!formData.altitudSimple) emptyFields.push("Altitud");
+        if (!formData.temperaturaSimple) emptyFields.push("Temperatura ambiente");
+      } else {
+        if (!formData.altitudeM) emptyFields.push("Altitud");
+        if (!formData.ambientTemperatureC) emptyFields.push("Temperatura ambiente");
+        if (!formData.slopePercent) emptyFields.push("Pendiente");
+        if (!formData.slippagePercent) emptyFields.push("Patinamiento");
+        if (!formData.workingSpeedKmh) emptyFields.push("Velocidad de trabajo");
+      }
+
+      if (emptyFields.length > 0) {
+        sileo.warning(`Estás dejando vacío(s) el/los campo(s): ${emptyFields.join(", ")}.`);
+      }
       setStep(4);
       ejecutarCalculo();
     }
@@ -179,7 +248,7 @@ export default function DatosTractor() {
       turbo: "",
       diametroLlanta: "",
       presionInflado: "",
-      tipoSuelo: "",
+      soil_type: "",
       tamanoLlanta: "",
       altitudeM: "",
       ambientTemperatureC: "",
@@ -191,6 +260,8 @@ export default function DatosTractor() {
     });
     setTractorImage(() => PiTractorFill);
     setResult(null);
+    setImplementsList([]);
+    setBusquedaImplemento("");
     setErrors({});
   };
 
@@ -253,7 +324,7 @@ export default function DatosTractor() {
       hasTurbo,
       tireDiameterIn: diametroLlanta,
       tirePressurePsi: presionInflado,
-      soilType: formData.tipoSuelo || null,
+      soilType: formData.soil_type || 'loam',
       altitudeM,
       ambientTemperatureC,
       slopePercent,
@@ -264,8 +335,46 @@ export default function DatosTractor() {
 
     try {
       const response = await calculateDirectPowerLoss(payload);
-      setResult(response?.data ?? response);
+      const resData = response?.data ?? response;
+      setResult(resData);
       sileo.success("Cálculo completado con éxito.");
+
+      // Cargar implementos compatibles en base a la potencia útil disponible
+      try {
+        setIsLoadingImplements(true);
+        const netPower = resData?.netPowerHp || toNumberOrNull(formData.pb) || 100;
+        const impRes = await getImplements({ limit: 100 });
+        const allImplements = impRes?.data || [];
+
+        const evaluated = allImplements.map((imp) => {
+          const reqHp = Number(imp.powerRequirementHp || imp.power_requirement_hp || 0);
+          let suitability = { label: "Óptimo", color: "green" };
+          if (reqHp > netPower) {
+            suitability = { label: "Potencia Insuficiente", color: "red" };
+          } else if (reqHp < netPower * 0.5) {
+            suitability = { label: "Sobredimensionado", color: "yellow" };
+          } else {
+            suitability = { label: "Óptimo", color: "green" };
+          }
+          return {
+            ...imp,
+            reqHp,
+            suitability,
+            isCompatible: reqHp <= netPower,
+          };
+        });
+
+        // Priorizar los implementos compatibles
+        const compatibles = evaluated
+          .filter((i) => i.isCompatible)
+          .sort((a, b) => b.reqHp - a.reqHp);
+
+        setImplementsList(compatibles.length > 0 ? compatibles : evaluated);
+      } catch (errImp) {
+        console.error("Error al obtener implementos compatibles:", errImp);
+      } finally {
+        setIsLoadingImplements(false);
+      }
     } catch (err) {
       console.error("Error en ejecutarCalculo (TengoTractor):", err);
       sileo.error(err.message || "Error de conexión. Verifica tu estado de red o el servidor.");
@@ -326,6 +435,8 @@ export default function DatosTractor() {
             onChange={handleChange}
             error={errors.pb}
             placeholder="HP"
+            min="1"
+            unit="HP"
             presets={PB_PRESETS}
             unknownDefault={PB_UNKNOWN_DEFAULT}
             unknownLabel="80 HP, valor típico"
@@ -341,6 +452,8 @@ export default function DatosTractor() {
             onChange={handleChange}
             error={errors.pmax_tdp}
             placeholder="HP"
+            min="1"
+            unit="HP"
             presets={PMAX_TDP_PRESETS}
             unknownDefault={PMAX_TDP_UNKNOWN_DEFAULT}
             unknownLabel="69 HP (86% de 80)"
@@ -356,6 +469,8 @@ export default function DatosTractor() {
             onChange={handleChange}
             error={errors.peso}
             placeholder="kg"
+            min="1"
+            unit="kg"
             presets={PESO_PRESETS}
             unknownDefault={PESO_UNKNOWN_DEFAULT}
             unknownLabel="4 500 kg, estándar mediano"
@@ -429,6 +544,8 @@ export default function DatosTractor() {
             value={formData.diametroLlanta}
             onChange={handleChange}
             placeholder="Pulgadas (in)"
+            min="0"
+            unit="in"
             presets={DIAMETRO_LLANTA_PRESETS}
             unknownDefault={DIAMETRO_LLANTA_UNKNOWN_DEFAULT}
             unknownLabel="dejar vacío"
@@ -443,6 +560,8 @@ export default function DatosTractor() {
             value={formData.presionInflado}
             onChange={handleChange}
             placeholder="PSI"
+            min="0"
+            unit="PSI"
             presets={PRESION_PRESETS}
             unknownDefault={PRESION_UNKNOWN_DEFAULT}
             unknownLabel="dejar vacío"
@@ -452,20 +571,27 @@ export default function DatosTractor() {
       )}
 
       <div>
-        <label htmlFor="tipoSuelo" className="text-sm font-medium text-foreground block mb-1.5">
-          Condición del suelo
+        <label htmlFor="soil_type" className="text-sm font-medium text-foreground block mb-1.5">
+          Tipo de suelo
         </label>
         <select
-          id="tipoSuelo"
-          name="tipoSuelo"
-          value={formData.tipoSuelo}
+          id="soil_type"
+          name="soil_type"
+          value={formData.soil_type}
           onChange={handleChange}
-          className={getInputClass('tipoSuelo', {})}
+          className={getInputClass('soil_type', errors)}
         >
-          <option value="">Selecciona el tipo de suelo (Opcional)</option>
-          <option value="firme">Firme — Suelo seco, compactado, sin labrar</option>
-          <option value="blando">Blando — Suelo suelto, arado recientemente, arenoso</option>
+          <option value="">Seleccione una opción</option>
+          <option value="clay">Arcilloso — Suelo pesado, alta retención de agua</option>
+          <option value="sandy">Arenoso — Suelo ligero, baja retención de agua</option>
+          <option value="loam">Franco — Suelo equilibrado, mezcla de arena, limo y arcilla</option>
+          <option value="silt">Limoso — Suelo de grano fino, propenso a compactación</option>
         </select>
+        {errors.soil_type && (
+          <p className="mt-1.5 text-xs text-destructive" role="alert">
+            {errors.soil_type}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -528,9 +654,11 @@ export default function DatosTractor() {
               value={formData.altitudeM}
               onChange={handleChange}
               placeholder="msnm"
+              min="0"
+              unit="msnm"
               presets={ALTITUD_PRESETS}
-              unknownDefault={ALTITUD_UNKNOWN_DEFAULT}
-              unknownLabel="dejar vacío"
+              unknownDefault="0"
+              unknownLabel="0 msnm (nivel del mar)"
               inputClass={getInputClass('altitudeM', {})}
             />
 
@@ -542,9 +670,10 @@ export default function DatosTractor() {
               value={formData.ambientTemperatureC}
               onChange={handleChange}
               placeholder="°C"
+              unit="°C"
               presets={TEMPERATURA_PRESETS}
-              unknownDefault={TEMPERATURA_UNKNOWN_DEFAULT}
-              unknownLabel="dejar vacío"
+              unknownDefault="22"
+              unknownLabel="22 °C (templado)"
               inputClass={getInputClass('ambientTemperatureC', {})}
             />
           </div>
@@ -558,9 +687,11 @@ export default function DatosTractor() {
               value={formData.slopePercent}
               onChange={handleChange}
               placeholder="%"
+              min="0"
+              unit="%"
               presets={PENDIENTE_PRESETS}
-              unknownDefault={PENDIENTE_UNKNOWN_DEFAULT}
-              unknownLabel="0% (plano)"
+              unknownDefault="0"
+              unknownLabel="0% (terreno plano)"
               inputClass={getInputClass('slopePercent', {})}
             />
 
@@ -572,9 +703,11 @@ export default function DatosTractor() {
               value={formData.slippagePercent}
               onChange={handleChange}
               placeholder="% (default: 15)"
+              min="0"
+              unit="%"
               presets={PATINAMIENTO_PRESETS}
-              unknownDefault={PATINAMIENTO_UNKNOWN_DEFAULT}
-              unknownLabel="sistema usará 15%"
+              unknownDefault="15"
+              unknownLabel="15% (estándar recomendado)"
               inputClass={getInputClass('slippagePercent', {})}
             />
           </div>
@@ -588,13 +721,15 @@ export default function DatosTractor() {
               value={formData.workingSpeedKmh}
               onChange={handleChange}
               placeholder="km/h (default: 7)"
+              min="0"
+              unit="km/h"
               presets={[
                 { label: '5 km/h', value: '5', hint: 'Labor lenta / profunda' },
                 { label: '7 km/h', value: '7', hint: 'Labor típica' },
                 { label: '10 km/h', value: '10', hint: 'Labor rápida / superficial' },
               ]}
               unknownDefault="7"
-              unknownLabel="sistema usará 7 km/h"
+              unknownLabel="7 km/h (estándar)"
               inputClass={getInputClass('workingSpeedKmh', {})}
             />
           </div>
@@ -627,6 +762,14 @@ export default function DatosTractor() {
     const netPowerHp = result?.netPowerHp ?? 0;
     const enginePowerHp = result?.enginePowerHp ?? 0;
     const efficiencyPct = result?.efficiencyPercentage ?? 0;
+
+    const filteredImplements = implementsList.filter(
+      (imp) =>
+        !busquedaImplemento ||
+        (imp.implementName || imp.name || "").toLowerCase().includes(busquedaImplemento.toLowerCase()) ||
+        (imp.brand || "").toLowerCase().includes(busquedaImplemento.toLowerCase()) ||
+        (imp.implementType || imp.type || "").toLowerCase().includes(busquedaImplemento.toLowerCase())
+    );
 
     return (
       <div className="space-y-8 animate-fadeIn">
@@ -697,6 +840,55 @@ export default function DatosTractor() {
             </div>
           </div>
         )}
+
+        {/* Implementos Compatibles Recomendados */}
+        <div className="border-t border-border/40 pt-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-foreground">Implementos Compatibles Recomendados</h3>
+              <p className="text-xs text-muted-foreground">
+                Maquinaria del catálogo que puedes operar eficientemente con los {netPowerHp} HP disponibles en barra de tiro.
+              </p>
+            </div>
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="Buscar implemento..."
+                value={busquedaImplemento}
+                onChange={(e) => setBusquedaImplemento(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-border/60 rounded text-sm bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+              />
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+            </div>
+          </div>
+
+          {isLoadingImplements ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {filteredImplements.length > 0 ? (
+                filteredImplements.map((imp) => (
+                  <TractorMachineCard
+                    key={imp.implementId || imp.implement_id || imp.id}
+                    imageSrc={imp.imageUrl || imp.image_url || imp.image || MachineImg}
+                    link={`/maquinaria/${imp.implementId || imp.implement_id || imp.id}`}
+                    title={imp.implementName || imp.name || `${imp.brand || ""} ${imp.implementType || "Implemento"}`}
+                    description={`Potencia requerida: ${imp.reqHp || imp.powerRequirementHp || imp.power_requirement_hp} HP - Estado: ${imp.suitability?.label || "Óptimo"}`}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full py-12 text-center text-muted-foreground bg-secondary/10 rounded border border-dashed border-border/60">
+                  <p className="text-base font-semibold">No se encontraron implementos compatibles</p>
+                  <p className="text-xs mt-1">Prueba refinando la búsqueda o con otra configuración de tractor.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="flex justify-center pt-4">
           <button

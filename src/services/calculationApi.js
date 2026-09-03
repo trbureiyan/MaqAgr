@@ -32,26 +32,42 @@ const mockDirectPowerLoss = async (payload) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       const enginePowerHp = payload.enginePowerHp || 100;
+
+      // Soil type affects rolling resistance.
+      // Base factor: loam (0%). Clay: +30%, Silt: +10%, Sandy: -20%.
+      const soilRollingFactor = {
+        clay:  1.30,
+        silt:  1.10,
+        loam:  1.00,
+        sandy: 0.80,
+      }[payload.soilType] ?? 1.00;
+
       const losses = {
-        slopeLossHp: +(enginePowerHp * 0.04).toFixed(2),
-        altitudeLossHp: payload.hasTurbo ? 0 : +(enginePowerHp * 0.03).toFixed(2),
-        rollingResistanceLossHp: +(enginePowerHp * 0.03).toFixed(2),
-        slippageLossHp: +(enginePowerHp * (payload.slippagePercent || 10) / 100 * 0.5).toFixed(2),
+        slopeLossHp:              +(enginePowerHp * 0.04).toFixed(2),
+        altitudeLossHp:           payload.hasTurbo ? 0 : +(enginePowerHp * 0.03).toFixed(2),
+        rollingResistanceLossHp:  +(enginePowerHp * 0.03 * soilRollingFactor).toFixed(2),
+        slippageLossHp:           +(enginePowerHp * (payload.slippagePercent || 10) / 100 * 0.5).toFixed(2),
       };
-      const totalLossHp = +(losses.slopeLossHp + losses.altitudeLossHp + losses.rollingResistanceLossHp + losses.slippageLossHp).toFixed(2);
+      const totalLossHp = +(
+        losses.slopeLossHp +
+        losses.altitudeLossHp +
+        losses.rollingResistanceLossHp +
+        losses.slippageLossHp
+      ).toFixed(2);
       const netPowerHp = +(enginePowerHp - totalLossHp).toFixed(2);
+
       resolve({
         success: true,
         data: {
           queryId: null,
           tractor: { brand: 'Manual', model: 'Input', hasTurbo: payload.hasTurbo || false },
-          terrain: { name: 'Terreno ingresado', soilType: payload.soilType || 'franco' },
+          terrain: { name: 'Terreno ingresado', soilType: payload.soilType || 'loam' },
           losses,
           totalLossHp,
           netPowerHp,
           enginePowerHp,
-          efficiencyPercentage: +((netPowerHp / enginePowerHp) * 100).toFixed(2)
-        }
+          efficiencyPercentage: +((netPowerHp / enginePowerHp) * 100).toFixed(2),
+        },
       });
     }, 1500);
   });

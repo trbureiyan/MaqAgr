@@ -73,6 +73,7 @@ const FieldWithPresets = ({
   unknownDefault,
   unknownLabel,
   inputClass,
+  unit,
 }) => {
   const [panelOpen, setPanelOpen] = useState(false);
   const blurTimerRef = useRef(null);
@@ -154,24 +155,54 @@ const FieldWithPresets = ({
       </div>
 
       {/* ── Input principal ── */}
-      <input
-        id={id}
-        name={name}
-        type={type}
-        step={step}
-        min={min}
-        value={value}
-        onChange={onChange}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        placeholder={placeholder}
-        className={inputClass}
-        aria-invalid={Boolean(error)}
-        aria-describedby={[
-          error ? `${id}-error` : null,
-          panelOpen ? `${id}-help-panel` : null,
-        ].filter(Boolean).join(' ') || undefined}
-      />
+      <div className="relative flex items-center">
+        <input
+          id={id}
+          name={name}
+          type={type}
+          step={step}
+          min={min}
+          value={value}
+          onChange={(e) => {
+            // When a numeric minimum is defined, clamp the value in real time
+            // so the user cannot enter 0 or negative numbers visually.
+            if (type === 'number' && min !== undefined && min !== null && min !== '') {
+              const numericMin = Number(min);
+              const numericVal = Number(e.target.value);
+              if (e.target.value !== '' && Number.isFinite(numericVal) && numericVal < numericMin) {
+                e.target.value = String(numericMin);
+                onChange({ target: { name, value: String(numericMin) } });
+                return;
+              }
+            }
+            onChange(e);
+          }}
+          onFocus={handleFocus}
+          onBlur={(e) => {
+            // On blur, also clamp — catches cases where the user typed fast
+            if (type === 'number' && min !== undefined && min !== null && min !== '') {
+              const numericMin = Number(min);
+              const numericVal = Number(e.target.value);
+              if (e.target.value !== '' && Number.isFinite(numericVal) && numericVal < numericMin) {
+                onChange({ target: { name, value: String(numericMin) } });
+              }
+            }
+            handleBlur(e);
+          }}
+          placeholder={placeholder}
+          className={`${inputClass} ${unit ? 'pr-14' : ''}`}
+          aria-invalid={Boolean(error)}
+          aria-describedby={[
+            error ? `${id}-error` : null,
+            panelOpen ? `${id}-help-panel` : null,
+          ].filter(Boolean).join(' ') || undefined}
+        />
+        {unit && (
+          <span className="absolute right-3 text-xs font-semibold text-muted-foreground/70 pointer-events-none select-none">
+            {unit}
+          </span>
+        )}
+      </div>
 
       {/* ── Panel de ayuda — progressive disclosure ── */}
       {/*
