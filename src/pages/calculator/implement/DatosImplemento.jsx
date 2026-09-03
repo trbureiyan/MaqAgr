@@ -548,6 +548,14 @@ export default function DatosImplemento() {
       0;
     const recommendedTractors = recommendations?.top5 || recommendations?.top_5 || [];
 
+    const factors = powerRequirement?.factors;
+    const basePower = Number(factors?.basePowerHp || factors?.basePowerHP || formData.power_requirement_hp || 0);
+    const soilFactor = Number(factors?.soilFactor ?? 1);
+    const slopeFactor = Number(factors?.slopeFactor ?? 1);
+    const depthFactor = Number(factors?.depthFactor ?? 1);
+    const safetyMargin = Number(factors?.safetyMargin ?? 0.15);
+    const calculatedHp = Number(powerRequirement?.calculatedPowerHp || basePower * soilFactor * slopeFactor * depthFactor);
+
     const filteredTractors = recommendedTractors.filter(
       (t) =>
         !busqueda ||
@@ -595,6 +603,53 @@ export default function DatosImplemento() {
             </p>
           </div>
         </div>
+
+        {/* Desglose de Pérdidas y Factores de Exigencia */}
+        {powerRequirement && (
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-4">Desglose de Pérdidas y Factores</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                {
+                  label: 'Tipo de suelo',
+                  value: +(basePower * (soilFactor - 1)).toFixed(2),
+                  hint: soilFactor > 1 ? `Exigencia +${Math.round((soilFactor - 1) * 100)}%` : soilFactor < 1 ? `Ahorro ${Math.round((1 - soilFactor) * 100)}%` : 'Base (neutro)',
+                  isNegative: soilFactor > 1,
+                },
+                {
+                  label: 'Profundidad',
+                  value: +(basePower * (depthFactor - 1)).toFixed(2),
+                  hint: `${formData.working_depth_cm || 20} cm de labor`,
+                  isNegative: depthFactor > 1,
+                },
+                {
+                  label: 'Pendiente',
+                  value: +(basePower * (slopeFactor - 1)).toFixed(2),
+                  hint: 'Inclinación de terreno',
+                  isNegative: slopeFactor > 1,
+                },
+                {
+                  label: 'Margen de reserva',
+                  value: +(calculatedHp * safetyMargin).toFixed(2),
+                  hint: `Seguridad (${Math.round(safetyMargin * 100)}%)`,
+                  isNegative: true,
+                },
+              ].map(({ label, value, hint, isNegative }) => (
+                <div key={label} className="bg-card border border-border/60 rounded p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1.5">
+                    {label}
+                    {hint && (
+                      <span className="block text-[10px] text-primary font-medium mt-0.5">{hint}</span>
+                    )}
+                  </p>
+                  <p className={`text-lg font-bold ${isNegative && value > 0 ? "text-destructive" : "text-primary"}`}>
+                    {value > 0 ? `+${value}` : value < 0 ? `${value}` : "0.0"} HP
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Recomendaciones de Tractores */}
         <div className="border-t border-border/40 pt-6">
