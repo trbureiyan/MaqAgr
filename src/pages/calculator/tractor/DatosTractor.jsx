@@ -36,9 +36,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../../components/ui/dialog";
-import { ChevronRight, ChevronLeft, BookOpen, RotateCcw, Search } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronLeft,
+  BookOpen,
+  RotateCcw,
+  Search,
+  Gauge,
+  Sparkles,
+} from "lucide-react";
 import StepIndicator from "../../../components/ui/StepIndicator";
 import SkeletonCard from "@/components/ui/SkeletonCard";
+import { getSoilLabel, getSoilConditionLabel } from "../../../lib/utils";
 
 export default function DatosTractor() {
   const navigate = useNavigate();
@@ -760,8 +769,27 @@ export default function DatosTractor() {
     const terrain = result?.terrain;
     const losses = result?.losses;
     const netPowerHp = result?.netPowerHp ?? 0;
-    const enginePowerHp = result?.enginePowerHp ?? 0;
-    const efficiencyPct = result?.efficiencyPercentage ?? 0;
+    const enginePowerHp = result?.enginePowerHp ?? (formData.pb ? Number(formData.pb) : 0);
+    const efficiencyPct = result?.efficiencyPercentage ?? (enginePowerHp > 0 ? Math.round((netPowerHp / enginePowerHp) * 100) : 0);
+
+    const isManualInput = (!tData?.brand || tData?.brand === "Manual") && (!tData?.model || tData?.model === "Input");
+    const tractorDisplayName = isManualInput
+      ? "Tractor Evaluado"
+      : `${tData?.brand || ""} ${tData?.model || ""}`.trim() || "Tractor Evaluado";
+
+    const soilDisplay = getSoilLabel(terrain?.soilType || formData.soil_type);
+    const soilConditionDisplay = getSoilConditionLabel(formData.soil_condition);
+
+    const totalLossHp = losses?.totalLossHp ?? (
+      losses
+        ? +(
+            (Number(losses.slopeLossHp) || 0) +
+            (tData?.hasTurbo ? 0 : (Number(losses.altitudeLossHp) || 0)) +
+            (Number(losses.rollingResistanceLossHp) || 0) +
+            (Number(losses.slippageLossHp) || 0)
+          ).toFixed(1)
+        : 0
+    );
 
     const filteredImplements = implementsList.filter(
       (imp) =>
@@ -774,67 +802,148 @@ export default function DatosTractor() {
     return (
       <div className="space-y-8 animate-fadeIn">
         <div className="text-center mb-6 border-b border-border/40 pb-4">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Análisis de Potencia Útil</h2>
-          <p className="text-sm text-muted-foreground">
-            Resultados estimados de la pérdida de potencia del tractor por factores ambientales y mecánicos.
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">
+            Balance de Potencia Disponible
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Capacidad efectiva de tracción calculada para tu equipo y las condiciones del terreno.
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Resumen */}
-          <div className="w-full md:w-1/2 bg-secondary/15 rounded border border-border/50 p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <h3 className="text-lg font-bold text-foreground">
-                {tData?.brand || "Tractor"} {tData?.model || ""}
-              </h3>
-              {tData?.hasTurbo && (
-                <span className="bg-primary/10 text-primary border border-primary/20 text-xs font-semibold px-2 py-0.5 rounded">
-                  Turboalimentado
-                </span>
-              )}
-            </div>
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p>Potencia nominal: <strong className="text-foreground">{enginePowerHp} HP</strong></p>
-              {formData.pb && <p>Potencia al motor (Pb): <strong className="text-foreground">{formData.pb} HP</strong></p>}
-              {formData.pmax_tdp && <p>Potencia TDP: <strong className="text-foreground">{formData.pmax_tdp} HP</strong></p>}
-              {formData.peso && <p>Peso operativo: <strong className="text-foreground">{formData.peso} kg</strong></p>}
-              {terrain && <p>Condición del suelo: <strong className="text-foreground">{terrain.soilType || "Firme"}</strong></p>}
+        {/* Panel Principal: Ficha del Tractor vs Potencia Neta */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+          {/* Ficha técnica del tractor */}
+          <div className="bg-card rounded-xl border border-border/70 p-6 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <PiTractorFill className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
+                      Equipo Evaluado
+                    </span>
+                    <h3 className="text-base font-bold text-foreground leading-tight">
+                      {tractorDisplayName}
+                    </h3>
+                  </div>
+                </div>
+                {tData?.hasTurbo && (
+                  <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                    <Sparkles className="w-3 h-3" />
+                    Turbo
+                  </span>
+                )}
+              </div>
+
+              <div className="divide-y divide-border/40 text-sm">
+                <div className="flex justify-between items-center py-2.5">
+                  <span className="text-muted-foreground text-xs font-medium">Potencia del motor</span>
+                  <span className="font-bold text-foreground text-sm">{enginePowerHp} HP</span>
+                </div>
+                {formData.pmax_tdp && (
+                  <div className="flex justify-between items-center py-2.5">
+                    <span className="text-muted-foreground text-xs font-medium">Toma de fuerza (TDP)</span>
+                    <span className="font-semibold text-foreground text-sm">{formData.pmax_tdp} HP</span>
+                  </div>
+                )}
+                {formData.peso && (
+                  <div className="flex justify-between items-center py-2.5">
+                    <span className="text-muted-foreground text-xs font-medium">Peso operativo</span>
+                    <span className="font-semibold text-foreground text-sm">{Number(formData.peso).toLocaleString()} kg</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center py-2.5">
+                  <span className="text-muted-foreground text-xs font-medium">Tipo de suelo</span>
+                  <span className="font-semibold text-foreground text-sm">{soilDisplay}</span>
+                </div>
+                {soilConditionDisplay && (
+                  <div className="flex justify-between items-center py-2.5">
+                    <span className="text-muted-foreground text-xs font-medium">Condición del terreno</span>
+                    <span className="font-semibold text-foreground text-sm">{soilConditionDisplay}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Valor Principal */}
-          <div className="w-full md:w-1/2 bg-secondary/30 rounded border border-border/60 p-6 flex flex-col justify-center items-center text-center">
-            <p className="text-sm text-muted-foreground mb-1">Potencia real disponible en barra de tiro</p>
-            <div className="text-3xl font-extrabold text-[#909d00] my-2">
-              {netPowerHp} HP
+          {/* Tarjeta de Potencia en Barra de Tiro */}
+          <div className="bg-card rounded-xl border border-primary/25 bg-gradient-to-b from-primary/[0.04] to-transparent p-6 shadow-xs flex flex-col justify-between text-center">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary mb-2">
+                <Gauge className="w-3.5 h-3.5" />
+                Potencia útil en barra de tiro
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Capacidad neta de tracción aprovechable en campo
+              </p>
             </div>
-            <div className="text-xs text-muted-foreground/80 mt-1">
-              Eficiencia final del tractor: <span className="font-semibold text-foreground">{efficiencyPct}%</span>
+
+            <div className="my-5">
+              <div className="text-4xl md:text-5xl font-black text-primary tracking-tight">
+                {netPowerHp} <span className="text-2xl font-bold text-muted-foreground">HP</span>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-3 border-t border-border/40">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Eficiencia operativa</span>
+                <span className="font-bold text-foreground">{efficiencyPct}%</span>
+              </div>
+              <div className="w-full bg-secondary/50 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-primary h-full rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, Math.max(0, efficiencyPct))}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {netPowerHp} HP aprovechables de {enginePowerHp} HP del motor.
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Desglose */}
+        {/* Desglose de Pérdidas de Potencia */}
         {losses && (
-          <div>
-            <h3 className="text-sm font-semibold text-foreground mb-4">Desglose de Pérdidas</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-semibold text-foreground">
+                Desglose de Pérdidas de Potencia
+              </h3>
+              <span className="text-xs text-muted-foreground">
+                Pérdida total estimada: <strong className="text-destructive font-bold">-{totalLossHp} HP</strong>
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
               {[
-                { label: 'Pendiente', value: losses.slopeLossHp },
-                { label: 'Altitud', value: losses.altitudeLossHp, zeroIfTurbo: tData?.hasTurbo },
-                { label: 'Rodamiento', value: losses.rollingResistanceLossHp },
-                { label: 'Patinamiento', value: losses.slippageLossHp },
+                { label: 'Inclinación / Pendiente', value: losses.slopeLossHp },
+                { label: 'Altitud geográfica', value: losses.altitudeLossHp, zeroIfTurbo: tData?.hasTurbo },
+                { label: 'Resistencia al rodamiento', value: losses.rollingResistanceLossHp },
+                { label: 'Patinamiento de llantas', value: losses.slippageLossHp },
               ].map(({ label, value, zeroIfTurbo }) => (
-                <div key={label} className="bg-card border border-border/60 rounded p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-1.5">
+                <div
+                  key={label}
+                  className="bg-card border border-border/60 rounded-xl p-3.5 flex flex-col justify-between text-center shadow-xs"
+                >
+                  <p className="text-xs text-muted-foreground font-medium mb-1.5">
                     {label}
-                    {zeroIfTurbo && (
-                      <span className="block text-[10px] text-primary font-medium mt-0.5">Compensado por turbo</span>
+                  </p>
+                  <div>
+                    {zeroIfTurbo ? (
+                      <div>
+                        <p className="text-lg font-bold text-foreground">0.0 HP</p>
+                        <span className="inline-block text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                          Compensado por turbo
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="text-lg font-bold text-destructive">
+                        -{value ?? 0} HP
+                      </p>
                     )}
-                  </p>
-                  <p className="text-lg font-bold text-destructive">
-                    {zeroIfTurbo ? "0.0" : `-${value ?? 0}`} HP
-                  </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -856,7 +965,7 @@ export default function DatosTractor() {
                 placeholder="Buscar implemento..."
                 value={busquedaImplemento}
                 onChange={(e) => setBusquedaImplemento(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-border/60 rounded text-sm bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                className="w-full pl-9 pr-4 py-2 border border-border/60 rounded-lg text-sm bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary shadow-xs"
               />
               <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
             </div>
@@ -881,7 +990,7 @@ export default function DatosTractor() {
                   />
                 ))
               ) : (
-                <div className="col-span-full py-12 text-center text-muted-foreground bg-secondary/10 rounded border border-dashed border-border/60">
+                <div className="col-span-full py-12 text-center text-muted-foreground bg-secondary/10 rounded-xl border border-dashed border-border/60">
                   <p className="text-base font-semibold">No se encontraron implementos compatibles</p>
                   <p className="text-xs mt-1">Prueba refinando la búsqueda o con otra configuración de tractor.</p>
                 </div>
@@ -894,7 +1003,7 @@ export default function DatosTractor() {
           <button
             type="button"
             onClick={resetWizard}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded hover:bg-primary/90 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors shadow-sm cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
             Nueva Búsqueda
@@ -902,6 +1011,7 @@ export default function DatosTractor() {
         </div>
       </div>
     );
+
   };
 
   return (
