@@ -142,12 +142,33 @@ const FILTROS_ESTADO = [
 ];
 
 /**
+ * Tipos de implemento de la Tabla 1 de Chaparro (9 aperos).
+ * Los valores son las claves del catálogo del backend
+ * (`IMPLEMENT_CATALOG` en backend/src/services/implementPowerService.js).
+ *
+ * @type {Array<{value: string, label: string}>}
+ */
+const TIPOS_IMPLEMENTO = [
+  { value: 'arado_disco_vertedera', label: 'Arado de disco y vertedera' },
+  { value: 'subsolador', label: 'Subsolador' },
+  { value: 'arado_cincel', label: 'Arado cincel' },
+  { value: 'implemento_rotativo', label: 'Implemento rotativo (10 cm)' },
+  { value: 'rastrillo_simple_discos', label: 'Rastrillo simple de discos' },
+  { value: 'rastrillo_pulidor', label: 'Rastrillo pulidor' },
+  { value: 'rastrillo_californiano', label: 'Rastrillo californiano' },
+  { value: 'rastra_pesada_26', label: 'Rastra pesada de discos 26"' },
+  { value: 'rastra_pesada_24', label: 'Rastra pesada de discos 24"' },
+];
+
+/**
  * Mapeo de valores de tipo del backend a etiquetas legibles.
+ * Incluye los tipos heredados (Plow/Seeder/Harrow) y los 9 tipos de Tabla 1.
  */
 const TIPO_LABELS = {
   'Plow': 'Arado',
   'Seeder': 'Sembradora',
   'Harrow': 'Rastra',
+  ...Object.fromEntries(TIPOS_IMPLEMENTO.map((tipo) => [tipo.value, tipo.label])),
 };
 
 // ---------------------------------------------------------------------------
@@ -514,6 +535,22 @@ const ImplementCRUD = () => {
     busqueda.trim() || filtroRapido.tipo || filtroRapido.estado
   );
 
+  /**
+   * Opciones del select de tipo: los 9 tipos de Tabla 1 más, cuando se edita
+   * un registro con un tipo heredado (p. ej. 'Plow'), esa opción extra para
+   * que el valor actual siga visible y no rompa la edición.
+   */
+  const tiposDisponibles = useMemo(() => {
+    const tipoActual = implementoActual.implementType;
+    if (!tipoActual || TIPOS_IMPLEMENTO.some((tipo) => tipo.value === tipoActual)) {
+      return TIPOS_IMPLEMENTO;
+    }
+    return [
+      { value: tipoActual, label: TIPO_LABELS[tipoActual] || tipoActual },
+      ...TIPOS_IMPLEMENTO,
+    ];
+  }, [implementoActual.implementType]);
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -857,7 +894,28 @@ const ImplementCRUD = () => {
                 <label className="text-sm font-medium">
                   Tipo de implemento <span className="text-destructive">*</span>
                 </label>
-                <Input name="implementType" value={implementoActual.implementType} onChange={manejarCambio} placeholder="Ej: Sembradora, Arado..." className={erroresFila.implementType ? 'border-destructive' : ''} />
+                <Select
+                  value={implementoActual.implementType || undefined}
+                  onValueChange={(val) => {
+                    setImplementoActual({ ...implementoActual, implementType: val });
+                    if (erroresFila.implementType) {
+                      setErroresFila((prev) => ({ ...prev, implementType: undefined }));
+                    }
+                  }}
+                >
+                  <SelectTrigger className={`w-full ${erroresFila.implementType ? 'border-destructive' : ''}`}>
+                    <SelectValue placeholder="Seleccione un tipo de implemento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {tiposDisponibles.map((tipo) => (
+                        <SelectItem key={tipo.value} value={tipo.value}>
+                          {tipo.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
                 {erroresFila.implementType && <span className="text-xs text-destructive">{erroresFila.implementType}</span>}
               </div>
 

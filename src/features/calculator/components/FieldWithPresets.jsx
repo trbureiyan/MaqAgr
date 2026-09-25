@@ -76,6 +76,7 @@ const FieldWithPresets = ({
   unit,
 }) => {
   const [panelOpen, setPanelOpen] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const blurTimerRef = useRef(null);
   const containerRef = useRef(null);
   const hasHelp = presets.length > 0 || unknownDefault !== undefined;
@@ -90,6 +91,7 @@ const FieldWithPresets = ({
 
   /** Al enfocar el input, abre el panel si hay presets disponibles. */
   const handleFocus = () => {
+    setIsFocused(true);
     if (hasHelp) {
       clearTimeout(blurTimerRef.current);
       setPanelOpen(true);
@@ -108,6 +110,7 @@ const FieldWithPresets = ({
     }
     blurTimerRef.current = setTimeout(() => {
       setPanelOpen(false);
+      setIsFocused(false);
     }, BLUR_CLOSE_DELAY_MS);
   };
 
@@ -131,18 +134,21 @@ const FieldWithPresets = ({
           {label}
         </label>
 
-        {/* Botón de ayuda — discreto, sólo visible si hay presets o unknown */}
+        {/* Botón de ayuda — sólo visible cuando el campo tiene foco o el panel está abierto */}
         {hasHelp && (
           <button
             type="button"
             onClick={togglePanel}
             aria-expanded={panelOpen}
             aria-controls={`${id}-help-panel`}
-            className={`flex items-center gap-1 text-xs transition-colors rounded px-1.5 py-0.5 ${
-              panelOpen
-                ? 'text-primary bg-primary/10'
-                : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
+            className={`flex items-center gap-1 text-xs rounded px-1.5 py-0.5 transition-all duration-200 ${
+              isFocused || panelOpen
+                ? panelOpen
+                  ? 'text-primary bg-primary/10 opacity-100'
+                  : 'text-muted-foreground hover:text-primary hover:bg-primary/5 opacity-100'
+                : 'opacity-0 pointer-events-none'
             }`}
+            tabIndex={-1}
             title="Ver valores de referencia"
           >
             <HelpCircle className="w-3 h-3" />
