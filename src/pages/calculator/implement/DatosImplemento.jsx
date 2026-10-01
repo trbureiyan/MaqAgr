@@ -8,7 +8,7 @@
  * @module pages/DatosImplemento
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { sileo } from "sileo";
 import { PiTractorFill as TractorImg } from "react-icons/pi";
@@ -19,6 +19,12 @@ import FieldWithPresets from "@/features/calculator/components/FieldWithPresets"
 import StepIndicator from "../../../components/ui/StepIndicator";
 import TractorMachineCard from "@/features/tractors/components/TractorMachineCard";
 import SkeletonCard from "@/components/ui/SkeletonCard";
+import CatalogFilters, {
+  EMPTY_CATALOG_FILTERS,
+} from "../../../components/ui/CatalogFilters";
+import Pagination from "../../../components/ui/Pagination";
+import useDebounce from "../../../hooks/useDebounce";
+import { IMPLEMENT_WORK_TYPE_GROUPS } from "../../../lib/implementTypeLabels";
 import { getInputClass } from "../../../lib/formUtils";
 import { getSoilLabel } from "../../../lib/utils";
 import {
@@ -86,6 +92,14 @@ export default function DatosImplemento() {
   const [isCatalogLoading, setIsCatalogLoading] = useState(false);
   const [catalogLoadError, setCatalogLoadError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Filtros y paginación del modal de catálogo (mismo patrón que el modal de tractores);
+  // `chip` guarda el tipo de trabajo seleccionado
+  const [catalogFilters, setCatalogFilters] = useState(EMPTY_CATALOG_FILTERS);
+  const debouncedCatalogSearch = useDebounce(catalogFilters.search, 400);
+  const CATALOG_PAGE_SIZE = 16;
+  const [catalogPage, setCatalogPage] = useState(1);
+  const [catalogPagination, setCatalogPagination] = useState(null);
+  const catalogResultsRef = useRef(null);
   const [selectedImplementId, setSelectedImplementId] = useState(null);
   const [selectedPowerReq, setSelectedPowerReq] = useState(null);
   const [implementImage, setImplementImage] = useState(MachineImg);
@@ -110,27 +124,67 @@ export default function DatosImplemento() {
     slope_percentage: "",
   });
 
-  // Carga del catálogo
-  useEffect(() => {
-    const fetchImplementos = async () => {
-      try {
-        setIsCatalogLoading(true);
-        setCatalogLoadError(null);
-        const response = await getImplements({ limit: 100 });
-        if (response.success && response.data) {
-          setImplementsCatalog(response.data);
-        } else {
-          setCatalogLoadError("No se pudo cargar el catálogo de implementos.");
-        }
-      } catch (error) {
-        console.error("Error al cargar implementos:", error);
-        setCatalogLoadError("Error de conexión al cargar el catálogo.");
-      } finally {
-        setIsCatalogLoading(false);
+  // Resultados del catálogo según los filtros activos (búsqueda con debounce),
+  // paginados de a 16 implementos
+  const fetchImplementosFiltrados = useCallback(async () => {
+    setIsCatalogLoading(true);
+    setCatalogLoadError(null);
+    try {
+      const response = await getImplements({
+        page: catalogPage,
+        limit: CATALOG_PAGE_SIZE,
+        search: debouncedCatalogSearch,
+        type: catalogFilters.chip,
+        minPower: catalogFilters.minPower,
+        maxPower: catalogFilters.maxPower,
+      });
+      if (response.success && response.data) {
+        setImplementsCatalog(response.data);
+        setCatalogPagination(response.pagination || null);
+      } else {
+        setCatalogLoadError("No se pudo cargar el catálogo de implementos.");
       }
-    };
-    fetchImplementos();
-  }, []);
+    } catch (error) {
+      console.error("Error al cargar implementos:", error);
+      setCatalogLoadError("Error de conexión al cargar el catálogo.");
+    } finally {
+      setIsCatalogLoading(false);
+    }
+  }, [
+    debouncedCatalogSearch,
+    catalogFilters.chip,
+    catalogFilters.minPower,
+    catalogFilters.maxPower,
+    catalogPage,
+  ]);
+
+  useEffect(() => {
+    fetchImplementosFiltrados();
+  }, [fetchImplementosFiltrados]);
+
+  const handleCatalogFiltersChange = (patch) => {
+    setCatalogFilters((prev) => ({ ...prev, ...patch }));
+    setCatalogPage(1);
+  };
+
+  const handleClearCatalogFilters = () => {
+    setCatalogFilters(EMPTY_CATALOG_FILTERS);
+    setCatalogPage(1);
+  };
+
+  const handleCatalogPageChange = (page) => {
+    setCatalogPage(page);
+    catalogResultsRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const catalogTotalPages = catalogPagination?.totalPages ?? 1;
+
+  const hasActiveCatalogFilters = Boolean(
+    catalogFilters.search ||
+      catalogFilters.chip ||
+      catalogFilters.minPower ||
+      catalogFilters.maxPower
+  );
 
   const handleImplementoSelect = (implemento) => {
     if (implemento) {
@@ -865,20 +919,41 @@ export default function DatosImplemento() {
             Selecciona tu modelo para rellenar los datos automáticamente.
           </p>
 
-          <div className="flex-1 overflow-y-auto mt-4 pr-1">
-            {isCatalogLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <div className="w-7 h-7 border-[3px] border-primary border-t-transparent rounded-full animate-spin" aria-label="Cargando" />
-              </div>
-            ) : catalogLoadError ? (
-              <div className="text-center py-12 text-destructive flex flex-col items-center gap-2">
-                <p className="text-sm font-medium">{catalogLoadError}</p>
-              </div>
-            ) : implementsCatalog.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <p className="text-sm">No se encontraron implementos en el catálogo.</p>
-              </div>
-            ) : (
+          <div className="flex flex-col lg:flex-row flex-1 min-h-0 gap-5 mt-4 overflow-y-auto lg:overflow-hidden">
+            {/* Panel de filtros (mismo patrón que el modal de tractores) */}
+            <aside className="lg:w-[230px] lg:shrink-0 lg:border-r lg:border-border/60 lg:pr-5">
+              <CatalogFilters
+                filters={catalogFilters}
+                onFiltersChange={handleCatalogFiltersChange}
+                onClearFilters={handleClearCatalogFilters}
+                chipVariant="select"
+                chipLabel="Tipo de Trabajo"
+                chipGroups={IMPLEMENT_WORK_TYPE_GROUPS}
+                selectPlaceholder="Todos los tipos"
+                powerLabel="Fuerza requerida (HP)"
+              />
+            </aside>
+
+            {/* Resultados + paginación */}
+            <div className="flex-1 min-w-0 flex flex-col lg:min-h-0">
+              <div ref={catalogResultsRef} className="flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1">
+              {isCatalogLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="w-7 h-7 border-[3px] border-primary border-t-transparent rounded-full animate-spin" aria-label="Cargando" />
+                </div>
+              ) : catalogLoadError ? (
+                <div className="text-center py-12 text-destructive flex flex-col items-center gap-2">
+                  <p className="text-sm font-medium">{catalogLoadError}</p>
+                </div>
+              ) : implementsCatalog.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p className="text-sm">
+                    {hasActiveCatalogFilters
+                      ? "No se encontraron implementos con estos filtros."
+                      : "No se encontraron implementos en el catálogo."}
+                  </p>
+                </div>
+              ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {implementsCatalog.map((impl) => (
                   <button
@@ -907,6 +982,13 @@ export default function DatosImplemento() {
                 ))}
               </div>
             )}
+              </div>
+              <Pagination
+                paginaActual={catalogPage}
+                totalPaginas={catalogTotalPages}
+                onCambiarPagina={handleCatalogPageChange}
+              />
+            </div>
           </div>
         </DialogContent>
       </Dialog>

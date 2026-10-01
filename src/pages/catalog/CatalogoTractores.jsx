@@ -15,9 +15,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import TractorMachineCard from '@/features/tractors/components/TractorMachineCard';
+import CatalogFilters, {
+  EMPTY_CATALOG_FILTERS,
+} from '@/components/ui/CatalogFilters';
 import SkeletonCard from '@/components/ui/SkeletonCard';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { PiTractorFill as TractorImg } from "react-icons/pi";
 import { getTractors } from '../../services/tractorApi';
 import useDebounce from '../../hooks/useDebounce';
@@ -46,13 +47,11 @@ export default function CatalogoTractores() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // States for filters
-  const [search, setSearch] = useState('');
-  const [brand, setBrand] = useState('');
-  const [minPower, setMinPower] = useState('');
-  const [maxPower, setMaxPower] = useState('');
+  // State for filters (panel controlado por CatalogFilters)
+  const [filters, setFilters] = useState(EMPTY_CATALOG_FILTERS);
+  const { chip: brand, minPower, maxPower } = filters;
 
-  const debouncedSearch = useDebounce(search, 500);
+  const debouncedSearch = useDebounce(filters.search, 500);
 
   const fetchTractors = useCallback(async () => {
     setIsLoading(true);
@@ -77,12 +76,9 @@ export default function CatalogoTractores() {
     fetchTractors();
   }, [fetchTractors]);
 
-  const handleClearFilters = () => {
-    setSearch('');
-    setBrand('');
-    setMinPower('');
-    setMaxPower('');
-  };
+  const handleFiltersChange = (patch) => setFilters((prev) => ({ ...prev, ...patch }));
+
+  const handleClearFilters = () => setFilters(EMPTY_CATALOG_FILTERS);
 
   return (
     <div className="min-h-screen bg-background">
@@ -91,65 +87,13 @@ export default function CatalogoTractores() {
 
           {/* ── Panel de filtros ── */}
           <aside className="flex flex-col gap-5 w-full lg:w-[260px] lg:flex-shrink-0">
-            <h2 className="text-base font-semibold text-[#1e2939]">Filtros</h2>
-
-            <div className="flex flex-col gap-5">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="tractor-modelo" className="text-sm font-medium text-foreground">
-                  Modelo o Nombre
-                </label>
-                <Input 
-                  id="tractor-modelo" 
-                  placeholder="Buscar modelo" 
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-foreground">Marcas</span>
-                <div className="flex flex-wrap gap-2">
-                  {BRANDS.map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => setBrand(brand === m ? '' : m)}
-                      className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                        brand === m 
-                          ? 'border-[#893d46] bg-[#893d46] text-white' 
-                          : 'border-border text-foreground hover:border-[#893d46] hover:text-[#893d46]'
-                      }`}
-                    >
-                      {m}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-foreground">Potencia de Motor (HP)</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input 
-                    type="number" 
-                    placeholder="Min" 
-                    min="0" 
-                    value={minPower}
-                    onChange={(e) => setMinPower(e.target.value)}
-                  />
-                  <Input 
-                    type="number" 
-                    placeholder="Max" 
-                    min="0" 
-                    value={maxPower}
-                    onChange={(e) => setMaxPower(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <Button variant="outline" className="w-full" onClick={handleClearFilters}>
-                Limpiar filtros
-              </Button>
-            </div>
+            <CatalogFilters
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              onClearFilters={handleClearFilters}
+              chipLabel="Marcas"
+              chipOptions={BRANDS.map((b) => ({ value: b, label: b }))}
+            />
           </aside>
 
           {/* ── Área principal ── */}

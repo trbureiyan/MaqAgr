@@ -7,7 +7,7 @@
  * @module pages/DatosTractor
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { sileo } from "sileo";
 import { PiTractorFill, PiTireFill } from "react-icons/pi";
@@ -29,6 +29,11 @@ import { getTractors } from "../../../services/tractorApi";
 import { getImplements } from "../../../services/implementApi";
 import { calculateDirectPowerLoss } from "../../../services/calculationApi";
 import TractorMachineCard from "@/features/tractors/components/TractorMachineCard";
+import CatalogFilters, {
+  EMPTY_CATALOG_FILTERS,
+} from "../../../components/ui/CatalogFilters";
+import Pagination from "../../../components/ui/Pagination";
+import useDebounce from "../../../hooks/useDebounce";
 import MachineImg from "../../../assets/icons/plow.webp";
 import {
   Dialog,
@@ -57,6 +62,15 @@ export default function DatosTractor() {
   const [tractorsCatalog, setTractorsCatalog] = useState([]);
   const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Filtros del modal de catálogo (mismo patrón que la página CatálogoTractores)
+  const [catalogFilters, setCatalogFilters] = useState(EMPTY_CATALOG_FILTERS);
+  const [allTractors, setAllTractors] = useState([]);
+  const debouncedCatalogSearch = useDebounce(catalogFilters.search, 400);
+  // Paginación del modal (16 tractores por página)
+  const CATALOG_PAGE_SIZE = 16;
+  const [catalogPage, setCatalogPage] = useState(1);
+  const [catalogPagination, setCatalogPagination] = useState(null);
+  const catalogResultsRef = useRef(null);
   const [tractorImage, setTractorImage] = useState(() => PiTractorFill);
 
   // Estados de cálculo final
@@ -90,23 +104,87 @@ export default function DatosTractor() {
     workingSpeedKmh: "", // Advanced Mode speed
   });
 
-  // Carga del catálogo de tractores
+  // Carga del catálogo completo (una sola vez) para derivar las marcas
+  // disponibles del panel de filtros
   useEffect(() => {
     const fetchTractores = async () => {
-      setIsLoadingCatalog(true);
       try {
         const response = await getTractors({ limit: 100 });
         if (response.success && response.data) {
-          setTractorsCatalog(response.data);
+          setAllTractors(response.data);
         }
       } catch (error) {
         console.error("Error al cargar tractores:", error);
-      } finally {
-        setIsLoadingCatalog(false);
       }
     };
     fetchTractores();
   }, []);
+
+  // Resultados del catálogo según los filtros activos (búsqueda con debounce),
+  // paginados de a 16 tractores
+  const fetchTractoresFiltrados = useCallback(async () => {
+    setIsLoadingCatalog(true);
+    try {
+      const response = await getTractors({
+        page: catalogPage,
+        limit: CATALOG_PAGE_SIZE,
+        search: debouncedCatalogSearch,
+        brand: catalogFilters.chip,
+        minPower: catalogFilters.minPower,
+        maxPower: catalogFilters.maxPower,
+      });
+      if (response.success && response.data) {
+        setTractorsCatalog(response.data);
+        setCatalogPagination(response.pagination || null);
+      }
+    } catch (error) {
+      console.error("Error al cargar tractores filtrados:", error);
+    } finally {
+      setIsLoadingCatalog(false);
+    }
+  }, [
+    debouncedCatalogSearch,
+    catalogFilters.chip,
+    catalogFilters.minPower,
+    catalogFilters.maxPower,
+    catalogPage,
+  ]);
+
+  useEffect(() => {
+    fetchTractoresFiltrados();
+  }, [fetchTractoresFiltrados]);
+
+  // Marcas presentes en el catálogo para los chips del panel de filtros
+  const availableBrands = useMemo(
+    () =>
+      [...new Set(allTractors.map((tractor) => tractor.brand).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b)),
+    [allTractors]
+  );
+
+  const handleCatalogFiltersChange = (patch) => {
+    setCatalogFilters((prev) => ({ ...prev, ...patch }));
+    setCatalogPage(1);
+  };
+
+  const handleClearCatalogFilters = () => {
+    setCatalogFilters(EMPTY_CATALOG_FILTERS);
+    setCatalogPage(1);
+  };
+
+  const handleCatalogPageChange = (page) => {
+    setCatalogPage(page);
+    catalogResultsRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const catalogTotalPages = catalogPagination?.totalPages ?? 1;
+
+  const hasActiveCatalogFilters = Boolean(
+    catalogFilters.search ||
+      catalogFilters.chip ||
+      catalogFilters.minPower ||
+      catalogFilters.maxPower
+  );
 
   const handleTractorSelect = (tractor) => {
     setFormData((prev) => ({
@@ -1133,16 +1211,32 @@ export default function DatosTractor() {
             Selecciona tu modelo para rellenar los datos automáticamente.
           </p>
 
-          <div className="flex-1 overflow-y-auto mt-4 pr-1">
-            {isLoadingCatalog ? (
-              <div className="flex items-center justify-center py-16">
-                <div className="w-7 h-7 border-[3px] border-primary border-t-transparent rounded-full animate-spin" aria-label="Cargando" />
-              </div>
-            ) : tractorsCatalog.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground text-sm">
-                No hay tractores en el catálogo.
-              </div>
-            ) : (
+          <div className="flex flex-col lg:flex-row flex-1 min-h-0 gap-5 mt-4 overflow-y-auto lg:overflow-hidden">
+            {/* Panel de filtros (mismo patrón que la página de catálogo) */}
+            <aside className="lg:w-[230px] lg:shrink-0 lg:border-r lg:border-border/60 lg:pr-5">
+              <CatalogFilters
+                filters={catalogFilters}
+                onFiltersChange={handleCatalogFiltersChange}
+                onClearFilters={handleClearCatalogFilters}
+                chipLabel="Marcas"
+                chipOptions={availableBrands.map((brand) => ({ value: brand, label: brand }))}
+              />
+            </aside>
+
+            {/* Resultados + paginación */}
+            <div className="flex-1 min-w-0 flex flex-col lg:min-h-0">
+              <div ref={catalogResultsRef} className="flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1">
+              {isLoadingCatalog ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="w-7 h-7 border-[3px] border-primary border-t-transparent rounded-full animate-spin" aria-label="Cargando" />
+                </div>
+              ) : tractorsCatalog.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground text-sm">
+                  {hasActiveCatalogFilters
+                    ? "No se encontraron tractores con estos filtros."
+                    : "No hay tractores en el catálogo."}
+                </div>
+              ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {tractorsCatalog.map((tractor) => (
                   <button
@@ -1178,6 +1272,13 @@ export default function DatosTractor() {
                 ))}
               </div>
             )}
+              </div>
+              <Pagination
+                paginaActual={catalogPage}
+                totalPaginas={catalogTotalPages}
+                onCambiarPagina={handleCatalogPageChange}
+              />
+            </div>
           </div>
         </DialogContent>
       </Dialog>

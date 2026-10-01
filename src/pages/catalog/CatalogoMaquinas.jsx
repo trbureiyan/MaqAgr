@@ -15,11 +15,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import TractorMachineCard from '@/features/tractors/components/TractorMachineCard';
+import CatalogFilters, {
+  EMPTY_CATALOG_FILTERS,
+} from '@/components/ui/CatalogFilters';
 import SkeletonCard from '@/components/ui/SkeletonCard';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import MaquinaImg from '../../assets/icons/plow.webp';
 import { getImplements } from '../../services/implementApi';
+import { IMPLEMENT_WORK_TYPE_GROUPS } from '../../lib/implementTypeLabels';
 import useDebounce from '../../hooks/useDebounce';
 
 // ---------------------------------------------------------------------------
@@ -34,12 +36,11 @@ export default function CatalogoMaquinas() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // States for filters
-  const [search, setSearch] = useState('');
-  const [minPower, setMinPower] = useState('');
-  const [maxPower, setMaxPower] = useState('');
+  // State for filters (panel controlado por CatalogFilters; `chip` = tipo de trabajo)
+  const [filters, setFilters] = useState(EMPTY_CATALOG_FILTERS);
+  const { chip: type, minPower, maxPower } = filters;
 
-  const debouncedSearch = useDebounce(search, 500);
+  const debouncedSearch = useDebounce(filters.search, 500);
 
   const fetchImplements = useCallback(async () => {
     setIsLoading(true);
@@ -47,6 +48,7 @@ export default function CatalogoMaquinas() {
     try {
       const response = await getImplements({
         search: debouncedSearch,
+        type,
         minPower,
         maxPower,
         limit: 12
@@ -57,17 +59,15 @@ export default function CatalogoMaquinas() {
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, minPower, maxPower]);
+  }, [debouncedSearch, type, minPower, maxPower]);
 
   useEffect(() => {
     fetchImplements();
   }, [fetchImplements]);
 
-  const handleClearFilters = () => {
-    setSearch('');
-    setMinPower('');
-    setMaxPower('');
-  };
+  const handleFiltersChange = (patch) => setFilters((prev) => ({ ...prev, ...patch }));
+
+  const handleClearFilters = () => setFilters(EMPTY_CATALOG_FILTERS);
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,47 +76,16 @@ export default function CatalogoMaquinas() {
 
           {/* ── Panel de filtros ── */}
           <aside className="flex flex-col gap-5 w-full lg:w-[260px] lg:flex-shrink-0">
-            <h2 className="text-base font-semibold text-[#1e2939]">Filtros</h2>
-
-            <div className="flex flex-col gap-5">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="machine-modelo" className="text-sm font-medium text-foreground">
-                  Modelo o Nombre
-                </label>
-                <Input 
-                  id="machine-modelo" 
-                  placeholder="Buscar modelo" 
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-foreground">
-                  Fuerza requerida (HP)
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input 
-                    type="number" 
-                    placeholder="Min" 
-                    min="0" 
-                    value={minPower}
-                    onChange={(e) => setMinPower(e.target.value)}
-                  />
-                  <Input 
-                    type="number" 
-                    placeholder="Max" 
-                    min="0" 
-                    value={maxPower}
-                    onChange={(e) => setMaxPower(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <Button variant="outline" className="w-full" onClick={handleClearFilters}>
-                Limpiar filtros
-              </Button>
-            </div>
+            <CatalogFilters
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              onClearFilters={handleClearFilters}
+              chipVariant="select"
+              chipLabel="Tipo de Trabajo"
+              chipGroups={IMPLEMENT_WORK_TYPE_GROUPS}
+              selectPlaceholder="Todos los tipos"
+              powerLabel="Fuerza requerida (HP)"
+            />
           </aside>
 
           {/* ── Área principal ── */}
