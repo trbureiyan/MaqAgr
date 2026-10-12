@@ -6,7 +6,7 @@
 
 > Interfaz web (SPA) para gestión y apoyo a la decisión en mecanización agrícola. Desarrollado como parte del Semillero de Investigación Devurity.
 
-![Status](https://img.shields.io/badge/status-active_development-blue)
+![Status](https://img.shields.io/badge/status-inactivo-lightgrey)
 ![SPA](https://img.shields.io/badge/Architecture-SPA-orange)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
