@@ -12,6 +12,7 @@
 ![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-38B2AC?logo=tailwindcss&logoColor=white)
 ![Node](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)
+[![DOI](https://img.shields.io/badge/DOI-10.18845%2Ftm.v39i7.8744-0A7BBE?logo=zenodo&logoColor=white)](https://doi.org/10.18845/tm.v39i7.8744)
 
 ---
 
