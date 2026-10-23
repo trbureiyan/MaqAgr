@@ -435,7 +435,7 @@ export default function DatosTractor() {
 
         const evaluated = allImplements.map((imp) => {
           const reqHp = Number(imp.powerRequirementHp || imp.power_requirement_hp || 0);
-          let suitability = { label: "Óptimo", color: "green" };
+          let suitability;
           if (reqHp > netPower) {
             suitability = { label: "Potencia Insuficiente", color: "red" };
           } else if (reqHp < netPower * 0.5) {
