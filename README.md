@@ -9,9 +9,9 @@
 ![Status](https://img.shields.io/badge/status-inactivo-lightgrey)
 ![SPA](https://img.shields.io/badge/Architecture-SPA-orange)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-38B2AC?logo=tailwindcss&logoColor=white)
-![Node](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)
+![Node](https://img.shields.io/badge/Node.js-24+-339933?logo=node.js&logoColor=white)
 [![DOI](https://img.shields.io/badge/DOI-10.18845%2Ftm.v39i7.8744-0A7BBE?logo=zenodo&logoColor=white)](https://doi.org/10.18845/tm.v39i7.8744)
 
 ---
@@ -135,9 +135,9 @@ Alias de imports configurados en `vite.config.js`:
 
 ### Prerrequisitos
 
-- Node.js 22+
+- Node.js 24+
 - Corepack habilitado o disponible en la instalación de Node.js
-- pnpm 11.1.0
+- pnpm 12.15.0
 
 ### 1) Clonar e instalar
 
@@ -235,7 +235,7 @@ Este enfoque permite trabajar UI, validaciones y estados asíncronos sin bloquea
 
 ### Bootstrap de Windows
 
-El script [`scripts/bootstrap-pnpm.ps1`](https://github.com/trbureiyan/MaqAgr/blob/refactor/switch-to-pnpm/scripts/bootstrap-pnpm.ps1) deja el entorno listo para trabajar en Windows, eliminando rastros de npm y fijando pnpm 11.1.0.
+El script [`scripts/bootstrap-pnpm.ps1`](https://github.com/trbureiyan/MaqAgr/blob/refactor/switch-to-pnpm/scripts/bootstrap-pnpm.ps1) deja el entorno listo para trabajar en Windows, eliminando rastros de npm y fijando pnpm 12.15.0.
 
 ---
 

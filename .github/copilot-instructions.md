@@ -31,7 +31,7 @@ You are an expert AI programming assistant working on **MaqAgr**, a web-based de
    - **Never use `^` or `~`** in dependency version specifiers. Always pin exact versions in `package.json`.
    - **Always commit the lockfile** (`pnpm-lock.yaml`).
    - Use deterministic installs: `pnpm install --frozen-lockfile`.
-   - **NPM IS STRICTLY FORBIDDEN**: This project exclusively uses pnpm (>=11.1.0). Never suggest or run npm commands.
+   - **NPM IS STRICTLY FORBIDDEN**: This project exclusively uses pnpm (>=12.15.0). Never suggest or run npm commands.
 
 ## Domain & Code Style
 

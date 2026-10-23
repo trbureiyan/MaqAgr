@@ -2,7 +2,7 @@
 param(
     [switch]$Pristine,
     [switch]$Verify,
-    [string]$PnpmVersion = '11.1.0'
+    [string]$PnpmVersion = '12.15.0'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -23,7 +23,7 @@ function Assert-Tool {
     param([string]$Name)
 
     if (-not (Test-CommandExists $Name)) {
-        throw "Missing '$Name'. Install Node.js 22+ with Corepack available before running this script."
+        throw "Missing '$Name'. Install Node.js 24+ with Corepack available before running this script."
     }
 }
 
@@ -31,7 +31,7 @@ function Get-PackageManagerVersion {
     $packageJson = Get-Content -LiteralPath 'package.json' -Raw | ConvertFrom-Json
 
     if (-not $packageJson.packageManager) {
-        throw 'package.json must define packageManager (expected pnpm@11.1.0).'
+        throw 'package.json must define packageManager (expected pnpm@12.15.0).'
     }
 
     if ($packageJson.packageManager -notmatch '^pnpm@(.+)$') {
@@ -72,8 +72,8 @@ if (-not (Test-Path 'package.json')) {
 
 $nodeVersion = (node --version).Trim()
 Write-Step "Node detected: $nodeVersion"
-if ($nodeVersion -notmatch '^v?(2[2-9]|[3-9]\d)\.') {
-    Write-Warning 'This repository is validated on Node.js 22+. Continue only if you have a specific reason.'
+if ($nodeVersion -notmatch '^v?(2[4-9]|[3-9]\d)\.') {
+    Write-Warning 'This repository is validated on Node.js 24+. Continue only if you have a specific reason.'
 }
 
 Write-Step 'Validating pnpm pin from package.json'
